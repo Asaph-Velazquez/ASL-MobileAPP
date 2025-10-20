@@ -1,15 +1,11 @@
-FROM node:latest
-WORKDIR /app
-COPY package.*json ./
-RUN npm intall -g expoFROM node:18
+FROM node:18
 
 WORKDIR /app
 
 COPY package*.json ./
-RUN npm install -g expo-cli && npm install
+RUN npm install
 
 COPY . .
 
-EXPOSE 19000 19001 19002
-
-CMD ["expo", "start", "--tunnel"]
+# Usar LAN en vez de tunnel
+CMD ["npx", "expo", "start", "--lan"]
