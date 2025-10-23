@@ -18,7 +18,7 @@ export default function HomeScreen() {
 
         <View style={styles.buttons}>
           <Pressable
-            onPress={() => {}}
+            onPress={() => router.push('/ASL/ASLHome')}
             style={({ pressed }) => [
               styles.button,
               styles.shadow,
@@ -31,7 +31,7 @@ export default function HomeScreen() {
 
           <Pressable
             onPress={() =>
-              router.push('/Home/TextHome')
+              router.push('/Text/TextHome')
             }
             style={({ pressed }) => [
               styles.button,
