@@ -14,30 +14,30 @@ export default function TextServices(){
         desciption : "Disfruta de un delicioso desayuno en nuestra cafeteria.",
         icon: "food-bank",
         iconType: "material" as const,
-        iconColor: "#4A90E2",
-        bgColor: "#E3F2FD"
+        iconColor: "#FF9800",
+        bgColor: "#FFF3E0"
         },{
         id: "Alberca",
         desciption : "Disfruta de un refrescante experiencia en nuestra alberca.",
         icon: "pool",
         iconType: "material" as const,
-        iconColor: "#4A90E2",
-        bgColor: "#E3F2FD"
+        iconColor: "#00BCD4",
+        bgColor: "#E0F7FA"
         },{
         id: "Gimnasio",
         desciption : "No dejes que pierdas tu rutina.",
         icon: "fitness-center",
         iconType: "material" as const,
-        iconColor: "#4A90E2",
-        bgColor: "#E3F2FD"
+        iconColor: "#F44336",
+        bgColor: "#FFEBEE"
         },
         {
         id: "Spa",
         desciption : "Disfruta de un relajante día de spa.",
         icon: "spa",
         iconType: "material" as const,
-        iconColor: "#4A90E2",
-        bgColor: "#E3F2FD"
+        iconColor: "#9C27B0",
+        bgColor: "#F3E5F5"
         }
     ];
 
@@ -54,7 +54,7 @@ export default function TextServices(){
         <ScrollView>
         <ThemedView style={commonStyles.container}>
             <View style={commonStyles.header}>
-                <Text style={[commonStyles.title, { color: textColor }]}>Hotel Aurora Central</Text>
+                <Text style={[commonStyles.title, { color: textColor }]}>Servicios incluidos</Text>
                 <Text style={[commonStyles.subtitle, { color: mutedColor }]}>¿Qué necesitas hoy?</Text>
             </View>
             

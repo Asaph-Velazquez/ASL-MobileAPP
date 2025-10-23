@@ -15,40 +15,40 @@ export default function TextRoomS(){
             desciption : "Disfruta de una deliciosa comida en tu habitación.",
             icon: "flatware",
             iconType: "material" as const,
-            iconColor: "#4A90E2",
-            bgColor: "#E3F2FD"
+            iconColor: "#FF6B6B",
+            bgColor: "#FFE5E5"
         },
         {
             id: "Amenities",
             desciption : "Si te hacen falta toallas, jabones o cualquier otro artículo, ¡solo pídelo!",
             icon: "soap",
             iconType: "material" as const,
-            iconColor: "#4A90E2",
-            bgColor: "#E3F2FD"
+            iconColor: "#4ECDC4",
+            bgColor: "#E0F7F5"
         },
         {
             id: "Lenceria",
             desciption : "solicita reposicion de  Sabanas, Toallas o Fundas",
             icon: "bed",
             iconType: "material" as const,
-            iconColor: "#4A90E2",
-            bgColor: "#E3F2FD"
+            iconColor: "#95E1D3",
+            bgColor: "#E8F8F5"
         },
         {
             id: "Comodidad",
             desciption: "Solicita almohadas extra, mantas térmicas o artículos para mejorar tu descanso.",
             icon: "self-improvement",
             iconType: "material" as const,
-            iconColor: "#4A90E2",
-            bgColor: "#E3F2FD"
+            iconColor: "#A29BFE",
+            bgColor: "#F0EFFF"
         },
         {
             id: "Extra",
             desciption : "Si quieres un servicio extra te comunicaremos con recepcion (se cobra adicionalmente y no aseguramos disponibilidad).",
             icon: "question-mark",
             iconType: "material" as const,
-            iconColor: "#4A90E2",
-            bgColor: "#E3F2FD"
+            iconColor: "#FDCB6E",
+            bgColor: "#FFF6E0"
         }       
     ]
 
@@ -65,8 +65,8 @@ export default function TextRoomS(){
         <ScrollView>
         <ThemedView style={commonStyles.container}>
             <View style={commonStyles.header}>
-                <Text style={[commonStyles.title, { color: textColor }]}>Hotel Aurora Central</Text>
-                <Text style={[commonStyles.subtitle, { color: mutedColor }]}>¿Qué necesitas hoy?</Text>
+                <Text style={[commonStyles.title, { color: textColor }]}>Servicio a la Habitación</Text>
+                <Text style={[commonStyles.subtitle, { color: mutedColor }]}>¿En que podemos ayudarte hoy?</Text>
             </View>
             
             <View style={commonStyles.cardsContainer}>

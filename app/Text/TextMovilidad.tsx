@@ -13,25 +13,22 @@ export default function TextMovilidad(){
         desciption : "Personal del hotel estaciona tu vehículo",
         icon: "local-parking",
         iconType: "material" as const,
-        iconColor: "#4A90E2",
-        bgColor: "#E3F2FD",
+        iconColor: "#3F51B5",
+        bgColor: "#E8EAF6",
         disponibilidad: "Sí"
         },{
         id: "Taxi o Ride-hailing",
         desciption : "Solicitud de taxi o apps como Uber/Didi",
         icon: "local-taxi",
         iconType: "material" as const,
-        iconColor: "#FFC107",
-        bgColor: "#FFF8E1",
+        iconColor: "#FFEB3B",
+        bgColor: "#FFFDE7",
         disponibilidad: "Variable"
         }
     ];
 
     const handlePress = (opcionId: string) => {
-        // Aquí puedes agregar la lógica para manejar la solicitud de movilidad
         console.log("Solicitando servicio de movilidad:", opcionId);
-        // Por ejemplo, navegar a un formulario de solicitud
-        // router.push('/Text/MovilidadForm?type=' + opcionId);
     };
     
     return(
