@@ -1,50 +1,95 @@
-# Welcome to your Expo app 👋
+# 📱ASL Mobile App 
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+Aplicación móvil para hoteles que permite a los huéspedes comunicarse con el personal del hotel mediante dos modos: ASL (Lenguaje de Señas Americano) y mensajería de texto.
 
-## Get started
+## 📋 Características
 
-1. Install dependencies
+### Modo Texto
+- Comunicación mediante texto, desarrollado para lectores con discapacidad auditiva y publico en general
 
-   ```bash
-   npm install
-   ```
+### Modo ASL
+- Comunicación mediante lenguaje de señas (en desarrollo)
 
-2. Start the app
+## 🚀 Comenzar
 
-   ```bash
-   npx expo start
-   ```
-
-In the output, you'll find options to open the app in a
-
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
-
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
-
-## Get a fresh project
-
-When you're ready, run:
+### Instalación
 
 ```bash
-npm run reset-project
+npm install
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+### Ejecutar la aplicación
 
-## Learn more
+```bash
+npx expo start
+```
 
-To learn more about developing your project with Expo, look at the following resources:
+En la salida, encontrarás opciones para abrir la app en:
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
+- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
+- [Expo Go](https://expo.dev/go)
 
-## Join the community
+## 🛠️ Tecnologías
 
-Join our community of developers creating universal apps.
+- **Framework**: Expo Router v6.0.11
+- **React Native**: 0.81.4
+- **React**: 19.1.0
+- **TypeScript**: 5.9.2
+- **Navegación**: @react-navigation/bottom-tabs
+- **Iconos**: @expo/vector-icons
+- **Temas**: Soporte para modo claro/oscuro
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+## 📁 Estructura del Proyecto
+
+```
+app/
+├── (tabs)/          # Navegación principal con tabs
+├── Text/            # Módulo de comunicación por texto
+│   ├── TextHome.tsx
+│   ├── TextServices.tsx
+│   ├── TextRoomS.tsx
+│   ├── TextReportProblem.tsx
+│   └── TextMovilidad.tsx
+├── ASL/             # Módulo de lenguaje de señas
+└── _layout.tsx      # Layout raíz
+
+components/
+├── theme-provider.tsx
+├── themed-view.tsx
+├── haptic-tab.tsx
+└── ui/
+    └── icon-symbol.tsx
+
+constants/
+└── theme.ts         # Configuración de temas
+
+styles/
+└── common.ts        # Estilos compartidos
+```
+
+## 🎨 Sistema de Temas
+
+La aplicación incluye un sistema de temas personalizado con:
+- Modo claro y oscuro
+- Colores personalizados para cada servicio
+- ThemeProvider global
+- Hook personalizado `useThemeColor`
+
+## 🧪 Scripts Disponibles
+
+```bash
+npm start          # Iniciar el servidor de desarrollo
+npm run android    # Ejecutar en Android
+npm run ios        # Ejecutar en iOS
+npm run web        # Ejecutar en web
+npm run typecheck  # Verificar tipos de TypeScript
+```
+
+## 📝 Desarrollo
+
+El proyecto utiliza:
+- **File-based routing** con Expo Router
+- **TypeScript** para type safety
+- **Estilos compartidos** para consistencia
+- **Componentes reutilizables** para UI
