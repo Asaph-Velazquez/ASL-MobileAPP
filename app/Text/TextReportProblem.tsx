@@ -96,7 +96,7 @@ export default function ReportProblem(){
                 problema: problemaSeleccionado,
                 descripcion: descripcion
             });
-            // Aquí puedes agregar la lógica para enviar el reporte
+            // TODO: agregar la lógica para enviar la solicitudS
             alert(`Reporte enviado:\nProblema: ${problemaSeleccionado}\nDescripción: ${descripcion}`);
             setDescripcion('');
             setProblemaSeleccionado('');
