@@ -2,12 +2,16 @@ import { ThemedView } from "@/components/themed-view";
 import { useThemeColor } from '@/hooks/use-theme-color';
 import { commonStyles } from '@/styles/common';
 import { MaterialCommunityIcons, MaterialIcons } from "@expo/vector-icons";
-import { ScrollView, Text, TouchableOpacity, View } from "react-native";
+import { useState } from "react";
+import { ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
 
 export default function ReportProblem(){
     const textColor = useThemeColor({}, 'text');
     const mutedColor = useThemeColor({}, 'muted');
     const cardBg = useThemeColor({}, 'card');
+    const [descripcion, setDescripcion] = useState('');
+    const [problemaSeleccionado, setProblemaSeleccionado] = useState('');
+    
     const ProblemOptions =[
         {
             id: "Aire Acondicionado",
@@ -15,21 +19,24 @@ export default function ReportProblem(){
             icon: "ac-unit",
             iconType: "material" as const,
             iconColor: "#2196F3",
-            bgColor: "#E3F2FD"
+            bgColor: "#E3F2FD",
+            placeholder: "Ej: El aire acondicionado no enfría bien, la temperatura no baja de 25°C..."
         },{
             id: "Plomería",
             desciption : "Problemas con el agua, drenaje o instalaciones sanitarias.",
             icon: "plumbing",
             iconType: "material" as const,
             iconColor: "#03A9F4",
-            bgColor: "#E1F5FE"
+            bgColor: "#E1F5FE",
+            placeholder: "Ej: La ducha no tiene agua caliente, hay una fuga en el lavabo..."
         },{
             id: "Electricidad",
             desciption : "Fallas eléctricas, apagones o problemas con enchufes.",
             icon: "bolt",
             iconType: "material" as const,
             iconColor: "#FFC107",
-            bgColor: "#FFF8E1"
+            bgColor: "#FFF8E1",
+            placeholder: "Ej: El enchufe cerca de la cama no funciona, las luces parpadean..."
         },
         {
             id: "Limpieza",
@@ -37,7 +44,8 @@ export default function ReportProblem(){
             icon: "cleaning-services",
             iconType: "material" as const,
             iconColor: "#4CAF50",
-            bgColor: "#E8F5E9"
+            bgColor: "#E8F5E9",
+            placeholder: "Ej: Necesito limpieza adicional en el baño, falta reposición de toallas..."
         },
         {
             id: "Ruido",
@@ -45,7 +53,8 @@ export default function ReportProblem(){
             icon: "volume-up",
             iconType: "material" as const,
             iconColor: "#FF5722",
-            bgColor: "#FBE9E7"
+            bgColor: "#FBE9E7",
+            placeholder: "Ej: Hay mucho ruido proveniente de la habitación de al lado..."
         },
         {
             id: "Mobiliario",
@@ -53,7 +62,8 @@ export default function ReportProblem(){
             icon: "weekend",
             iconType: "material" as const,
             iconColor: "#795548",
-            bgColor: "#EFEBE9"
+            bgColor: "#EFEBE9",
+            placeholder: "Ej: La silla del escritorio está rota, el cajón no cierra bien..."
         },
         {
             id: "TV / Internet",
@@ -61,7 +71,8 @@ export default function ReportProblem(){
             icon: "wifi-off",
             iconType: "material" as const,
             iconColor: "#9C27B0",
-            bgColor: "#F3E5F5"
+            bgColor: "#F3E5F5",
+            placeholder: "Ej: El WiFi no funciona, la TV no enciende o no hay señal..."
         },
         {
             id: "Otro Problema",
@@ -69,12 +80,29 @@ export default function ReportProblem(){
             icon: "report-problem",
             iconType: "material" as const,
             iconColor: "#F44336",
-            bgColor: "#FFEBEE"
+            bgColor: "#FFEBEE",
+            placeholder: "Ej: Describe el problema que estás experimentando..."
         }
     ];
 
     const handlePress = (opcionId: string) => {
-        console.log("Reportando problema:", opcionId);
+        setProblemaSeleccionado(opcionId);
+        console.log("Problema seleccionado:", opcionId);
+    };
+
+    const handleEnviar = () => {
+        if (problemaSeleccionado && descripcion.trim()) {
+            console.log("Enviando reporte:", {
+                problema: problemaSeleccionado,
+                descripcion: descripcion
+            });
+            // Aquí puedes agregar la lógica para enviar el reporte
+            alert(`Reporte enviado:\nProblema: ${problemaSeleccionado}\nDescripción: ${descripcion}`);
+            setDescripcion('');
+            setProblemaSeleccionado('');
+        } else {
+            alert('Por favor selecciona un tipo de problema y agrega una descripción');
+        }
     };
     
     return(
@@ -89,7 +117,11 @@ export default function ReportProblem(){
                 {ProblemOptions.map((opcion, index) => (
                     <TouchableOpacity 
                         key={index}
-                        style={[commonStyles.card, { backgroundColor: cardBg }]}
+                        style={[
+                            commonStyles.card, 
+                            { backgroundColor: cardBg },
+                            problemaSeleccionado === opcion.id && styles.cardSelected
+                        ]}
                         onPress={() => handlePress(opcion.id)}
                         activeOpacity={0.8}
                     >
@@ -114,8 +146,75 @@ export default function ReportProblem(){
                         </View>
                     </TouchableOpacity>
                 ))}
+
+                {problemaSeleccionado && (
+                    <View style={styles.inputContainer}>
+                        <Text style={[styles.inputLabel, { color: textColor }]}>
+                            Describe el problema:
+                        </Text>
+                        <TextInput
+                            style={[
+                                styles.textInput,
+                                { 
+                                    backgroundColor: cardBg,
+                                    color: textColor,
+                                    borderColor: mutedColor
+                                }
+                            ]}
+                            placeholder={ProblemOptions.find(op => op.id === problemaSeleccionado)?.placeholder || "Describe el problema..."}
+                            placeholderTextColor={mutedColor}
+                            value={descripcion}
+                            onChangeText={setDescripcion}
+                            multiline
+                            numberOfLines={4}
+                            textAlignVertical="top"
+                        />
+                        <TouchableOpacity
+                            style={styles.submitButton}
+                            onPress={handleEnviar}
+                            activeOpacity={0.8}
+                        >
+                            <Text style={styles.submitButtonText}>Enviar Reporte</Text>
+                        </TouchableOpacity>
+                    </View>
+                )}
             </View>
         </ThemedView>
         </ScrollView>
     );
 }
+
+const styles = StyleSheet.create({
+    cardSelected: {
+        borderWidth: 2,
+        borderColor: '#F44336',
+    },
+    inputContainer: {
+        marginTop: 20,
+        gap: 12,
+    },
+    inputLabel: {
+        fontSize: 16,
+        fontWeight: '600',
+    },
+    textInput: {
+        borderWidth: 1,
+        borderRadius: 12,
+        padding: 16,
+        fontSize: 16,
+        minHeight: 120,
+        maxHeight: 200,
+    },
+    submitButton: {
+        backgroundColor: '#F44336',
+        borderRadius: 12,
+        padding: 16,
+        alignItems: 'center',
+        marginTop: 8,
+    },
+    submitButtonText: {
+        color: '#FFFFFF',
+        fontSize: 16,
+        fontWeight: '600',
+    },
+});

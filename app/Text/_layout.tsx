@@ -6,7 +6,7 @@ import { IconSymbol } from '@/components/ui/icon-symbol';
 import { Colors } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { MaterialIcons } from '@expo/vector-icons';
-import { TouchableOpacity, View } from 'react-native';
+import { TouchableOpacity } from 'react-native';
 
 export default function TabLayout() {
   const colorScheme = useColorScheme();
@@ -16,7 +16,6 @@ export default function TabLayout() {
       screenOptions={{
         tabBarActiveTintColor: Colors[colorScheme ?? 'light'].tint,
         headerShown: true,
-        headerTitle: 'Home',
         headerLeft: () => (
           <TouchableOpacity 
             onPress={() => router.back()}
@@ -31,29 +30,54 @@ export default function TabLayout() {
         ),
         tabBarShowLabel: false,
         tabBarButton: HapticTab,
+        tabBarStyle: {
+          justifyContent: 'center',
+          alignItems: 'center',
+        },
+        tabBarItemStyle: {
+          justifyContent: 'center',
+          alignItems: 'center',
+        },
       }}>
       <Tabs.Screen
         name="TextHome"
         options={{
           title: 'Home',
+          headerTitle: 'Home',
           tabBarIcon: ({ color, size }) => (
-            <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-              <IconSymbol size={size ?? 28} name="house.fill" color={color} />
-            </View>
+            <IconSymbol size={size ?? 28} name="house.fill" color={color} />
           ),
         }}
       />
       <Tabs.Screen
         name="TextRoomS"
         options={{
-          title: 'Room Services',
+          title: 'Room Service',
+          headerTitle: 'Room Service',
           tabBarButton: () => null,  
         }}
       />
       <Tabs.Screen
         name="TextServices"
         options={{
-          title: 'Hotel Services',
+          title: 'Servicios del Hotel',
+          headerTitle: 'Servicios del Hotel',
+          tabBarButton: () => null,  
+        }}
+      />
+      <Tabs.Screen
+        name="TextReportProblem"
+        options={{
+          title: 'Reportar Problema',
+          headerTitle: 'Reportar Problema',
+          tabBarButton: () => null,  
+        }}
+      />
+      <Tabs.Screen
+        name="TextMovilidad"
+        options={{
+          title: 'Movilidad',
+          headerTitle: 'Movilidad',
           tabBarButton: () => null,  
         }}
       />
