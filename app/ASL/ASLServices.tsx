@@ -3,67 +3,71 @@ import { useThemeColor } from '@/hooks/use-theme-color';
 import { commonStyles } from '@/styles/common';
 import { MaterialCommunityIcons, MaterialIcons } from "@expo/vector-icons";
 import { useState } from "react";
-import { Modal, Pressable, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { Image, Modal, Pressable, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
-export default function TextServices(){
+export default function ASLServices(){
     const textColor = useThemeColor({}, 'text');
-    const mutedColor = useThemeColor({}, 'muted');
     const cardBg = useThemeColor({}, 'card');
     const [modalVisible, setModalVisible] = useState(false);
     const [selectedService, setSelectedService] = useState<any>(null);
     
     const ServiceOptions =[{
-            id: "Desayuno incluido",
-            desciption : "Disfruta de un delicioso desayuno en nuestra cafeteria.",
-            icon: "food-bank",
-            iconType: "material" as const,
-            iconColor: "#FF9800",
-            bgColor: "#FFF3E0",
-            detalles: {
-            horario: "6:00 AM - 11:00 AM",
-            ubicacion: "Restaurante principal, piso 1",
-            incluye: ["Buffet continental", "Frutas frescas", "Café y jugos", "Pan recién horneado"],
-            nota: "Reserva con 1 día de anticipación para opciones especiales"
+        id: "Desayuno incluido",
+        // GIF de "Desayuno incluido" en ASL
+        gifUrl: "https://placeholder.com/asl-breakfast.gif", // Reemplazar con GIF real
+        icon: "food-bank",
+        iconType: "material" as const,
+        iconColor: "#FF9800",
+        bgColor: "#FFF3E0",
+        detalles: {
+            // GIF de horario en ASL
+            horarioGif: "https://placeholder.com/asl-breakfast-schedule.gif",
+            // GIF de ubicación en ASL
+            ubicacionGif: "https://placeholder.com/asl-breakfast-location.gif",
+            // GIF de lo que incluye en ASL
+            incluyeGif: "https://placeholder.com/asl-breakfast-includes.gif",
+            // GIF de nota en ASL
+            notaGif: "https://placeholder.com/asl-breakfast-note.gif"
         }
         },{
-            id: "Alberca",
-            desciption : "Disfruta de un refrescante experiencia en nuestra alberca.",
-            icon: "pool",
-            iconType: "material" as const,
-            iconColor: "#00BCD4",
-            bgColor: "#E0F7FA",
-            detalles: {
-            horario: "7:00 AM - 10:00 PM",
-            ubicacion: "Terraza, piso 5",
-            incluye: ["Toallas incluidas", "Camastros disponibles", "Bar en la piscina", "Área infantil"],
-            nota: "Capacidad máxima: 50 personas. Se recomienda reservar camastros en temporada alta"
+        id: "Alberca",
+        gifUrl: "https://placeholder.com/asl-pool.gif",
+        icon: "pool",
+        iconType: "material" as const,
+        iconColor: "#00BCD4",
+        bgColor: "#E0F7FA",
+        detalles: {
+            horarioGif: "https://placeholder.com/asl-pool-schedule.gif",
+            ubicacionGif: "https://placeholder.com/asl-pool-location.gif",
+            incluyeGif: "https://placeholder.com/asl-pool-includes.gif",
+            notaGif: "https://placeholder.com/asl-pool-note.gif"
         }
         },{
-            id: "Gimnasio",
-            desciption : "No dejes que pierdas tu rutina.",
-            icon: "fitness-center",
-            iconType: "material" as const,
-            iconColor: "#F44336",
-            bgColor: "#FFEBEE",
-            detalles: {
-            horario: "24 horas",
-            ubicacion: "Piso 2, junto al spa",
-            incluye: ["Equipo cardiovascular", "Pesas y mancuernas", "Toallas y agua", "Entrenador disponible con cita"],
-            nota: "Acceso con llave de habitación. Se recomienda llevar tenis deportivos"
+        id: "Gimnasio",
+        gifUrl: "https://placeholder.com/asl-gym.gif",
+        icon: "fitness-center",
+        iconType: "material" as const,
+        iconColor: "#F44336",
+        bgColor: "#FFEBEE",
+        detalles: {
+            horarioGif: "https://placeholder.com/asl-gym-schedule.gif",
+            ubicacionGif: "https://placeholder.com/asl-gym-location.gif",
+            incluyeGif: "https://placeholder.com/asl-gym-includes.gif",
+            notaGif: "https://placeholder.com/asl-gym-note.gif"
         }
         },
         {
-            id: "Spa",
-            desciption : "Disfruta de un relajante día de spa.",
-            icon: "spa",
-            iconType: "material" as const,
-            iconColor: "#9C27B0",
-            bgColor: "#F3E5F5",
-            detalles: {
-            horario: "9:00 AM - 8:00 PM",
-            ubicacion: "Piso 2, ala oeste",
-            incluye: ["Masajes terapéuticos", "Faciales", "Sauna y vapor", "Aromaterapia"],
-            nota: "Reserva con 24 horas de anticipación. Servicios con costo adicional"
+        id: "Spa",
+        gifUrl: "https://placeholder.com/asl-spa.gif",
+        icon: "spa",
+        iconType: "material" as const,
+        iconColor: "#9C27B0",
+        bgColor: "#F3E5F5",
+        detalles: {
+            horarioGif: "https://placeholder.com/asl-spa-schedule.gif",
+            ubicacionGif: "https://placeholder.com/asl-spa-location.gif",
+            incluyeGif: "https://placeholder.com/asl-spa-includes.gif",
+            notaGif: "https://placeholder.com/asl-spa-note.gif"
         }
     }];
 
@@ -79,8 +83,18 @@ export default function TextServices(){
         >
         <ThemedView style={commonStyles.container}>
             <View style={commonStyles.header}>
-                <Text style={[commonStyles.title, { color: textColor }]}>Servicios incluidos</Text>
-                <Text style={[commonStyles.subtitle, { color: mutedColor }]}>¿Qué necesitas hoy?</Text>
+                {/* GIF de "Servicios incluidos" en ASL */}
+                <Image 
+                    source={{ uri: "https://placeholder.com/asl-services-title.gif" }}
+                    style={styles.titleGif}
+                    resizeMode="contain"
+                />
+                {/* GIF de "¿Qué necesitas hoy?" en ASL */}
+                <Image 
+                    source={{ uri: "https://placeholder.com/asl-what-need-today.gif" }}
+                    style={styles.subtitleGif}
+                    resizeMode="contain"
+                />
             </View>
             
             <View style={commonStyles.cardsContainer}>
@@ -107,14 +121,18 @@ export default function TextServices(){
                             )}
                         </View>
                         <View style={commonStyles.textContainer}>
-                            <Text style={[commonStyles.cardTitle, { color: textColor }]}>{opcion.id}</Text>
-                            <Text style={[commonStyles.cardDescription, { color: mutedColor }]}>{opcion.desciption}</Text>
+                            {/* GIF de lenguaje de señas en lugar de texto */}
+                            <Image 
+                                source={{ uri: opcion.gifUrl }}
+                                style={styles.cardGif}
+                                resizeMode="contain"
+                            />
                         </View>
                     </TouchableOpacity>
                 ))}
             </View>
 
-            {/* Modal descriptivo */}
+            {/* Modal descriptivo con GIFs */}
             <Modal
                 animationType="slide"
                 transparent={true}
@@ -148,57 +166,54 @@ export default function TextServices(){
                                             />
                                         )}
                                     </View>
-                                    <Text style={[styles.modalTitle, { color: textColor }]}>
-                                        {selectedService.id}
-                                    </Text>
-                                    <Text style={[styles.modalDescription, { color: textColor, opacity: 0.8 }]}>
-                                        {selectedService.desciption}
-                                    </Text>
+                                    {/* GIF del título del servicio */}
+                                    <Image 
+                                        source={{ uri: selectedService.gifUrl }}
+                                        style={styles.modalTitleGif}
+                                        resizeMode="contain"
+                                    />
                                 </View>
 
-                                {/* Detalles del servicio */}
+                                {/* Detalles del servicio en GIFs */}
                                 <View style={styles.detailsContainer}>
-                                    {/* Horario */}
+                                    {/* Horario GIF */}
                                     <View style={styles.detailRow}>
                                         <MaterialIcons name="schedule" size={24} color={selectedService.iconColor} />
-                                        <View style={styles.detailText}>
-                                            <Text style={[styles.detailLabel, { color: textColor }]}>Horario</Text>
-                                            <Text style={[styles.detailValue, { color: mutedColor }]}>
-                                                {selectedService.detalles.horario}
-                                            </Text>
-                                        </View>
+                                        <Image 
+                                            source={{ uri: selectedService.detalles.horarioGif }}
+                                            style={styles.detailGif}
+                                            resizeMode="contain"
+                                        />
                                     </View>
 
-                                    {/* Ubicación */}
+                                    {/* Ubicación GIF */}
                                     <View style={styles.detailRow}>
                                         <MaterialIcons name="location-on" size={24} color={selectedService.iconColor} />
-                                        <View style={styles.detailText}>
-                                            <Text style={[styles.detailLabel, { color: textColor }]}>Ubicación</Text>
-                                            <Text style={[styles.detailValue, { color: mutedColor }]}>
-                                                {selectedService.detalles.ubicacion}
-                                            </Text>
-                                        </View>
+                                        <Image 
+                                            source={{ uri: selectedService.detalles.ubicacionGif }}
+                                            style={styles.detailGif}
+                                            resizeMode="contain"
+                                        />
                                     </View>
 
-                                    {/* Incluye */}
+                                    {/* Incluye GIF */}
                                     <View style={styles.detailRow}>
                                         <MaterialIcons name="check-circle" size={24} color={selectedService.iconColor} />
-                                        <View style={styles.detailText}>
-                                            <Text style={[styles.detailLabel, { color: textColor }]}>Incluye</Text>
-                                            {selectedService.detalles.incluye.map((item: string, idx: number) => (
-                                                <Text key={idx} style={[styles.detailValue, { color: mutedColor }]}>
-                                                    • {item}
-                                                </Text>
-                                            ))}
-                                        </View>
+                                        <Image 
+                                            source={{ uri: selectedService.detalles.incluyeGif }}
+                                            style={styles.detailGif}
+                                            resizeMode="contain"
+                                        />
                                     </View>
 
-                                    {/* Nota */}
+                                    {/* Nota GIF */}
                                     <View style={[styles.notaContainer, { backgroundColor: cardBg, borderColor: selectedService.iconColor, borderWidth: 1 }]}>
                                         <MaterialIcons name="info" size={20} color={selectedService.iconColor} />
-                                        <Text style={[styles.notaText, { color: textColor }]}>
-                                            {selectedService.detalles.nota}
-                                        </Text>
+                                        <Image 
+                                            source={{ uri: selectedService.detalles.notaGif }}
+                                            style={styles.notaGif}
+                                            resizeMode="contain"
+                                        />
                                     </View>
                                 </View>
 
@@ -208,7 +223,7 @@ export default function TextServices(){
                                     onPress={() => setModalVisible(false)}
                                     activeOpacity={0.8}
                                 >
-                                    <Text style={styles.closeButtonText}>Cerrar</Text>
+                                    <Text style={styles.closeButtonText}>✕</Text>
                                 </TouchableOpacity>
                             </ScrollView>
                         )}
@@ -221,6 +236,19 @@ export default function TextServices(){
 }
 
 const styles = StyleSheet.create({
+    titleGif: {
+        width: '100%',
+        height: 80,
+        marginBottom: 8,
+    },
+    subtitleGif: {
+        width: '100%',
+        height: 60,
+    },
+    cardGif: {
+        width: '100%',
+        height: 80,
+    },
     modalOverlay: {
         flex: 1,
         backgroundColor: 'rgba(0, 0, 0, 0.5)',
@@ -255,16 +283,9 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         marginBottom: 16,
     },
-    modalTitle: {
-        fontSize: 24,
-        fontWeight: 'bold',
-        textAlign: 'center',
-        marginBottom: 8,
-    },
-    modalDescription: {
-        fontSize: 16,
-        textAlign: 'center',
-        lineHeight: 22,
+    modalTitleGif: {
+        width: '100%',
+        height: 80,
     },
     detailsContainer: {
         gap: 20,
@@ -273,32 +294,23 @@ const styles = StyleSheet.create({
     detailRow: {
         flexDirection: 'row',
         gap: 12,
-        alignItems: 'flex-start',
+        alignItems: 'center',
     },
-    detailText: {
+    detailGif: {
         flex: 1,
-        gap: 4,
-    },
-    detailLabel: {
-        fontSize: 16,
-        fontWeight: '600',
-    },
-    detailValue: {
-        fontSize: 14,
-        lineHeight: 20,
+        height: 100,
     },
     notaContainer: {
         flexDirection: 'row',
         gap: 8,
         padding: 12,
         borderRadius: 12,
-        alignItems: 'flex-start',
+        alignItems: 'center',
         marginTop: 8,
     },
-    notaText: {
+    notaGif: {
         flex: 1,
-        fontSize: 13,
-        lineHeight: 18,
+        height: 80,
     },
     closeButton: {
         borderRadius: 12,
@@ -308,9 +320,7 @@ const styles = StyleSheet.create({
     },
     closeButtonText: {
         color: '#FFFFFF',
-        fontSize: 16,
+        fontSize: 24,
         fontWeight: '600',
     },
 });
-
-
