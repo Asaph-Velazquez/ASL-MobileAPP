@@ -78,8 +78,11 @@ export default function ASLServices(){
     
     return(
         <ScrollView
-            showsVerticalScrollIndicator={false}
-            pointerEvents="box-none"
+          decelerationRate="fast"
+          scrollEventThrottle={16}
+          nestedScrollEnabled={true}
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={{ paddingBottom: 40 }}
         >
         <ThemedView style={commonStyles.container}>
             <View style={commonStyles.header}>
