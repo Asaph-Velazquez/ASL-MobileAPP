@@ -4,6 +4,8 @@ import { commonStyles } from '@/styles/common';
 import { MaterialCommunityIcons, MaterialIcons } from "@expo/vector-icons";
 import { useState } from 'react';
 import { ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
+import { useWebSocketMobile } from "@/services/socket";
+import { Alert } from "react-native";
 
 export default function TextRoomS(){
     const textColor = useThemeColor({}, 'text');
@@ -59,21 +61,54 @@ export default function TextRoomS(){
         }       
     ]
 
+    //logica de envio de datos por websocket
+    const { estaConectado, enviarPeticion } = useWebSocketMobile();
+    const [roomNumber, setRoomNumber] = useState(''); 
+    const [guestName, setGuestName] = useState('');
+
     const handlePress = (opcionId: string) => {
-        // marcar la opción seleccionada para mostrar el textbox
         setServicioSeleccionado(opcionId);
-        // limpiar descripción anterior
         setDescripcion('');
     };
 
     const handleEnviar = () => {
-        if (servicioSeleccionado && descripcion.trim()) {
-            // Aquí podrías enviar la petición al servidor o manejarla localmente
-            alert(`Solicitud enviada:\nServicio: ${servicioSeleccionado}\nDescripción: ${descripcion}`);
-            setServicioSeleccionado('');
-            setDescripcion('');
+        // Validar que haya servicio y descripción
+        if (!servicioSeleccionado || !descripcion.trim()) {
+            Alert.alert('Error', 'Por favor selecciona un servicio y escribe la descripción');
+            return;
+        }
+
+        // Validar datos del huésped
+        if (!roomNumber || !guestName) {
+            Alert.alert('Error', 'Por favor completa tu número de habitación y nombre');
+            return;
+        }
+
+        // Enviar por WebSocket
+        const success = enviarPeticion({
+            type: 'room-service',
+            roomNumber,
+            guestName,
+            message: `${servicioSeleccionado}: ${descripcion}`,
+            priority: 'high', // Alta prioridad para room service
+        });
+
+        if (success) {
+            Alert.alert(
+                '✅ Solicitud Enviada', 
+                `Tu solicitud de ${servicioSeleccionado} ha sido enviada al personal del hotel.`,
+                [
+                    {
+                        text: 'OK',
+                        onPress: () => {
+                            setServicioSeleccionado('');
+                            setDescripcion('');
+                        }
+                    }
+                ]
+            );
         } else {
-            alert('Por favor selecciona un servicio y escribe la descripción');
+            Alert.alert('❌ Error', 'No hay conexión con el servidor. Verifica tu conexión.');
         }
     };
 
@@ -121,6 +156,41 @@ export default function TextRoomS(){
 
                 {servicioSeleccionado && (
                     <View style={styles.inputContainer}>
+                        {/* Indicador de conexión */}
+                        <View style={styles.connectionIndicator}>
+                            <View style={[
+                                styles.connectionDot,
+                                { backgroundColor: estaConectado ? '#4CAF50' : '#F44336' }
+                            ]} />
+                            <Text style={[styles.connectionText, { color: mutedColor }]}>
+                                {estaConectado ? 'Conectado' : 'Sin conexión'}
+                            </Text>
+                        </View>
+
+                        {/* Datos del huésped */}
+                        <Text style={[styles.inputLabel, { color: textColor }]}>Tus datos:</Text>
+                        <TextInput
+                            style={[
+                                styles.textInput,
+                                { backgroundColor: cardBg, color: textColor, borderColor: mutedColor, minHeight: 50, maxHeight: 50 }
+                            ]}
+                            placeholder="Número de habitación"
+                            placeholderTextColor={mutedColor}
+                            value={roomNumber}
+                            onChangeText={setRoomNumber}
+                            keyboardType="numeric"
+                        />
+                        <TextInput
+                            style={[
+                                styles.textInput,
+                                { backgroundColor: cardBg, color: textColor, borderColor: mutedColor, minHeight: 50, maxHeight: 50 }
+                            ]}
+                            placeholder="Tu nombre"
+                            placeholderTextColor={mutedColor}
+                            value={guestName}
+                            onChangeText={setGuestName}
+                        />
+
                         <Text style={[styles.inputLabel, { color: textColor }]}>Describe tu solicitud:</Text>
                         <TextInput
                             style={[
@@ -135,8 +205,18 @@ export default function TextRoomS(){
                             numberOfLines={4}
                             textAlignVertical="top"
                         />
-                        <TouchableOpacity style={styles.submitButton} onPress={handleEnviar} activeOpacity={0.8}>
-                            <Text style={styles.submitButtonText}>Enviar Solicitud</Text>
+                        <TouchableOpacity 
+                            style={[
+                                styles.submitButton,
+                                !estaConectado && styles.disabledButton
+                            ]} 
+                            onPress={handleEnviar} 
+                            activeOpacity={0.8}
+                            disabled={!estaConectado}
+                        >
+                            <Text style={styles.submitButtonText}>
+                                {estaConectado ? 'Enviar Solicitud' : 'Sin Conexión'}
+                            </Text>
                         </TouchableOpacity>
                     </View>
                 )}
@@ -179,5 +259,23 @@ const styles = StyleSheet.create({
         color: '#FFFFFF',
         fontSize: 16,
         fontWeight: '600',
+    },
+    connectionIndicator: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 8,
+        marginBottom: 8,
+    },
+    connectionDot: {
+        width: 10,
+        height: 10,
+        borderRadius: 5,
+    },
+    connectionText: {
+        fontSize: 14,
+        fontWeight: '500',
+    },
+    disabledButton: {
+        backgroundColor: '#BDBDBD',
     },
 });

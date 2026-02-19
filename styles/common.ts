@@ -1,8 +1,7 @@
 import { StyleSheet } from 'react-native';
 
-/*
-    Estilos comunes compartidos entre pantallas
-*/
+/* Estilos comunes compartidos entre pantallas*/
+
 export const commonStyles = StyleSheet.create({
   container: {
     flex: 1,
