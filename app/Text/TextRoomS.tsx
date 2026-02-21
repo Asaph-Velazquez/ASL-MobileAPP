@@ -4,8 +4,8 @@ import { commonStyles } from '@/styles/common';
 import { MaterialCommunityIcons, MaterialIcons } from "@expo/vector-icons";
 import { useState } from 'react';
 import { ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
-import { useWebSocketMobile } from "@/services/socket";
-import { Alert } from "react-native";
+import { useWebSocket } from "@/components/websocket-provider";
+import { toast } from 'sonner-native';
 
 export default function TextRoomS(){
     const textColor = useThemeColor({}, 'text');
@@ -62,7 +62,7 @@ export default function TextRoomS(){
     ]
 
     //logica de envio de datos por websocket
-    const { estaConectado, enviarPeticion } = useWebSocketMobile();
+    const { estaConectado, enviarPeticion, misPeticiones } = useWebSocket();
     const [roomNumber, setRoomNumber] = useState(''); 
     const [guestName, setGuestName] = useState('');
 
@@ -74,13 +74,17 @@ export default function TextRoomS(){
     const handleEnviar = () => {
         // Validar que haya servicio y descripción
         if (!servicioSeleccionado || !descripcion.trim()) {
-            Alert.alert('Error', 'Por favor selecciona un servicio y escribe la descripción');
+            toast.error('Campos incompletos', {
+                description: 'Por favor selecciona un servicio y escribe la descripción',
+            });
             return;
         }
 
         // Validar datos del huésped
         if (!roomNumber || !guestName) {
-            Alert.alert('Error', 'Por favor completa tu número de habitación y nombre');
+            toast.error('Datos faltantes', {
+                description: 'Por favor completa tu número de habitación y nombre',
+            });
             return;
         }
 
@@ -94,21 +98,15 @@ export default function TextRoomS(){
         });
 
         if (success) {
-            Alert.alert(
-                '✅ Solicitud Enviada', 
-                `Tu solicitud de ${servicioSeleccionado} ha sido enviada al personal del hotel.`,
-                [
-                    {
-                        text: 'OK',
-                        onPress: () => {
-                            setServicioSeleccionado('');
-                            setDescripcion('');
-                        }
-                    }
-                ]
-            );
+            toast.success('Solicitud Enviada', {
+                description: `Tu solicitud de ${servicioSeleccionado} ha sido enviada al personal del hotel.`,
+            });
+            setServicioSeleccionado('');
+            setDescripcion('');
         } else {
-            Alert.alert('❌ Error', 'No hay conexión con el servidor. Verifica tu conexión.');
+            toast.error('Error de conexión', {
+                description: 'No hay conexión con el servidor. Verifica tu conexión.',
+            });
         }
     };
 
@@ -222,6 +220,43 @@ export default function TextRoomS(){
                 )}
             </View>
 
+            {/* Historial de Peticiones */}
+            {misPeticiones.length > 0 && (
+                <View style={styles.historialContainer}>
+                    <Text style={[styles.historialTitle, { color: textColor }]}>
+                        📋 Mis Peticiones ({misPeticiones.length})
+                    </Text>
+                    {misPeticiones.slice(0, 5).map((peticion) => {
+                        const estadoConfig = {
+                            'pending': { color: '#FFA726', icon: '⏳', label: 'Pendiente' },
+                            'in-progress': { color: '#42A5F5', icon: '🔄', label: 'En Proceso' },
+                            'completed': { color: '#66BB6A', icon: '✅', label: 'Completada' }
+                        };
+                        const config = estadoConfig[peticion.status as keyof typeof estadoConfig];
+                        
+                        return (
+                            <View key={peticion.id} style={[styles.peticionCard, { backgroundColor: cardBg }]}>
+                                <View style={styles.peticionHeader}>
+                                    <Text style={[styles.peticionTipo, { color: textColor }]}>
+                                        {peticion.type === 'room-service' ? '🍽️ Room Service' : 
+                                         peticion.type === 'services' ? '🛎️ Servicios' :
+                                         peticion.type === 'problem' ? '⚠️ Problema' : '✨ Extra'}
+                                    </Text>
+                                    <View style={[styles.estadoBadge, { backgroundColor: config.color }]}>
+                                        <Text style={styles.estadoText}>
+                                            {config.icon} {config.label}
+                                        </Text>
+                                    </View>
+                                </View>
+                                <Text style={[styles.peticionMensaje, { color: mutedColor }]} numberOfLines={2}>
+                                    {peticion.message}
+                                </Text>
+                            </View>
+                        );
+                    })}
+                </View>
+            )}
+
         </ThemedView>
         </ScrollView>
     )
@@ -277,5 +312,47 @@ const styles = StyleSheet.create({
     },
     disabledButton: {
         backgroundColor: '#BDBDBD',
+    },
+    historialContainer: {
+        marginTop: 24,
+        gap: 12,
+    },
+    historialTitle: {
+        fontSize: 18,
+        fontWeight: '700',
+        marginBottom: 8,
+    },
+    peticionCard: {
+        padding: 16,
+        borderRadius: 12,
+        gap: 8,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 4,
+        elevation: 3,
+    },
+    peticionHeader: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+    },
+    peticionTipo: {
+        fontSize: 14,
+        fontWeight: '600',
+    },
+    estadoBadge: {
+        paddingHorizontal: 12,
+        paddingVertical: 4,
+        borderRadius: 12,
+    },
+    estadoText: {
+        color: '#FFFFFF',
+        fontSize: 12,
+        fontWeight: '600',
+    },
+    peticionMensaje: {
+        fontSize: 13,
+        lineHeight: 18,
     },
 });

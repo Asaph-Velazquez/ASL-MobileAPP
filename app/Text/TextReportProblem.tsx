@@ -4,6 +4,7 @@ import { commonStyles } from '@/styles/common';
 import { MaterialCommunityIcons, MaterialIcons } from "@expo/vector-icons";
 import { useState } from "react";
 import { ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
+import { toast } from 'sonner-native';
 
 export default function ReportProblem(){
     const textColor = useThemeColor({}, 'text');
@@ -96,12 +97,15 @@ export default function ReportProblem(){
                 problema: problemaSeleccionado,
                 descripcion: descripcion
             });
-            // TODO: agregar la lógica para enviar la solicitudS
-            alert(`Reporte enviado:\nProblema: ${problemaSeleccionado}\nDescripción: ${descripcion}`);
+            toast.success('Reporte enviado', {
+                description: `Problema: ${problemaSeleccionado}`,
+            });
             setDescripcion('');
             setProblemaSeleccionado('');
         } else {
-            alert('Por favor selecciona un tipo de problema y agrega una descripción');
+            toast.error('Campos incompletos', {
+                description: 'Por favor selecciona un tipo de problema y agrega una descripción',
+            });
         }
     };
     

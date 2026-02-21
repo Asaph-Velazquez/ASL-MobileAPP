@@ -4,6 +4,7 @@ import { commonStyles } from '@/styles/common';
 import { MaterialCommunityIcons, MaterialIcons } from "@expo/vector-icons";
 import { useState } from "react";
 import { ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
+import { toast } from 'sonner-native';
 
 export default function TextMovilidad(){
     const textColor = useThemeColor({}, 'text');
@@ -45,11 +46,15 @@ export default function TextMovilidad(){
                 descripcion: descripcion
             });
             // TODO: agregar la lógica para enviar la solicitud
-            alert(`Solicitud enviada:\nServicio: ${servicioSeleccionado}\nDescripción: ${descripcion}`);
+            toast.success('Solicitud enviada', {
+                description: `Servicio: ${servicioSeleccionado}`,
+            });
             setDescripcion('');
             setServicioSeleccionado('');
         } else {
-            alert('Por favor selecciona un servicio y agrega una descripción');
+            toast.error('Campos incompletos', {
+                description: 'Por favor selecciona un servicio y agrega una descripción',
+            });
         }
     };
     
