@@ -17,11 +17,21 @@ interface WebSocketContextType {
 const WebSocketContext = createContext<WebSocketContextType | undefined>(undefined);
 
 export function WebSocketProvider({ children }: { children: ReactNode }) {
-  const socketData = useWebSocketMobile();
-  const { guestName, roomNumber } = useAuth();
+  const { guestName, roomNumber, token, isAuthenticated } = useAuth();
+  const socketData = useWebSocketMobile(token);
   
   // Hook de notificaciones global
   useNotifications({ ultimaActualizacion: socketData.ultimaActualizacion });
+
+  // Handle logout: disconnect WebSocket when token is cleared
+  const prevIsAuthenticatedRef = React.useRef(isAuthenticated);
+  React.useEffect(() => {
+    if (prevIsAuthenticatedRef.current && !isAuthenticated) {
+      // User logged out, disconnect WebSocket
+      console.log('🔌 User logged out, WebSocket will disconnect on next reconnect');
+    }
+    prevIsAuthenticatedRef.current = isAuthenticated;
+  }, [isAuthenticated]);
 
   // Wrapper function that auto-injects roomNumber and guestName from auth context
   const enviarPeticionWrapper = (peticion: {

@@ -5,7 +5,7 @@ import { MaterialCommunityIcons, MaterialIcons } from "@expo/vector-icons";
 import { CameraView, useCameraPermissions } from 'expo-camera';
 import { useState } from 'react';
 import { Image, Modal, Pressable, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
-import { useWebSocketMobile } from "@/services/socket";
+import { useWebSocket } from '@/components/websocket-provider';
 
 export default function ASLRoomS(){
     const cardBg = useThemeColor({}, 'card');
@@ -15,7 +15,7 @@ export default function ASLRoomS(){
     const [modalVisible, setModalVisible] = useState(false);
     const [cameraActive, setCameraActive] = useState(false);
     const [permission, requestPermission] = useCameraPermissions();
-    const { misPeticiones } = useWebSocketMobile();
+    const { misPeticiones } = useWebSocket();
     
     const opciones = [
         {

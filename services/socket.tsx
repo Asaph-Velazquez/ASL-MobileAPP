@@ -13,7 +13,7 @@ interface Peticion {
   timestamp: Date;
 }
 
-export function useWebSocketMobile() {
+export function useWebSocketMobile(token: string | null) {
   const [estaConectado, setEstaConectado] = useState(false);
   const [misPeticiones, setMisPeticiones] = useState<Peticion[]>([]);
   const [ultimaActualizacion, setUltimaActualizacion] = useState<any>(null);
@@ -25,7 +25,9 @@ export function useWebSocketMobile() {
   // Conexión WebSocket con reconexión automática
   const conectar = useCallback(() => {
     try {
-      const ws = new WebSocket(URL_WS);
+      // Build WebSocket URL with token as query parameter
+      const wsUrl = token ? `${URL_WS}?token=${encodeURIComponent(token)}` : URL_WS;
+      const ws = new WebSocket(wsUrl);
 
       ws.onopen = () => {
         console.log('✅ Conectado al servidor');
@@ -96,7 +98,7 @@ export function useWebSocketMobile() {
     } catch (error) {
       console.error('❌ Error al crear WebSocket:', error);
     }
-  }, []);
+  }, [token]);
 
   // Enviar petición al panel web
   const enviarPeticion = (peticion: {
