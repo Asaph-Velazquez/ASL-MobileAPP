@@ -1,8 +1,3 @@
-/**
- * Learn more about light and dark modes:
- * https://docs.expo.dev/guides/color-schemes/
- */
-
 import { useTheme } from '@/components/theme-provider';
 import { Colors } from '@/constants/theme';
 import { useColorScheme as useSystemColorScheme } from '@/hooks/use-color-scheme';

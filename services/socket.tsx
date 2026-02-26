@@ -149,7 +149,7 @@ export function useWebSocketMobile() {
   return {
     estaConectado,
     enviarPeticion,
-    misPeticiones,       // Historial de peticiones del huésped
-    ultimaActualizacion, // Última actualización de estado recibida
+    misPeticiones,       
+    ultimaActualizacion, 
   };
 }

@@ -223,28 +223,84 @@ export default function TextRoomS(){
             {/* Historial de Peticiones */}
             {misPeticiones.length > 0 && (
                 <View style={styles.historialContainer}>
-                    <Text style={[styles.historialTitle, { color: textColor }]}>
-                        📋 Mis Peticiones ({misPeticiones.length})
-                    </Text>
+                    <View style={styles.historialHeader}>
+                        <MaterialIcons name="history" size={24} color={textColor} />
+                        <Text style={[styles.historialTitle, { color: textColor }]}>
+                            Mis Peticiones ({misPeticiones.length})
+                        </Text>
+                    </View>
                     {misPeticiones.slice(0, 5).map((peticion) => {
                         const estadoConfig = {
-                            'pending': { color: '#FFA726', icon: '⏳', label: 'Pendiente' },
-                            'in-progress': { color: '#42A5F5', icon: '🔄', label: 'En Proceso' },
-                            'completed': { color: '#66BB6A', icon: '✅', label: 'Completada' }
+                            'pending': { 
+                                color: '#FFA726', 
+                                icon: 'schedule',
+                                iconType: 'material' as const,
+                                label: 'Pendiente' 
+                            },
+                            'in-progress': { 
+                                color: '#42A5F5', 
+                                icon: 'autorenew',
+                                iconType: 'material' as const,
+                                label: 'En Proceso' 
+                            },
+                            'completed': { 
+                                color: '#66BB6A', 
+                                icon: 'check-circle',
+                                iconType: 'material' as const,
+                                label: 'Completada' 
+                            }
                         };
                         const config = estadoConfig[peticion.status as keyof typeof estadoConfig];
+                        
+                        const tipoConfig = {
+                            'room-service': { 
+                                icon: 'restaurant-menu',
+                                iconType: 'material' as const,
+                                label: 'Room Service',
+                                color: '#9C27B0'
+                            },
+                            'services': { 
+                                icon: 'room-service',
+                                iconType: 'material' as const,
+                                label: 'Servicios',
+                                color: '#4A90E2'
+                            },
+                            'problem': { 
+                                icon: 'warning',
+                                iconType: 'material' as const,
+                                label: 'Problema',
+                                color: '#F44336'
+                            },
+                            'extra': { 
+                                icon: 'star',
+                                iconType: 'material' as const,
+                                label: 'Extra',
+                                color: '#FF9800'
+                            }
+                        };
+                        const tipoInfo = tipoConfig[peticion.type as keyof typeof tipoConfig] || tipoConfig.extra;
                         
                         return (
                             <View key={peticion.id} style={[styles.peticionCard, { backgroundColor: cardBg }]}>
                                 <View style={styles.peticionHeader}>
-                                    <Text style={[styles.peticionTipo, { color: textColor }]}>
-                                        {peticion.type === 'room-service' ? '🍽️ Room Service' : 
-                                         peticion.type === 'services' ? '🛎️ Servicios' :
-                                         peticion.type === 'problem' ? '⚠️ Problema' : '✨ Extra'}
-                                    </Text>
+                                    <View style={styles.peticionTipoContainer}>
+                                        <MaterialIcons 
+                                            name={tipoInfo.icon as any} 
+                                            size={20} 
+                                            color={tipoInfo.color} 
+                                        />
+                                        <Text style={[styles.peticionTipo, { color: textColor }]}>
+                                            {tipoInfo.label}
+                                        </Text>
+                                    </View>
                                     <View style={[styles.estadoBadge, { backgroundColor: config.color }]}>
+                                        <MaterialIcons 
+                                            name={config.icon as any} 
+                                            size={14} 
+                                            color="#FFFFFF" 
+                                        />
                                         <Text style={styles.estadoText}>
-                                            {config.icon} {config.label}
+                                            {config.label}
                                         </Text>
                                     </View>
                                 </View>
@@ -317,10 +373,15 @@ const styles = StyleSheet.create({
         marginTop: 24,
         gap: 12,
     },
+    historialHeader: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 8,
+        marginBottom: 8,
+    },
     historialTitle: {
         fontSize: 18,
         fontWeight: '700',
-        marginBottom: 8,
     },
     peticionCard: {
         padding: 16,
@@ -337,14 +398,22 @@ const styles = StyleSheet.create({
         justifyContent: 'space-between',
         alignItems: 'center',
     },
+    peticionTipoContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 6,
+    },
     peticionTipo: {
         fontSize: 14,
         fontWeight: '600',
     },
     estadoBadge: {
-        paddingHorizontal: 12,
+        paddingHorizontal: 10,
         paddingVertical: 4,
         borderRadius: 12,
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 4,
     },
     estadoText: {
         color: '#FFFFFF',

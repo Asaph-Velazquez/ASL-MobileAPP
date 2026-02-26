@@ -4,14 +4,18 @@ import { commonStyles } from '@/styles/common';
 import { MaterialCommunityIcons, MaterialIcons } from "@expo/vector-icons";
 import { CameraView, useCameraPermissions } from 'expo-camera';
 import { useState } from 'react';
-import { Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { Image, Modal, Pressable, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { useWebSocketMobile } from "@/services/socket";
 
 export default function ASLRoomS(){
     const cardBg = useThemeColor({}, 'card');
     const textColor = useThemeColor({}, 'text');
-    const [servicioSeleccionado, setServicioSeleccionado] = useState('');
+    const mutedColor = useThemeColor({}, 'muted');
+    const [servicioSeleccionado, setServicioSeleccionado] = useState<any>(null);
+    const [modalVisible, setModalVisible] = useState(false);
     const [cameraActive, setCameraActive] = useState(false);
     const [permission, requestPermission] = useCameraPermissions();
+    const { misPeticiones } = useWebSocketMobile();
     
     const opciones = [
         {
@@ -57,8 +61,9 @@ export default function ASLRoomS(){
         }       
     ];
 
-    const handlePress = (opcionId: string) => {
-        setServicioSeleccionado(opcionId);
+    const handlePress = (opcion: any) => {
+        setServicioSeleccionado(opcion);
+        setModalVisible(true);
     };
 
     const handleActivateCamera = async () => {
@@ -103,10 +108,9 @@ export default function ASLRoomS(){
                         key={index}
                         style={[
                             commonStyles.card,
-                            { backgroundColor: cardBg },
-                            servicioSeleccionado === opcion.id && styles.cardSelected
+                            { backgroundColor: cardBg }
                         ]}
-                        onPress={() => handlePress(opcion.id)}
+                        onPress={() => handlePress(opcion)}
                         activeOpacity={0.8}
                     >
                         <View style={[commonStyles.iconContainer, { backgroundColor: opcion.bgColor }]}>
@@ -134,43 +138,187 @@ export default function ASLRoomS(){
                         </View>
                     </TouchableOpacity>
                 ))}
+            </View>
 
-                {servicioSeleccionado && !cameraActive && (
-                    <View style={styles.cameraContainer}>
-                        {/* GIF de instrucción para usar la cámara en ASL */}
+            {/* Modal de confirmación */}
+            <Modal
+                animationType="slide"
+                transparent={true}
+                visible={modalVisible}
+                onRequestClose={() => setModalVisible(false)}
+            >
+                <Pressable 
+                    style={styles.modalOverlay}
+                    onPress={() => setModalVisible(false)}
+                >
+                    <Pressable 
+                        style={[styles.modalContent, { backgroundColor: cardBg }]}
+                        onPress={(e) => e.stopPropagation()}
+                    >
+                        {servicioSeleccionado && !cameraActive && (
+                            <View style={styles.modalInner}>
+                                {/* Header del modal */}
+                                <View style={styles.modalHeader}>
+                                    <View style={[styles.modalIcon, { backgroundColor: servicioSeleccionado.bgColor }]}>
+                                        {servicioSeleccionado.iconType === "material" ? (
+                                            <MaterialIcons 
+                                                name={servicioSeleccionado.icon as any} 
+                                                size={48} 
+                                                color={servicioSeleccionado.iconColor} 
+                                            />
+                                        ) : (
+                                            <MaterialCommunityIcons 
+                                                name={servicioSeleccionado.icon as any} 
+                                                size={48} 
+                                                color={servicioSeleccionado.iconColor} 
+                                            />
+                                        )}
+                                    </View>
+                                    {/* GIF del servicio seleccionado */}
+                                    <Image 
+                                        source={{ uri: servicioSeleccionado.gifUrl }}
+                                        style={styles.modalTitleGif}
+                                        resizeMode="contain"
+                                    />
+                                </View>
+
+                                {/* GIF de instrucción para usar la cámara en ASL */}
+                                <Image 
+                                    source={{ uri: "https://placeholder.com/asl-use-camera.gif" }}
+                                    style={styles.instructionGif}
+                                    resizeMode="contain"
+                                />
+
+                                {/* Botones */}
+                                <View style={styles.buttonContainer}>
+                                    <TouchableOpacity 
+                                        style={[styles.actionButton, { backgroundColor: servicioSeleccionado.iconColor }]} 
+                                        onPress={handleActivateCamera}
+                                        activeOpacity={0.8}
+                                    >
+                                        <MaterialIcons name="videocam" size={24} color="#FFFFFF" />
+                                        <Text style={styles.buttonText}>Usar Cámara</Text>
+                                    </TouchableOpacity>
+
+                                    <TouchableOpacity
+                                        style={styles.cancelButton}
+                                        onPress={() => setModalVisible(false)}
+                                        activeOpacity={0.8}
+                                    >
+                                        <Text style={[styles.cancelButtonText, { color: textColor }]}>Cancelar</Text>
+                                    </TouchableOpacity>
+                                </View>
+                            </View>
+                        )}
+
+                        {cameraActive && (
+                            <View style={styles.cameraViewContainer}>
+                                <CameraView style={styles.camera} facing="front">
+                                    <View style={styles.cameraOverlay}>
+                                        <Text style={styles.cameraText}>
+                                            Muestra tu mensaje en lenguaje de señas
+                                        </Text>
+                                        <TouchableOpacity 
+                                            style={styles.closeCamera} 
+                                            onPress={() => {
+                                                setCameraActive(false);
+                                                setModalVisible(false);
+                                            }}
+                                        >
+                                            <MaterialIcons name="close" size={32} color="#FFFFFF" />
+                                        </TouchableOpacity>
+                                    </View>
+                                </CameraView>
+                            </View>
+                        )}
+                    </Pressable>
+                </Pressable>
+            </Modal>
+
+            {/* Historial de Peticiones */}
+            {misPeticiones.length > 0 && (
+                <View style={styles.historialContainer}>
+                    <View style={styles.historialHeader}>
+                        <MaterialIcons name="history" size={24} color={textColor} />
                         <Image 
-                            source={{ uri: "https://placeholder.com/asl-use-camera.gif" }}
-                            style={styles.instructionGif}
+                            source={{ uri: "https://placeholder.com/asl-history.gif" }}
+                            style={styles.historialGif}
                             resizeMode="contain"
                         />
-                        <TouchableOpacity 
-                            style={styles.cameraButton} 
-                            onPress={handleActivateCamera}
-                            activeOpacity={0.8}
-                        >
-                            <MaterialIcons name="videocam" size={32} color="#FFFFFF" />
-                        </TouchableOpacity>
                     </View>
-                )}
-
-                {cameraActive && (
-                    <View style={styles.cameraViewContainer}>
-                        <CameraView style={styles.camera} facing="front">
-                            <View style={styles.cameraOverlay}>
-                                <Text style={styles.cameraText}>
-                                    Muestra tu mensaje en lenguaje de señas
-                                </Text>
-                                <TouchableOpacity 
-                                    style={styles.closeCamera} 
-                                    onPress={() => setCameraActive(false)}
-                                >
-                                    <MaterialIcons name="close" size={32} color="#FFFFFF" />
-                                </TouchableOpacity>
+                    {misPeticiones.slice(0, 5).map((peticion: any) => {
+                        const estadoConfig = {
+                            'pending': { 
+                                color: '#FFA726', 
+                                icon: 'schedule',
+                                iconType: 'material' as const,
+                            },
+                            'in-progress': { 
+                                color: '#42A5F5', 
+                                icon: 'autorenew',
+                                iconType: 'material' as const,
+                            },
+                            'completed': { 
+                                color: '#66BB6A', 
+                                icon: 'check-circle',
+                                iconType: 'material' as const,
+                            }
+                        };
+                        const config = estadoConfig[peticion.status as keyof typeof estadoConfig];
+                        
+                        const tipoConfig = {
+                            'room-service': { 
+                                icon: 'restaurant-menu',
+                                iconType: 'material' as const,
+                                color: '#9C27B0'
+                            },
+                            'services': { 
+                                icon: 'room-service',
+                                iconType: 'material' as const,
+                                color: '#4A90E2'
+                            },
+                            'problem': { 
+                                icon: 'warning',
+                                iconType: 'material' as const,
+                                color: '#F44336'
+                            },
+                            'extra': { 
+                                icon: 'star',
+                                iconType: 'material' as const,
+                                color: '#FF9800'
+                            }
+                        };
+                        const tipoInfo = tipoConfig[peticion.type as keyof typeof tipoConfig] || tipoConfig.extra;
+                        
+                        return (
+                            <View key={peticion.id} style={[styles.peticionCard, { backgroundColor: cardBg }]}>
+                                <View style={styles.peticionHeader}>
+                                    <View style={styles.peticionTipoContainer}>
+                                        <MaterialIcons 
+                                            name={tipoInfo.icon as any} 
+                                            size={20} 
+                                            color={tipoInfo.color} 
+                                        />
+                                    </View>
+                                    <View style={[styles.estadoBadge, { backgroundColor: config.color }]}>
+                                        <MaterialIcons 
+                                            name={config.icon as any} 
+                                            size={14} 
+                                            color="#FFFFFF" 
+                                        />
+                                    </View>
+                                </View>
+                                {/* GIF del mensaje en ASL */}
+                                <Image 
+                                    source={{ uri: "https://placeholder.com/asl-message.gif" }}
+                                    style={styles.peticionGif}
+                                    resizeMode="contain"
+                                />
                             </View>
-                        </CameraView>
-                    </View>
-                )}
-            </View>
+                        );
+                    })}
+                </View>
+            )}
 
         </ThemedView>
         </ScrollView>
@@ -191,33 +339,82 @@ const styles = StyleSheet.create({
         width: '100%',
         height: 80,
     },
-    cardSelected: {
-        borderWidth: 2,
-        borderColor: '#4A90E2',
-    },
-    cameraContainer: {
-        marginTop: 20,
-        gap: 12,
+    modalOverlay: {
+        flex: 1,
+        backgroundColor: 'rgba(0, 0, 0, 0.5)',
+        justifyContent: 'center',
         alignItems: 'center',
+        padding: 20,
+    },
+    modalContent: {
+        borderRadius: 20,
+        padding: 24,
+        width: '100%',
+        maxWidth: 500,
+        shadowColor: "#000",
+        shadowOffset: {
+            width: 0,
+            height: 2,
+        },
+        shadowOpacity: 0.25,
+        shadowRadius: 4,
+        elevation: 5,
+    },
+    modalInner: {
+        gap: 20,
+    },
+    modalHeader: {
+        alignItems: 'center',
+        marginBottom: 12,
+    },
+    modalIcon: {
+        width: 80,
+        height: 80,
+        borderRadius: 40,
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginBottom: 16,
+    },
+    modalTitleGif: {
+        width: '100%',
+        height: 80,
     },
     instructionGif: {
         width: '100%',
         height: 100,
     },
-    cameraButton: {
-        backgroundColor: '#4A90E2',
-        borderRadius: 50,
-        padding: 20,
+    buttonContainer: {
+        gap: 12,
+        marginTop: 8,
+    },
+    actionButton: {
+        flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'center',
-        width: 80,
-        height: 80,
+        gap: 8,
+        borderRadius: 12,
+        padding: 16,
+    },
+    buttonText: {
+        color: '#FFFFFF',
+        fontSize: 16,
+        fontWeight: '600',
+    },
+    cancelButton: {
+        borderRadius: 12,
+        padding: 16,
+        alignItems: 'center',
+        borderWidth: 1,
+        borderColor: '#E0E0E0',
+    },
+    cancelButtonText: {
+        fontSize: 16,
+        fontWeight: '600',
     },
     cameraViewContainer: {
-        marginTop: 20,
         borderRadius: 12,
         overflow: 'hidden',
-        height: 400,
+        height: 500,
     },
     camera: {
         flex: 1,
@@ -242,5 +439,47 @@ const styles = StyleSheet.create({
         backgroundColor: 'rgba(0,0,0,0.5)',
         borderRadius: 50,
         padding: 15,
+    },
+    historialContainer: {
+        marginTop: 24,
+        gap: 12,
+    },
+    historialHeader: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 8,
+        marginBottom: 8,
+    },
+    historialGif: {
+        flex: 1,
+        height: 40,
+    },
+    peticionCard: {
+        padding: 16,
+        borderRadius: 12,
+        gap: 8,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 4,
+        elevation: 3,
+    },
+    peticionHeader: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+    },
+    peticionTipoContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 6,
+    },
+    estadoBadge: {
+        padding: 6,
+        borderRadius: 12,
+    },
+    peticionGif: {
+        width: '100%',
+        height: 60,
     },
 });
