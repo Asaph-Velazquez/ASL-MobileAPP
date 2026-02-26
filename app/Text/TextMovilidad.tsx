@@ -5,6 +5,8 @@ import { MaterialCommunityIcons, MaterialIcons } from "@expo/vector-icons";
 import { useState } from "react";
 import { ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
 import { toast } from 'sonner-native';
+import { useWebSocket } from '../../components/websocket-provider';
+import { useAuth } from '@/components/auth-provider';
 
 export default function TextMovilidad(){
     const textColor = useThemeColor({}, 'text');
@@ -12,6 +14,8 @@ export default function TextMovilidad(){
     const cardBg = useThemeColor({}, 'card');
     const [descripcion, setDescripcion] = useState('');
     const [servicioSeleccionado, setServicioSeleccionado] = useState('');
+    const { estaConectado, enviarPeticion, misPeticiones } = useWebSocket();
+    const { guestName, roomNumber } = useAuth();
     
     const MovilidadOptions =[{
         id: "Valet Parking",
@@ -40,20 +44,38 @@ export default function TextMovilidad(){
     };
 
     const handleEnviar = () => {
-        if (servicioSeleccionado && descripcion.trim()) {
-            console.log("Enviando solicitud:", {
-                servicio: servicioSeleccionado,
-                descripcion: descripcion
+        // Validar que haya servicio y descripción
+        if (!servicioSeleccionado || !descripcion.trim()) {
+            toast.error('Campos incompletos', {
+                description: 'Por favor selecciona un servicio y agrega una descripción',
             });
-            // TODO: agregar la lógica para enviar la solicitud
-            toast.success('Solicitud enviada', {
-                description: `Servicio: ${servicioSeleccionado}`,
+            return;
+        }
+
+        // Validar datos del huésped (from auth context)
+        if (!roomNumber || !guestName) {
+            toast.error('No autenticado', {
+                description: 'Por favor inicia sesión con tu código QR',
+            });
+            return;
+        }
+
+        // Enviar por WebSocket (roomNumber and guestName auto-injected by provider)
+        const success = enviarPeticion({
+            type: 'extra',
+            message: `${servicioSeleccionado}: ${descripcion}`,
+            priority: 'medium',
+        });
+
+        if (success) {
+            toast.success('Solicitud Enviada', {
+                description: `Tu solicitud de ${servicioSeleccionado} ha sido enviada.`,
             });
             setDescripcion('');
             setServicioSeleccionado('');
         } else {
-            toast.error('Campos incompletos', {
-                description: 'Por favor selecciona un servicio y agrega una descripción',
+            toast.error('Error de conexión', {
+                description: 'No hay conexión con el servidor. Verifica tu conexión.',
             });
         }
     };
@@ -61,10 +83,19 @@ export default function TextMovilidad(){
     return(
         <ScrollView>
         <ThemedView style={commonStyles.container}>
-            <View style={commonStyles.header}>
-                <Text style={[commonStyles.title, { color: textColor }]}>Servicios de Movilidad</Text>
-                <Text style={[commonStyles.subtitle, { color: mutedColor }]}>¿Qué servicio necesitas?</Text>
+            <View style={[commonStyles.header, { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }]}>
+                <View>
+                    <Text style={[commonStyles.title, { color: textColor }]}>Servicios de Movilidad</Text>
+                    <Text style={[commonStyles.subtitle, { color: mutedColor }]}>¿Qué servicio necesitas?</Text>
+                </View>
+                <View style={{ alignItems: 'center', gap: 4 }}>
+                    <View style={{ width: 12, height: 12, borderRadius: 6, backgroundColor: estaConectado ? '#4CAF50' : '#F44336' }} />
+                    <Text style={{ fontSize: 12, color: estaConectado ? '#4CAF50' : '#F44336', fontWeight: '600' }}>
+                        {estaConectado ? 'Conectado' : 'Desconectado'}
+                    </Text>
+                </View>
             </View>
+
             
             <View style={commonStyles.cardsContainer}>
                 {MovilidadOptions.map((opcion, index) => (
@@ -126,12 +157,14 @@ export default function TextMovilidad(){
                             textAlignVertical="top"
                         />
                         <TouchableOpacity
-                            style={styles.submitButton}
+                            style={[styles.submitButton, !estaConectado && styles.submitButtonDisabled]}
                             onPress={handleEnviar}
                             activeOpacity={0.8}
+                            disabled={!estaConectado}
                         >
                             <Text style={styles.submitButtonText}>Enviar Solicitud</Text>
                         </TouchableOpacity>
+
                     </View>
                 )}
             </View>
@@ -172,5 +205,8 @@ const styles = StyleSheet.create({
         color: '#FFFFFF',
         fontSize: 16,
         fontWeight: '600',
+    },
+    submitButtonDisabled: {
+        opacity: 0.5,
     },
 });

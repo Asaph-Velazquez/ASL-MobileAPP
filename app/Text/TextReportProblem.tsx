@@ -5,6 +5,8 @@ import { MaterialCommunityIcons, MaterialIcons } from "@expo/vector-icons";
 import { useState } from "react";
 import { ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
 import { toast } from 'sonner-native';
+import { useWebSocket } from "@/components/websocket-provider";
+import { useAuth } from "@/components/auth-provider";
 
 export default function ReportProblem(){
     const textColor = useThemeColor({}, 'text');
@@ -12,6 +14,9 @@ export default function ReportProblem(){
     const cardBg = useThemeColor({}, 'card');
     const [descripcion, setDescripcion] = useState('');
     const [problemaSeleccionado, setProblemaSeleccionado] = useState('');
+    const { estaConectado, enviarPeticion, misPeticiones } = useWebSocket();
+    const { guestName, roomNumber } = useAuth();
+    
     
     const ProblemOptions =[
         {
@@ -92,19 +97,38 @@ export default function ReportProblem(){
     };
 
     const handleEnviar = () => {
-        if (problemaSeleccionado && descripcion.trim()) {
-            console.log("Enviando reporte:", {
-                problema: problemaSeleccionado,
-                descripcion: descripcion
-            });
-            toast.success('Reporte enviado', {
-                description: `Problema: ${problemaSeleccionado}`,
-            });
-            setDescripcion('');
-            setProblemaSeleccionado('');
-        } else {
+        // Validar que haya problema y descripción
+        if (!problemaSeleccionado || !descripcion.trim()) {
             toast.error('Campos incompletos', {
                 description: 'Por favor selecciona un tipo de problema y agrega una descripción',
+            });
+            return;
+        }
+
+        // Validar datos del huésped (from auth context)
+        if (!roomNumber || !guestName) {
+            toast.error('No autenticado', {
+                description: 'Por favor inicia sesión con tu código QR',
+            });
+            return;
+        }
+
+        // Enviar por WebSocket (roomNumber and guestName auto-injected by provider)
+        const success = enviarPeticion({
+            type: 'problem',
+            message: `${problemaSeleccionado}: ${descripcion}`,
+            priority: 'urgent',
+        });
+
+        if (success) {
+            toast.success('Problema Reportado', {
+                description: 'Tu reporte ha sido enviado al personal del hotel.',
+            });
+            setProblemaSeleccionado('');
+            setDescripcion('');
+        } else {
+            toast.error('Error de conexión', {
+                description: 'No hay conexión con el servidor. Verifica tu conexión.',
             });
         }
     };
@@ -153,9 +177,18 @@ export default function ReportProblem(){
 
                 {problemaSeleccionado && (
                     <View style={styles.inputContainer}>
-                        <Text style={[styles.inputLabel, { color: textColor }]}>
-                            Describe el problema:
-                        </Text>
+                        {/* Indicador de conexión */}
+                        <View style={styles.connectionIndicator}>
+                            <View style={[
+                                styles.connectionDot,
+                                { backgroundColor: estaConectado ? '#4CAF50' : '#F44336' }
+                            ]} />
+                            <Text style={[styles.connectionText, { color: mutedColor }]}>
+                                {estaConectado ? 'Conectado' : 'Sin conexión'}
+                            </Text>
+                        </View>
+
+                        <Text style={[styles.inputLabel, { color: textColor }]}>Describe el problema:</Text>
                         <TextInput
                             style={[
                                 styles.textInput,
@@ -174,11 +207,17 @@ export default function ReportProblem(){
                             textAlignVertical="top"
                         />
                         <TouchableOpacity
-                            style={styles.submitButton}
+                            style={[
+                                styles.submitButton,
+                                !estaConectado && styles.disabledButton
+                            ]}
                             onPress={handleEnviar}
                             activeOpacity={0.8}
+                            disabled={!estaConectado}
                         >
-                            <Text style={styles.submitButtonText}>Enviar Reporte</Text>
+                            <Text style={styles.submitButtonText}>
+                                {estaConectado ? 'Enviar Reporte' : 'Sin Conexión'}
+                            </Text>
                         </TouchableOpacity>
                     </View>
                 )}
@@ -220,5 +259,23 @@ const styles = StyleSheet.create({
         color: '#FFFFFF',
         fontSize: 16,
         fontWeight: '600',
+    },
+    connectionIndicator: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 8,
+        marginBottom: 8,
+    },
+    connectionDot: {
+        width: 10,
+        height: 10,
+        borderRadius: 5,
+    },
+    connectionText: {
+        fontSize: 14,
+        fontWeight: '500',
+    },
+    disabledButton: {
+        backgroundColor: '#BDBDBD',
     },
 });

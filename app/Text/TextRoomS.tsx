@@ -5,6 +5,7 @@ import { MaterialCommunityIcons, MaterialIcons } from "@expo/vector-icons";
 import { useState } from 'react';
 import { ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
 import { useWebSocket } from "@/components/websocket-provider";
+import { useAuth } from "@/components/auth-provider";
 import { toast } from 'sonner-native';
 
 export default function TextRoomS(){
@@ -63,8 +64,7 @@ export default function TextRoomS(){
 
     //logica de envio de datos por websocket
     const { estaConectado, enviarPeticion, misPeticiones } = useWebSocket();
-    const [roomNumber, setRoomNumber] = useState(''); 
-    const [guestName, setGuestName] = useState('');
+    const { guestName, roomNumber } = useAuth();
 
     const handlePress = (opcionId: string) => {
         setServicioSeleccionado(opcionId);
@@ -80,19 +80,17 @@ export default function TextRoomS(){
             return;
         }
 
-        // Validar datos del huésped
+        // Validar datos del huésped (from auth context)
         if (!roomNumber || !guestName) {
-            toast.error('Datos faltantes', {
-                description: 'Por favor completa tu número de habitación y nombre',
+            toast.error('No autenticado', {
+                description: 'Por favor inicia sesión con tu código QR',
             });
             return;
         }
 
-        // Enviar por WebSocket
+        // Enviar por WebSocket (roomNumber and guestName auto-injected by provider)
         const success = enviarPeticion({
             type: 'room-service',
-            roomNumber,
-            guestName,
             message: `${servicioSeleccionado}: ${descripcion}`,
             priority: 'high', // Alta prioridad para room service
         });
@@ -165,29 +163,6 @@ export default function TextRoomS(){
                             </Text>
                         </View>
 
-                        {/* Datos del huésped */}
-                        <Text style={[styles.inputLabel, { color: textColor }]}>Tus datos:</Text>
-                        <TextInput
-                            style={[
-                                styles.textInput,
-                                { backgroundColor: cardBg, color: textColor, borderColor: mutedColor, minHeight: 50, maxHeight: 50 }
-                            ]}
-                            placeholder="Número de habitación"
-                            placeholderTextColor={mutedColor}
-                            value={roomNumber}
-                            onChangeText={setRoomNumber}
-                            keyboardType="numeric"
-                        />
-                        <TextInput
-                            style={[
-                                styles.textInput,
-                                { backgroundColor: cardBg, color: textColor, borderColor: mutedColor, minHeight: 50, maxHeight: 50 }
-                            ]}
-                            placeholder="Tu nombre"
-                            placeholderTextColor={mutedColor}
-                            value={guestName}
-                            onChangeText={setGuestName}
-                        />
 
                         <Text style={[styles.inputLabel, { color: textColor }]}>Describe tu solicitud:</Text>
                         <TextInput

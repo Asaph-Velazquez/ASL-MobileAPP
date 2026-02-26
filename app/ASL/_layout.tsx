@@ -30,7 +30,7 @@ export default function TabLayout() {
           </TouchableOpacity>
         ),
         headerRight: () => (
-          <ModeToggleButton currentScreen="TextHome" colorScheme={colorScheme} />
+          <ModeToggleButton currentScreen="ASLHome" colorScheme={colorScheme} />
         ),
         tabBarShowLabel: false,
         tabBarButton: HapticTab,
@@ -44,12 +44,12 @@ export default function TabLayout() {
         },
       }}>
       <Tabs.Screen
-        name="TextHome"
+        name="ASLHome"
         options={{
           title: 'Home',
           headerTitle: 'Home',
           headerRight: () => (
-            <ModeToggleButton currentScreen="TextHome" colorScheme={colorScheme} />
+            <ModeToggleButton currentScreen="ASLHome" colorScheme={colorScheme} />
           ),
           tabBarIcon: ({ color, size }) => (
             <IconSymbol size={size ?? 28} name="house.fill" color={color} />
@@ -57,45 +57,45 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
-        name="TextRoomS"
+        name="ASLRoomS"
         options={{
           title: 'Room Service',
           headerTitle: 'Room Service',
           headerRight: () => (
-            <ModeToggleButton currentScreen="TextRoomS" colorScheme={colorScheme} />
+            <ModeToggleButton currentScreen="ASLRoomS" colorScheme={colorScheme} />
           ),
           tabBarButton: () => null,  
         }}
       />
       <Tabs.Screen
-        name="TextServices"
+        name="ASLServices"
         options={{
           title: 'Servicios del Hotel',
           headerTitle: 'Servicios del Hotel',
           headerRight: () => (
-            <ModeToggleButton currentScreen="TextServices" colorScheme={colorScheme} />
+            <ModeToggleButton currentScreen="ASLServices" colorScheme={colorScheme} />
           ),
           tabBarButton: () => null,  
         }}
       />
       <Tabs.Screen
-        name="TextReportProblem"
+        name="ASLReportProblem"
         options={{
           title: 'Reportar Problema',
           headerTitle: 'Reportar Problema',
           headerRight: () => (
-            <ModeToggleButton currentScreen="TextReportProblem" colorScheme={colorScheme} />
+            <ModeToggleButton currentScreen="ASLReportProblem" colorScheme={colorScheme} />
           ),
           tabBarButton: () => null,  
         }}
       />
       <Tabs.Screen
-        name="TextMovilidad"
+        name="ASLMovilidad"
         options={{
           title: 'Movilidad',
           headerTitle: 'Movilidad',
           headerRight: () => (
-            <ModeToggleButton currentScreen="TextMovilidad" colorScheme={colorScheme} />
+            <ModeToggleButton currentScreen="ASLMovilidad" colorScheme={colorScheme} />
           ),
           tabBarButton: () => null,  
         }}

@@ -1,15 +1,16 @@
 import { router } from 'expo-router';
 import React from 'react';
-import { Pressable, StyleSheet, Text, useColorScheme, View } from 'react-native';
+import { Pressable, StyleSheet, Text, useColorScheme, View, TouchableOpacity } from 'react-native';
 import { MaterialIcons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { ThemedView } from '@/components/themed-view';
 import { useThemeColor } from '@/hooks/use-theme-color';
-
+import { useAuth } from '@/components/auth-provider';
 export default function HomeScreen() {
   const scheme = useColorScheme();
   const isDark = scheme === 'dark';
   const textColor = useThemeColor({}, 'text');
   const mutedColor = useThemeColor({}, 'muted');
+  const { guestName, roomNumber, logout, isAuthenticated } = useAuth();
 
   const colors = {
     background: isDark ? '#0E1116' : '#F5F5F5',
@@ -29,6 +30,28 @@ export default function HomeScreen() {
             Selecciona tu método de comunicación preferido
           </Text>
         </View>
+
+        {/* User info bar (shown when authenticated) */}
+        {isAuthenticated && (
+          <View style={styles.userInfoBar}>
+            <View style={styles.userInfo}>
+              <Text style={[styles.welcomeText, { color: textColor }]}>
+                Bienvenido, {guestName}
+              </Text>
+              <Text style={[styles.roomText, { color: mutedColor }]}>
+                Habitación: {roomNumber}
+              </Text>
+            </View>
+            <TouchableOpacity
+              style={styles.logoutButton}
+              onPress={logout}
+              activeOpacity={0.8}
+            >
+              <MaterialIcons name="logout" size={20} color="#F44336" />
+              <Text style={styles.logoutText}>Cerrar Sesión</Text>
+            </TouchableOpacity>
+          </View>
+        )}
 
         {/* Botones de selección */}
         <View style={styles.buttons}>
@@ -204,5 +227,40 @@ const styles = StyleSheet.create({
     fontSize: 13,
     textAlign: 'center',
     lineHeight: 18,
+  },
+  userInfoBar: {
+    backgroundColor: 'rgba(74, 144, 226, 0.1)',
+    borderRadius: 12,
+    padding: 16,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 20,
+    gap: 12,
+  },
+  userInfo: {
+    flex: 1,
+    gap: 4,
+  },
+  welcomeText: {
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  roomText: {
+    fontSize: 14,
+  },
+  logoutButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 8,
+    backgroundColor: 'rgba(244, 67, 54, 0.1)',
+  },
+  logoutText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#F44336',
   },
 });
