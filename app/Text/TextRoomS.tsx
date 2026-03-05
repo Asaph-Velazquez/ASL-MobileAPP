@@ -1,402 +1,127 @@
-import { ThemedView } from "@/components/themed-view";
-import { useThemeColor } from '@/hooks/use-theme-color';
-import { commonStyles } from '@/styles/common';
-import { MaterialCommunityIcons, MaterialIcons } from "@expo/vector-icons";
+import { ThemedView } from "@/components/BothComponents/themed-view";
+import { ServiceCard, ServiceOption } from "@/components/TextComponents/ServiceCard";
+import { ScreenHeader } from "@/components/BothComponents/ScreenHeader";
+import { PetitionModal } from "@/components/TextComponents/PetitionModal";
+import { usePetitionSender } from "@/hooks/usePetitionSender";
 import { useState } from 'react';
-import { ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
-import { useWebSocket } from "@/components/websocket-provider";
-import { useAuth } from "@/components/auth-provider";
-import { toast } from 'sonner-native';
+import { ScrollView, StyleSheet, View } from "react-native";
 
 export default function TextRoomS(){
-    const textColor = useThemeColor({}, 'text');
-    const mutedColor = useThemeColor({}, 'muted');
-    const cardBg = useThemeColor({}, 'card');
-    const [descripcion, setDescripcion] = useState('');
-    const [servicioSeleccionado, setServicioSeleccionado] = useState('');
-    const opciones = [
+    const [selectedService, setSelectedService] = useState<ServiceOption | null>(null);
+    const [modalVisible, setModalVisible] = useState(false);
+    const { sendPetition, isLoading } = usePetitionSender();
+
+    const opciones: ServiceOption[] = [
         {
-            id: "Comida",
-            desciption : "Disfruta de una deliciosa comida en tu habitación.",
+            id: "Food",
+            description: "Enjoy a delicious meal in your room.",
             icon: "flatware",
             iconType: "material" as const,
             iconColor: "#FF6B6B",
             bgColor: "#FFE5E5",
-            placeholder: "Ej: Quiero ordenar cena para 2 personas a las 20:00..."
+            placeholder: "Ex: I want to order dinner for 2 people at 8:00 PM..."
         },
         {
             id: "Amenities",
-            desciption : "Si te hacen falta toallas, jabones o cualquier otro artículo, ¡solo pídelo!",
+            description: "If you need towels, soap or any other item, just ask!",
             icon: "soap",
             iconType: "material" as const,
             iconColor: "#4ECDC4",
             bgColor: "#E0F7F5",
-            placeholder: "Ej: Solicito toallas extra y jabón, por favor."
+            placeholder: "Ex: I request extra towels and soap, please."
         },
         {
-            id: "Lenceria",
-            desciption : "solicita reposicion de  Sabanas, Toallas o Fundas",
+            id: "Linens",
+            description: "Request replacement of sheets, towels or pillowcases.",
             icon: "bed",
             iconType: "material" as const,
             iconColor: "#95E1D3",
             bgColor: "#E8F8F5",
-            placeholder: "Ej: Necesito cambio de sábanas y toallas, por favor."
+            placeholder: "Ex: I need fresh sheets and towels, please."
         },
         {
-            id: "Comodidad",
-            desciption: "Solicita almohadas extra, mantas térmicas o artículos para mejorar tu descanso.",
+            id: "Comfort Items",
+            description: "Request extra pillows, blankets or items to improve your rest.",
             icon: "self-improvement",
             iconType: "material" as const,
             iconColor: "#A29BFE",
             bgColor: "#F0EFFF",
-            placeholder: "Ej: Solicito una almohada extra y una manta adicional."
+            placeholder: "Ex: I request an extra pillow and an additional blanket."
         },
         {
             id: "Extra",
-            desciption : "Si quieres un servicio extra te comunicaremos con recepcion (se cobra adicionalmente y no aseguramos disponibilidad).",
+            description: "For additional services, we'll connect you with reception (additional charges may apply, availability not guaranteed).",
             icon: "question-mark",
             iconType: "material" as const,
             iconColor: "#FDCB6E",
             bgColor: "#FFF6E0",
-            placeholder: "Ej: Me gustaría solicitar un servicio adicional, describa..."
+            placeholder: "Ex: I would like to request an additional service, please describe..."
         }       
-    ]
+    ];
 
-    //logica de envio de datos por websocket
-    const { estaConectado, enviarPeticion, misPeticiones } = useWebSocket();
-    const { guestName, roomNumber } = useAuth();
-
-    const handlePress = (opcionId: string) => {
-        setServicioSeleccionado(opcionId);
-        setDescripcion('');
+    const handlePress = (option: ServiceOption) => {
+        setSelectedService(option);
+        setModalVisible(true);
     };
 
-    const handleEnviar = () => {
-        // Validar que haya servicio y descripción
-        if (!servicioSeleccionado || !descripcion.trim()) {
-            toast.error('Campos incompletos', {
-                description: 'Por favor selecciona un servicio y escribe la descripción',
-            });
-            return;
-        }
+    const handleSend = async (description: string) => {
+        if (!selectedService) return;
 
-        // Validar datos del huésped (from auth context)
-        if (!roomNumber || !guestName) {
-            toast.error('No autenticado', {
-                description: 'Por favor inicia sesión con tu código QR',
-            });
-            return;
-        }
-
-        // Enviar por WebSocket (roomNumber and guestName auto-injected by provider)
-        const success = enviarPeticion({
+        const success = await sendPetition({
             type: 'room-service',
-            message: `${servicioSeleccionado}: ${descripcion}`,
-            priority: 'high', // Alta prioridad para room service
+            serviceName: selectedService.id,
+            description,
+            priority: 'high',
         });
 
         if (success) {
-            toast.success('Solicitud Enviada', {
-                description: `Tu solicitud de ${servicioSeleccionado} ha sido enviada al personal del hotel.`,
-            });
-            setServicioSeleccionado('');
-            setDescripcion('');
-        } else {
-            toast.error('Error de conexión', {
-                description: 'No hay conexión con el servidor. Verifica tu conexión.',
-            });
+            setModalVisible(false);
+            setSelectedService(null);
         }
     };
 
     return(
-        <ScrollView>
-        <ThemedView style={commonStyles.container}>
-            <View style={commonStyles.header}>
-                <Text style={[commonStyles.title, { color: textColor }]}>Servicio a la Habitación</Text>
-                <Text style={[commonStyles.subtitle, { color: mutedColor }]}>¿En que podemos ayudarte hoy?</Text>
-            </View>
-            
-            <View style={commonStyles.cardsContainer}>
-                {opciones.map((opcion, index) => (
-                    <TouchableOpacity 
-                        key={index}
-                        style={[
-                            commonStyles.card,
-                            { backgroundColor: cardBg },
-                            servicioSeleccionado === opcion.id && styles.cardSelected
-                        ]}
-                        onPress={() => handlePress(opcion.id)}
-                        activeOpacity={0.8}
-                    >
-                        <View style={[commonStyles.iconContainer, { backgroundColor: opcion.bgColor }]}>
-                            {opcion.iconType === "material" ? (
-                                <MaterialIcons 
-                                    name={opcion.icon as any} 
-                                    size={32} 
-                                    color={opcion.iconColor} 
-                                />
-                            ) : (
-                                <MaterialCommunityIcons 
-                                    name={opcion.icon as any} 
-                                    size={32} 
-                                    color={opcion.iconColor} 
-                                />
-                            )}
-                        </View>
-                        <View style={commonStyles.textContainer}>
-                            <Text style={[commonStyles.cardTitle, { color: textColor }]}>{opcion.id}</Text>
-                            <Text style={[commonStyles.cardDescription, { color: mutedColor }]}>{opcion.desciption}</Text>
-                        </View>
-                    </TouchableOpacity>
-                ))}
-
-                {servicioSeleccionado && (
-                    <View style={styles.inputContainer}>
-                        {/* Indicador de conexión */}
-                        <View style={styles.connectionIndicator}>
-                            <View style={[
-                                styles.connectionDot,
-                                { backgroundColor: estaConectado ? '#4CAF50' : '#F44336' }
-                            ]} />
-                            <Text style={[styles.connectionText, { color: mutedColor }]}>
-                                {estaConectado ? 'Conectado' : 'Sin conexión'}
-                            </Text>
-                        </View>
-
-
-                        <Text style={[styles.inputLabel, { color: textColor }]}>Describe tu solicitud:</Text>
-                        <TextInput
-                            style={[
-                                styles.textInput,
-                                { backgroundColor: cardBg, color: textColor, borderColor: mutedColor }
-                            ]}
-                            placeholder={opciones.find(op => op.id === servicioSeleccionado)?.placeholder || 'Describe tu solicitud...'}
-                            placeholderTextColor={mutedColor}
-                            value={descripcion}
-                            onChangeText={setDescripcion}
-                            multiline
-                            numberOfLines={4}
-                            textAlignVertical="top"
+        <ThemedView style={styles.container}>
+            <ScrollView>
+                <ScreenHeader 
+                    title="Room Service"
+                    subtitle="How can we help you today?"
+                />
+                
+                <View style={styles.cardsContainer}>
+                    {opciones.map((opcion, index) => (
+                        <ServiceCard
+                            key={index}
+                            option={opcion}
+                            onPress={handlePress}
+                            isSelected={selectedService?.id === opcion.id}
                         />
-                        <TouchableOpacity 
-                            style={[
-                                styles.submitButton,
-                                !estaConectado && styles.disabledButton
-                            ]} 
-                            onPress={handleEnviar} 
-                            activeOpacity={0.8}
-                            disabled={!estaConectado}
-                        >
-                            <Text style={styles.submitButtonText}>
-                                {estaConectado ? 'Enviar Solicitud' : 'Sin Conexión'}
-                            </Text>
-                        </TouchableOpacity>
-                    </View>
-                )}
-            </View>
-
-            {/* Historial de Peticiones */}
-            {misPeticiones.length > 0 && (
-                <View style={styles.historialContainer}>
-                    <View style={styles.historialHeader}>
-                        <MaterialIcons name="history" size={24} color={textColor} />
-                        <Text style={[styles.historialTitle, { color: textColor }]}>
-                            Mis Peticiones ({misPeticiones.length})
-                        </Text>
-                    </View>
-                    {misPeticiones.slice(0, 5).map((peticion) => {
-                        const estadoConfig = {
-                            'pending': { 
-                                color: '#FFA726', 
-                                icon: 'schedule',
-                                iconType: 'material' as const,
-                                label: 'Pendiente' 
-                            },
-                            'in-progress': { 
-                                color: '#42A5F5', 
-                                icon: 'autorenew',
-                                iconType: 'material' as const,
-                                label: 'En Proceso' 
-                            },
-                            'completed': { 
-                                color: '#66BB6A', 
-                                icon: 'check-circle',
-                                iconType: 'material' as const,
-                                label: 'Completada' 
-                            }
-                        };
-                        const config = estadoConfig[peticion.status as keyof typeof estadoConfig];
-                        
-                        const tipoConfig = {
-                            'room-service': { 
-                                icon: 'restaurant-menu',
-                                iconType: 'material' as const,
-                                label: 'Room Service',
-                                color: '#9C27B0'
-                            },
-                            'services': { 
-                                icon: 'room-service',
-                                iconType: 'material' as const,
-                                label: 'Servicios',
-                                color: '#4A90E2'
-                            },
-                            'problem': { 
-                                icon: 'warning',
-                                iconType: 'material' as const,
-                                label: 'Problema',
-                                color: '#F44336'
-                            },
-                            'extra': { 
-                                icon: 'star',
-                                iconType: 'material' as const,
-                                label: 'Extra',
-                                color: '#FF9800'
-                            }
-                        };
-                        const tipoInfo = tipoConfig[peticion.type as keyof typeof tipoConfig] || tipoConfig.extra;
-                        
-                        return (
-                            <View key={peticion.id} style={[styles.peticionCard, { backgroundColor: cardBg }]}>
-                                <View style={styles.peticionHeader}>
-                                    <View style={styles.peticionTipoContainer}>
-                                        <MaterialIcons 
-                                            name={tipoInfo.icon as any} 
-                                            size={20} 
-                                            color={tipoInfo.color} 
-                                        />
-                                        <Text style={[styles.peticionTipo, { color: textColor }]}>
-                                            {tipoInfo.label}
-                                        </Text>
-                                    </View>
-                                    <View style={[styles.estadoBadge, { backgroundColor: config.color }]}>
-                                        <MaterialIcons 
-                                            name={config.icon as any} 
-                                            size={14} 
-                                            color="#FFFFFF" 
-                                        />
-                                        <Text style={styles.estadoText}>
-                                            {config.label}
-                                        </Text>
-                                    </View>
-                                </View>
-                                <Text style={[styles.peticionMensaje, { color: mutedColor }]} numberOfLines={2}>
-                                    {peticion.message}
-                                </Text>
-                            </View>
-                        );
-                    })}
+                    ))}
                 </View>
-            )}
+            </ScrollView>
 
+            <PetitionModal
+                visible={modalVisible}
+                onClose={() => {
+                    setModalVisible(false);
+                    setSelectedService(null);
+                }}
+                selectedOption={selectedService}
+                onSend={handleSend}
+                sendButtonText="Send Request"
+                isLoading={isLoading}
+            />
         </ThemedView>
-        </ScrollView>
-    )
+    );
 }
 
 const styles = StyleSheet.create({
-    cardSelected: {
-        borderWidth: 2,
-        borderColor: '#4A90E2',
+    container: {
+        flex: 1,
     },
-    inputContainer: {
-        marginTop: 20,
-        gap: 12,
-    },
-    inputLabel: {
-        fontSize: 16,
-        fontWeight: '600',
-    },
-    textInput: {
-        borderWidth: 1,
-        borderRadius: 12,
-        padding: 16,
-        fontSize: 16,
-        minHeight: 120,
-        maxHeight: 200,
-    },
-    submitButton: {
-        backgroundColor: '#4A90E2',
-        borderRadius: 12,
-        padding: 16,
-        alignItems: 'center',
-        marginTop: 8,
-    },
-    submitButtonText: {
-        color: '#FFFFFF',
-        fontSize: 16,
-        fontWeight: '600',
-    },
-    connectionIndicator: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        gap: 8,
-        marginBottom: 8,
-    },
-    connectionDot: {
-        width: 10,
-        height: 10,
-        borderRadius: 5,
-    },
-    connectionText: {
-        fontSize: 14,
-        fontWeight: '500',
-    },
-    disabledButton: {
-        backgroundColor: '#BDBDBD',
-    },
-    historialContainer: {
-        marginTop: 24,
-        gap: 12,
-    },
-    historialHeader: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        gap: 8,
-        marginBottom: 8,
-    },
-    historialTitle: {
-        fontSize: 18,
-        fontWeight: '700',
-    },
-    peticionCard: {
-        padding: 16,
-        borderRadius: 12,
-        gap: 8,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.1,
-        shadowRadius: 4,
-        elevation: 3,
-    },
-    peticionHeader: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-    },
-    peticionTipoContainer: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        gap: 6,
-    },
-    peticionTipo: {
-        fontSize: 14,
-        fontWeight: '600',
-    },
-    estadoBadge: {
-        paddingHorizontal: 10,
-        paddingVertical: 4,
-        borderRadius: 12,
-        flexDirection: 'row',
-        alignItems: 'center',
-        gap: 4,
-    },
-    estadoText: {
-        color: '#FFFFFF',
-        fontSize: 12,
-        fontWeight: '600',
-    },
-    peticionMensaje: {
-        fontSize: 13,
-        lineHeight: 18,
+    cardsContainer: {
+        paddingHorizontal: 20,
+        gap: 16,
+        paddingBottom: 20,
     },
 });

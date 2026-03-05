@@ -1,16 +1,25 @@
 import { router } from 'expo-router';
-import React from 'react';
-import { Pressable, StyleSheet, Text, useColorScheme, View, TouchableOpacity } from 'react-native';
+import React, { useState } from 'react';
+import { Pressable, StyleSheet, Text, useColorScheme, View, Image } from 'react-native';
 import { MaterialIcons, MaterialCommunityIcons } from '@expo/vector-icons';
-import { ThemedView } from '@/components/themed-view';
+import { ThemedView } from '@/components/BothComponents/themed-view';
 import { useThemeColor } from '@/hooks/use-theme-color';
-import { useAuth } from '@/components/auth-provider';
+import { useAuth } from '@/components/BothComponents/auth-provider';
 export default function HomeScreen() {
   const scheme = useColorScheme();
   const isDark = scheme === 'dark';
   const textColor = useThemeColor({}, 'text');
   const mutedColor = useThemeColor({}, 'muted');
-  const { guestName, roomNumber, logout, isAuthenticated } = useAuth();
+  const { guestName, roomNumber } = useAuth();
+  const [selectedGif, setSelectedGif] = useState<any>(require('../../assets/gifs/ModASL.gif'));
+
+  // Función helper para manejar tanto URLs como rutas locales
+  const getImageSource = (source: any) => {
+    if (typeof source === 'string') {
+      return { uri: source };
+    }
+    return source;
+  };
 
   const colors = {
     background: isDark ? '#0E1116' : '#F5F5F5',
@@ -25,33 +34,11 @@ export default function HomeScreen() {
           <View style={styles.logoContainer}>
             <MaterialIcons name="hotel" size={48} color="#4A90E2" />
           </View>
-          <Text style={[styles.title, { color: textColor }]}>Hotel Aurora Central</Text>
+          <Text style={[styles.title, { color: textColor }]}>Aurora Central Hotel</Text>
           <Text style={[styles.subtitle, { color: mutedColor }]}>
-            Selecciona tu método de comunicación preferido
+            Welcome, {guestName} - Room {roomNumber}
           </Text>
         </View>
-
-        {/* User info bar (shown when authenticated) */}
-        {isAuthenticated && (
-          <View style={styles.userInfoBar}>
-            <View style={styles.userInfo}>
-              <Text style={[styles.welcomeText, { color: textColor }]}>
-                Bienvenido, {guestName}
-              </Text>
-              <Text style={[styles.roomText, { color: mutedColor }]}>
-                Habitación: {roomNumber}
-              </Text>
-            </View>
-            <TouchableOpacity
-              style={styles.logoutButton}
-              onPress={logout}
-              activeOpacity={0.8}
-            >
-              <MaterialIcons name="logout" size={20} color="#F44336" />
-              <Text style={styles.logoutText}>Cerrar Sesión</Text>
-            </TouchableOpacity>
-          </View>
-        )}
 
         {/* Botones de selección */}
         <View style={styles.buttons}>
@@ -68,17 +55,16 @@ export default function HomeScreen() {
             ]}
             android_ripple={{ color: 'rgba(255,255,255,0.2)' }}
           >
-            <View style={styles.cardContent}>
-              <View style={[styles.iconContainer, styles.aslIconBg]}>
-                <MaterialCommunityIcons name="sign-language" size={40} color="#FFFFFF" />
+            <View style={styles.cardContentLarge}>
+              {/* GIF de ASL */}
+              <Image 
+                source={getImageSource(require('../../assets/gifs/ModASL.gif'))}
+                style={styles.gifImage}
+                resizeMode="contain"
+              />
+              <View style={styles.iconBadge}>
+                <MaterialCommunityIcons name="sign-language" size={32} color="#FFFFFF" />
               </View>
-              <View style={styles.cardTextContainer}>
-                <Text style={styles.cardTitle}>Lenguaje de Señas</Text>
-                <Text style={styles.cardDescription}>
-                  Usa ASL para comunicarte con el personal
-                </Text>
-              </View>
-              <MaterialIcons name="arrow-forward-ios" size={24} color="rgba(255,255,255,0.8)" />
             </View>
           </Pressable>
 
@@ -97,15 +83,15 @@ export default function HomeScreen() {
           >
             <View style={styles.cardContent}>
               <View style={[styles.iconContainer, styles.textIconBg]}>
-                <MaterialIcons name="chat-bubble" size={40} color="#FFFFFF" />
+                <MaterialIcons name="chat-bubble" size={32} color="#FFFFFF" />
               </View>
               <View style={styles.cardTextContainer}>
-                <Text style={styles.cardTitle}>Texto</Text>
+                <Text style={styles.cardTitle}>Text Mode</Text>
                 <Text style={styles.cardDescription}>
-                  Escribe tus solicitudes y mensajes
+                  Write your requests and messages to communicate with staff
                 </Text>
               </View>
-              <MaterialIcons name="arrow-forward-ios" size={24} color="rgba(255,255,255,0.8)" />
+              <MaterialIcons name="arrow-forward-ios" size={20} color="rgba(255,255,255,0.8)" />
             </View>
           </Pressable>
         </View>
@@ -114,7 +100,7 @@ export default function HomeScreen() {
         <View style={styles.footer}>
           <MaterialIcons name="info-outline" size={16} color={mutedColor} />
           <Text style={[styles.footerText, { color: mutedColor }]}>
-            Podrás cambiar tu preferencia en cualquier momento
+            You can change your preference at any time
           </Text>
         </View>
       </View>
@@ -130,73 +116,76 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 24,
-    paddingVertical: 60,
+    paddingHorizontal: 20,
+    paddingVertical: 40,
   },
   header: {
     alignItems: 'center',
-    gap: 12,
-    marginTop: 20,
+    gap: 8,
+    marginTop: 10,
   },
   logoContainer: {
-    width: 96,
-    height: 96,
-    borderRadius: 48,
+    width: 80,
+    height: 80,
+    borderRadius: 40,
     backgroundColor: 'rgba(74, 144, 226, 0.1)',
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 8,
   },
   title: {
-    fontSize: 32,
+    fontSize: 24,
     fontWeight: '800',
     textAlign: 'center',
     letterSpacing: 0.5,
   },
   subtitle: {
-    fontSize: 16,
+    fontSize: 14,
     textAlign: 'center',
-    lineHeight: 22,
-    maxWidth: 300,
+    lineHeight: 20,
+    maxWidth: 280,
   },
   buttons: {
     width: '100%',
     gap: 20,
     flex: 1,
     justifyContent: 'center',
+    maxHeight: 400,
   },
   card: {
-    borderRadius: 20,
+    borderRadius: 24,
     overflow: 'hidden',
     shadowColor: '#000',
-    shadowOpacity: 0.15,
-    shadowRadius: 12,
-    shadowOffset: { width: 0, height: 6 },
-    elevation: 6,
-    padding: 20,
-    minHeight: 120,
+    shadowOpacity: 0.2,
+    shadowRadius: 16,
+    shadowOffset: { width: 0, height: 8 },
+    elevation: 8,
+    padding: 0,
     justifyContent: 'center',
+    alignItems: 'center',
   },
   aslCard: {
     backgroundColor: '#3B82F6',
+    flex: 2,
   },
   textCard: {
     backgroundColor: '#8B5CF6',
+    flex: 1,
   },
   cardContent: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 16,
+    gap: 12,
+    paddingHorizontal: 16,
+    paddingVertical: 16,
+    width: '100%',
   },
   iconContainer: {
-    width: 64,
-    height: 64,
-    borderRadius: 16,
+    width: 56,
+    height: 56,
+    borderRadius: 14,
     alignItems: 'center',
     justifyContent: 'center',
-  },
-  aslIconBg: {
-    backgroundColor: 'rgba(255, 255, 255, 0.2)',
   },
   textIconBg: {
     backgroundColor: 'rgba(255, 255, 255, 0.2)',
@@ -206,15 +195,46 @@ const styles = StyleSheet.create({
     gap: 4,
   },
   cardTitle: {
-    fontSize: 22,
+    fontSize: 18,
     fontWeight: '700',
     color: '#FFFFFF',
     letterSpacing: 0.3,
   },
   cardDescription: {
-    fontSize: 14,
+    fontSize: 12,
     color: 'rgba(255, 255, 255, 0.85)',
-    lineHeight: 20,
+    lineHeight: 16,
+  },
+  cardContentLarge: {
+    width: '100%',
+    height: '100%',
+    justifyContent: 'center',
+    alignItems: 'center',
+    position: 'relative',
+  },
+  gifImage: {
+    width: '100%',
+    height: '100%',
+    position: 'absolute',
+  },
+  iconBadge: {
+    position: 'absolute',
+    bottom: 16,
+    right: 16,
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    backgroundColor: 'rgba(0, 0, 0, 0.6)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 5,
   },
   footer: {
     flexDirection: 'row',
@@ -227,40 +247,5 @@ const styles = StyleSheet.create({
     fontSize: 13,
     textAlign: 'center',
     lineHeight: 18,
-  },
-  userInfoBar: {
-    backgroundColor: 'rgba(74, 144, 226, 0.1)',
-    borderRadius: 12,
-    padding: 16,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 20,
-    gap: 12,
-  },
-  userInfo: {
-    flex: 1,
-    gap: 4,
-  },
-  welcomeText: {
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  roomText: {
-    fontSize: 14,
-  },
-  logoutButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderRadius: 8,
-    backgroundColor: 'rgba(244, 67, 54, 0.1)',
-  },
-  logoutText: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#F44336',
   },
 });

@@ -1,13 +1,13 @@
 import { Tabs, router } from 'expo-router';
 import React from 'react';
 
-import { HapticTab } from '@/components/haptic-tab';
-import { IconSymbol } from '@/components/ui/icon-symbol';
+import { HapticTab } from '@/components/BothComponents/haptic-tab';
+import { IconSymbol } from '@/components/BothComponents/ui/icon-symbol';
 import { Colors } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { MaterialIcons } from '@expo/vector-icons';
 import { TouchableOpacity } from 'react-native';
-import { ModeToggleButton } from '@/components/mode-toggle-button';
+import { HeaderButtons } from '@/components/BothComponents/header-buttons';
 
 export default function TabLayout() {
   const colorScheme = useColorScheme();
@@ -30,7 +30,7 @@ export default function TabLayout() {
           </TouchableOpacity>
         ),
         headerRight: () => (
-          <ModeToggleButton currentScreen="TextHome" colorScheme={colorScheme} />
+          <HeaderButtons currentScreen="TextHome" colorScheme={colorScheme} />
         ),
         tabBarShowLabel: false,
         tabBarButton: HapticTab,
@@ -49,7 +49,7 @@ export default function TabLayout() {
           title: 'Home',
           headerTitle: 'Home',
           headerRight: () => (
-            <ModeToggleButton currentScreen="TextHome" colorScheme={colorScheme} />
+            <HeaderButtons currentScreen="TextHome" colorScheme={colorScheme} />
           ),
           tabBarIcon: ({ color, size }) => (
             <IconSymbol size={size ?? 28} name="house.fill" color={color} />
@@ -62,7 +62,7 @@ export default function TabLayout() {
           title: 'Room Service',
           headerTitle: 'Room Service',
           headerRight: () => (
-            <ModeToggleButton currentScreen="TextRoomS" colorScheme={colorScheme} />
+            <HeaderButtons currentScreen="TextRoomS" colorScheme={colorScheme} />
           ),
           tabBarButton: () => null,  
         }}
@@ -70,10 +70,10 @@ export default function TabLayout() {
       <Tabs.Screen
         name="TextServices"
         options={{
-          title: 'Servicios del Hotel',
-          headerTitle: 'Servicios del Hotel',
+          title: 'Hotel Services',
+          headerTitle: 'Hotel Services',
           headerRight: () => (
-            <ModeToggleButton currentScreen="TextServices" colorScheme={colorScheme} />
+            <HeaderButtons currentScreen="TextServices" colorScheme={colorScheme} />
           ),
           tabBarButton: () => null,  
         }}
@@ -81,10 +81,10 @@ export default function TabLayout() {
       <Tabs.Screen
         name="TextReportProblem"
         options={{
-          title: 'Reportar Problema',
-          headerTitle: 'Reportar Problema',
+          title: 'Report Problem',
+          headerTitle: 'Report Problem',
           headerRight: () => (
-            <ModeToggleButton currentScreen="TextReportProblem" colorScheme={colorScheme} />
+            <HeaderButtons currentScreen="TextReportProblem" colorScheme={colorScheme} />
           ),
           tabBarButton: () => null,  
         }}
@@ -92,10 +92,10 @@ export default function TabLayout() {
       <Tabs.Screen
         name="TextMovilidad"
         options={{
-          title: 'Movilidad',
-          headerTitle: 'Movilidad',
+          title: 'Mobility',
+          headerTitle: 'Mobility',
           headerRight: () => (
-            <ModeToggleButton currentScreen="TextMovilidad" colorScheme={colorScheme} />
+            <HeaderButtons currentScreen="TextMovilidad" colorScheme={colorScheme} />
           ),
           tabBarButton: () => null,  
         }}

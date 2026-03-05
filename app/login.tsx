@@ -1,24 +1,23 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TextInput, TouchableOpacity, ActivityIndicator, Alert } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { CameraView, useCameraPermissions } from 'expo-camera';
 import { MaterialIcons } from '@expo/vector-icons';
 import { router } from 'expo-router';
-import { useAuth } from '@/components/auth-provider';
-import { validateToken, registerGuest } from '@/services/auth';
+import { useAuth } from '@/components/BothComponents/auth-provider';
+import { validateToken } from '@/services/auth';
 
-type FlowState = 'camera' | 'validating' | 'name-entry' | 'registering' | 'error';
+type FlowState = 'camera' | 'validating' | 'error';
 
 export default function LoginScreen() {
   const [permission, requestPermission] = useCameraPermissions();
   const [flowState, setFlowState] = useState<FlowState>('camera');
   const [scanned, setScanned] = useState(false);
-  const [guestName, setGuestName] = useState('');
   const [roomNumber, setRoomNumber] = useState('');
   const [token, setToken] = useState('');
   const [error, setError] = useState('');
   const { login } = useAuth();
 
-  // Handler for barcode scan
+  // Manejador para escaneo de código de barras
   const handleBarcodeScan = async ({ data }: { data: string }) => {
     if (scanned) return;
     
@@ -29,9 +28,14 @@ export default function LoginScreen() {
       const result = await validateToken(data);
       
       if (result.valid) {
-        setToken(data);
-        setRoomNumber(result.roomNumber || '');
-        setFlowState('name-entry');
+        // Iniciar sesión automáticamente con el token
+        await login(data, 'Guest', result.roomNumber || '');
+        
+        // Pequeño delay para asegurar que el estado de autenticación se estabilice
+        setTimeout(() => {
+          // Redirigir al onboarding
+          router.replace('/onboarding');
+        }, 100);
       } else {
         setError(result.reason || 'Código QR inválido');
         setFlowState('error');
@@ -43,56 +47,20 @@ export default function LoginScreen() {
     }
   };
 
-  // Handler for name submission
-  const handleNameSubmit = async () => {
-    if (!guestName.trim()) {
-      Alert.alert('Error', 'Por favor ingresa tu nombre');
-      return;
-    }
-
-    setFlowState('registering');
-
-    try {
-      const result = await registerGuest(token, guestName.trim());
-      
-      // Login with session token
-      await login(result.sessionToken, result.guestName, result.roomNumber);
-      
-      // Navigate to home
-      router.replace('/(tabs)');
-    } catch (err) {
-      setError('Error al registrar el huésped');
-      setFlowState('error');
-      console.error('Error registering guest:', err);
-    }
-  };
-
-  // Reset to scan again
+  // Reiniciar para escanear de nuevo
   const handleScanAgain = () => {
     setScanned(false);
     setFlowState('camera');
     setError('');
-    setGuestName('');
     setToken('');
     setRoomNumber('');
   };
 
-  // Request camera permissions
-  const handleRequestPermission = async () => {
-    const { granted } = await requestPermission();
-    if (!granted) {
-      Alert.alert(
-        'Permisos de Cámara',
-        'Se necesitan permisos de cámara para escanear códigos QR'
-      );
-    }
-  };
-
-  // Permission not granted UI
+  // Solicitar permisos de cámara
   if (!permission) {
     return (
       <View style={styles.container}>
-        <ActivityIndicator size="large" color="#4A90E2" />
+        <ActivityIndicator size="large" color="#2563eb" />
       </View>
     );
   }
@@ -100,335 +68,168 @@ export default function LoginScreen() {
   if (!permission.granted) {
     return (
       <View style={styles.container}>
-        <View style={styles.permissionContainer}>
-          <MaterialIcons name="camera-alt" size={64} color="#4A90E2" />
-          <Text style={styles.permissionTitle}>Permisos de Cámara</Text>
-          <Text style={styles.permissionText}>
-            Necesitamos acceso a la cámara para escanear el código QR de tu habitación
-          </Text>
-          <TouchableOpacity
-            style={styles.permissionButton}
-            onPress={handleRequestPermission}
-          >
-            <Text style={styles.permissionButtonText}>Conceder Permisos</Text>
-          </TouchableOpacity>
-        </View>
+        <MaterialIcons name="camera-alt" size={64} color="#666" />
+        <Text style={styles.title}>Camera access needed</Text>
+        <Text style={styles.subtitle}>To scan your room QR code</Text>
+        <TouchableOpacity style={styles.button} onPress={requestPermission}>
+          <Text style={styles.buttonText}>Grant Permission</Text>
+        </TouchableOpacity>
       </View>
     );
   }
 
-  // Camera scanning UI
-  if (flowState === 'camera') {
-    return (
-      <View style={styles.container}>
-        <CameraView
-          style={styles.camera}
-          facing="back"
-          onBarcodeScanned={scanned ? undefined : handleBarcodeScan}
-          barcodeScannerSettings={{
-            barcodeTypes: ['qr'],
-          }}
-        >
-          <View style={styles.cameraOverlay}>
-            <View style={styles.scannerHeader}>
-              <MaterialIcons name="qr-code-scanner" size={48} color="#FFFFFF" />
-              <Text style={styles.scannerTitle}>Escanea el código QR</Text>
-              <Text style={styles.scannerSubtitle}>
-                de tu habitación
-              </Text>
-            </View>
-            
-            <View style={styles.scanFrame} />
-            
-            <View style={styles.scannerFooter}>
-              <Text style={styles.scannerHint}>
-                Apunta la cámara al código QR
-              </Text>
-            </View>
-          </View>
-        </CameraView>
-      </View>
-    );
-  }
-
-  // Validating UI
+  // Loading state
   if (flowState === 'validating') {
     return (
       <View style={styles.container}>
-        <View style={styles.centerContent}>
-          <ActivityIndicator size="large" color="#4A90E2" />
-          <Text style={styles.loadingText}>Validando código...</Text>
-        </View>
+        <ActivityIndicator size="large" color="#2563eb" />
+        <Text style={styles.title}>Validating code...</Text>
       </View>
     );
   }
 
-  // Name entry UI
-  if (flowState === 'name-entry') {
-    return (
-      <View style={styles.container}>
-        <View style={styles.formContainer}>
-          <View style={styles.formHeader}>
-            <MaterialIcons name="person" size={64} color="#4A90E2" />
-            <Text style={styles.formTitle}>Bienvenido</Text>
-            <Text style={styles.formSubtitle}>Habitación {roomNumber}</Text>
-          </View>
-
-          <View style={styles.formBody}>
-            <Text style={styles.label}>Ingresa tu nombre</Text>
-            <TextInput
-              style={styles.input}
-              placeholder="Nombre completo"
-              value={guestName}
-              onChangeText={setGuestName}
-              autoFocus
-              returnKeyType="done"
-              onSubmitEditing={handleNameSubmit}
-            />
-
-            <TouchableOpacity
-              style={styles.submitButton}
-              onPress={handleNameSubmit}
-              activeOpacity={0.8}
-            >
-              <Text style={styles.submitButtonText}>Continuar</Text>
-              <MaterialIcons name="arrow-forward" size={24} color="#FFFFFF" />
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={styles.backButton}
-              onPress={handleScanAgain}
-            >
-              <Text style={styles.backButtonText}>Escanear otro código</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-      </View>
-    );
-  }
-
-  // Registering UI
-  if (flowState === 'registering') {
-    return (
-      <View style={styles.container}>
-        <View style={styles.centerContent}>
-          <ActivityIndicator size="large" color="#4A90E2" />
-          <Text style={styles.loadingText}>Registrando...</Text>
-        </View>
-      </View>
-    );
-  }
-
-  // Error UI
+  // Estado de error
   if (flowState === 'error') {
     return (
       <View style={styles.container}>
-        <View style={styles.errorContainer}>
-          <MaterialIcons name="error-outline" size={64} color="#F44336" />
-          <Text style={styles.errorTitle}>Error</Text>
-          <Text style={styles.errorText}>{error}</Text>
-          
-          <TouchableOpacity
-            style={styles.retryButton}
-            onPress={handleScanAgain}
-            activeOpacity={0.8}
-          >
-            <MaterialIcons name="qr-code-scanner" size={24} color="#FFFFFF" />
-            <Text style={styles.retryButtonText}>Escanear de Nuevo</Text>
-          </TouchableOpacity>
-        </View>
+        <MaterialIcons name="error-outline" size={64} color="#dc2626" />
+        <Text style={styles.title}>{error}</Text>
+        <TouchableOpacity style={styles.button} onPress={handleScanAgain}>
+          <Text style={styles.buttonText}>Scan again</Text>
+        </TouchableOpacity>
       </View>
     );
   }
 
-  return null;
+  // Estado de escaneo de cámara/QR
+  return (
+    <View style={styles.container}>
+      <CameraView
+        style={styles.camera}
+        facing="back"
+        onBarcodeScanned={scanned ? undefined : handleBarcodeScan}
+        barcodeScannerSettings={{ barcodeTypes: ['qr'] }}
+      >
+        <View style={styles.overlay}>
+          <View style={styles.header}>
+            <Text style={styles.headerTitle}>Scan your room QR code</Text>
+          </View>
+          <View style={styles.scanFrame}>
+            <View style={[styles.corner, styles.topLeft]} />
+            <View style={[styles.corner, styles.topRight]} />
+            <View style={[styles.corner, styles.bottomLeft]} />
+            <View style={[styles.corner, styles.bottomRight]} />
+          </View>
+          <View style={styles.footer}>
+            <MaterialIcons name="qr-code-scanner" size={24} color="white" />
+            <Text style={styles.footerText}>Position the QR code inside the frame</Text>
+          </View>
+        </View>
+      </CameraView>
+    </View>
+  );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F5F5F5',
+    backgroundColor: '#000',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   camera: {
     flex: 1,
+    width: '100%',
   },
-  cameraOverlay: {
+  overlay: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    backgroundColor: 'rgba(0,0,0,0.5)',
     justifyContent: 'space-between',
-    padding: 20,
   },
-  scannerHeader: {
+  header: {
+    paddingTop: 60,
+    paddingHorizontal: 20,
     alignItems: 'center',
-    marginTop: 60,
-    gap: 8,
   },
-  scannerTitle: {
-    fontSize: 28,
-    fontWeight: '700',
-    color: '#FFFFFF',
-    textAlign: 'center',
-  },
-  scannerSubtitle: {
-    fontSize: 18,
-    color: 'rgba(255, 255, 255, 0.9)',
+  headerTitle: {
+    color: 'white',
+    fontSize: 20,
+    fontWeight: 'bold',
     textAlign: 'center',
   },
   scanFrame: {
     width: 250,
     height: 250,
     alignSelf: 'center',
-    borderWidth: 3,
-    borderColor: '#4A90E2',
-    borderRadius: 20,
-    backgroundColor: 'transparent',
-  },
-  scannerFooter: {
-    alignItems: 'center',
-    marginBottom: 40,
-  },
-  scannerHint: {
-    fontSize: 16,
-    color: 'rgba(255, 255, 255, 0.8)',
-    textAlign: 'center',
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-    padding: 12,
-    borderRadius: 8,
-  },
-  centerContent: {
-    flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    gap: 16,
   },
-  loadingText: {
-    fontSize: 18,
-    color: '#333333',
-    fontWeight: '600',
+  corner: {
+    position: 'absolute',
+    width: 40,
+    height: 40,
+    borderColor: '#2563eb',
   },
-  formContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    padding: 24,
+  topLeft: {
+    top: 0,
+    left: 0,
+    borderTopWidth: 4,
+    borderLeftWidth: 4,
   },
-  formHeader: {
+  topRight: {
+    top: 0,
+    right: 0,
+    borderTopWidth: 4,
+    borderRightWidth: 4,
+  },
+  bottomLeft: {
+    bottom: 0,
+    left: 0,
+    borderBottomWidth: 4,
+    borderLeftWidth: 4,
+  },
+  bottomRight: {
+    bottom: 0,
+    right: 0,
+    borderBottomWidth: 4,
+    borderRightWidth: 4,
+  },
+  footer: {
+    paddingBottom: 60,
     alignItems: 'center',
-    marginBottom: 40,
-    gap: 8,
-  },
-  formTitle: {
-    fontSize: 32,
-    fontWeight: '800',
-    color: '#333333',
-  },
-  formSubtitle: {
-    fontSize: 18,
-    color: '#666666',
-  },
-  formBody: {
-    gap: 16,
-  },
-  label: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#333333',
-    marginBottom: 8,
-  },
-  input: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 12,
-    padding: 16,
-    fontSize: 16,
-    borderWidth: 1,
-    borderColor: '#E0E0E0',
-  },
-  submitButton: {
     flexDirection: 'row',
-    backgroundColor: '#4A90E2',
-    borderRadius: 12,
-    padding: 16,
-    alignItems: 'center',
     justifyContent: 'center',
     gap: 8,
+  },
+  footerText: {
+    color: 'white',
+    fontSize: 14,
+  },
+  title: {
+    color: 'white',
+    fontSize: 20,
+    fontWeight: 'bold',
+    textAlign: 'center',
+    marginTop: 20,
+    marginHorizontal: 20,
+  },
+  subtitle: {
+    color: '#999',
+    fontSize: 14,
+    textAlign: 'center',
     marginTop: 8,
+    marginHorizontal: 20,
   },
-  submitButtonText: {
-    fontSize: 18,
-    fontWeight: '700',
-    color: '#FFFFFF',
-  },
-  backButton: {
-    padding: 16,
-    alignItems: 'center',
-  },
-  backButtonText: {
-    fontSize: 16,
-    color: '#4A90E2',
-    fontWeight: '600',
-  },
-  errorContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 24,
-    gap: 16,
-  },
-  errorTitle: {
-    fontSize: 28,
-    fontWeight: '700',
-    color: '#F44336',
-  },
-  errorText: {
-    fontSize: 16,
-    color: '#666666',
-    textAlign: 'center',
-    marginBottom: 16,
-  },
-  retryButton: {
-    flexDirection: 'row',
-    backgroundColor: '#4A90E2',
+  button: {
+    backgroundColor: '#2563eb',
+    paddingHorizontal: 32,
+    paddingVertical: 16,
     borderRadius: 12,
-    padding: 16,
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 8,
-    minWidth: 220,
+    marginTop: 24,
   },
-  retryButtonText: {
-    fontSize: 18,
-    fontWeight: '700',
-    color: '#FFFFFF',
-  },
-  permissionContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 24,
-    gap: 16,
-  },
-  permissionTitle: {
-    fontSize: 24,
-    fontWeight: '700',
-    color: '#333333',
-  },
-  permissionText: {
+  buttonText: {
+    color: 'white',
     fontSize: 16,
-    color: '#666666',
-    textAlign: 'center',
-    lineHeight: 24,
-    maxWidth: 300,
-  },
-  permissionButton: {
-    backgroundColor: '#4A90E2',
-    borderRadius: 12,
-    padding: 16,
-    minWidth: 200,
-    alignItems: 'center',
-    marginTop: 16,
-  },
-  permissionButtonText: {
-    fontSize: 18,
-    fontWeight: '700',
-    color: '#FFFFFF',
+    fontWeight: 'bold',
   },
 });

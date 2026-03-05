@@ -1,103 +1,91 @@
-import { ThemedView } from "@/components/themed-view";
-import { useThemeColor } from '@/hooks/use-theme-color';
-import { commonStyles } from '@/styles/common';
-import { MaterialCommunityIcons, MaterialIcons } from "@expo/vector-icons";
+import { ThemedView } from "@/components/BothComponents/themed-view";
+import { ScreenHeader } from "@/components/BothComponents/ScreenHeader";
+import { ServiceCard, ServiceOption } from "@/components/TextComponents/ServiceCard";
 import { router } from "expo-router";
-import { ScrollView, Text, TouchableOpacity, View } from "react-native";
+import { ScrollView, StyleSheet, View } from "react-native";
 
-export default function TextHome(){
-    const textColor = useThemeColor({}, 'text');
-    const mutedColor = useThemeColor({}, 'muted');
-    const cardBg = useThemeColor({}, 'card');
-    const opciones = [
+export default function TextHome() {
+    const services: ServiceOption[] = [
         {
-            id: "Servicios",
-            desciption : "Explora los servicios que ofrecemos en nuestro hotel.",
+            id: "Services",
+            description: "Explore the services we offer at our hotel.",
             icon: "room-service",
-            iconType: "material" as const,
+            iconType: "material",
             iconColor: "#4A90E2",
             bgColor: "#E3F2FD"
         },
         {
             id: "Room Service",
-            desciption : "Revisa que opciones de room service tenemos disponibles.",
+            description: "Check our available room service options.",
             icon: "silverware-fork-knife",
-            iconType: "community" as const,
+            iconType: "community",
             iconColor: "#9C27B0",
             bgColor: "#F3E5F5"
         },
         {
-            id: "Problema",
-            desciption : "Informa sobre cualquier problema que puedas tener durante tu estancia.",
+            id: "Problem",
+            description: "Report any issues you may have during your stay.",
             icon: "warning",
-            iconType: "material" as const,
+            iconType: "material",
             iconColor: "#F44336",
             bgColor: "#FFEBEE"
         },
         {
-            id: "Movilidad",
-            desciption: "Solicita valet parking, transporte privado o servicios especiales.",
+            id: "Mobility",
+            description: "Request valet parking, private transport or special services.",
             icon: "local-taxi",
-            iconType: "material" as const,
+            iconType: "material",
             iconColor: "#ffe100ff",
             bgColor: "#fffde5ff"
         }
-    ]
+    ];
 
-    const handlePress = (opcionId: string) => {
-        (opcionId == "Servicios")?
-            router.push('/Text/TextServices')
-            : null;
-        (opcionId == "Room Service")?
-            router.push('/Text/TextRoomS')
-            : null;
-        (opcionId == "Problema")?
-            router.push('/Text/TextReportProblem')
-            : null;
-        (opcionId == "Movilidad")?
-            router.push('/Text/TextMovilidad')
-            : null;
+    const handlePress = (option: ServiceOption) => {
+        switch(option.id) {
+            case "Services":
+                router.push('/Text/TextServices');
+                break;
+            case "Room Service":
+                router.push('/Text/TextRoomS');
+                break;
+            case "Problem":
+                router.push('/Text/TextReportProblem');
+                break;
+            case "Mobility":
+                router.push('/Text/TextMovilidad');
+                break;
+        }
     };
 
-    return(
+    return (
         <ScrollView>
-        <ThemedView style={commonStyles.container}>
-            <View style={commonStyles.header}>
-                <Text style={[commonStyles.title, { color: textColor }]}>Hotel Aurora Central</Text>
-                <Text style={[commonStyles.subtitle, { color: mutedColor }]}>¿Qué necesitas hoy?</Text>
-            </View>
-            
-            <View style={commonStyles.cardsContainer}>
-                {opciones.map((opcion, index) => (
-                    <TouchableOpacity 
-                        key={index}
-                        style={[commonStyles.card, { backgroundColor: cardBg }]}
-                        onPress={() => handlePress(opcion.id)}
-                        activeOpacity={0.8}
-                    >
-                        <View style={[commonStyles.iconContainer, { backgroundColor: opcion.bgColor }]}>
-                            {opcion.iconType === "material" ? (
-                                <MaterialIcons 
-                                    name={opcion.icon as any} 
-                                    size={32} 
-                                    color={opcion.iconColor} 
-                                />
-                            ) : (
-                                <MaterialCommunityIcons 
-                                    name={opcion.icon as any} 
-                                    size={32} 
-                                    color={opcion.iconColor} 
-                                />
-                            )}
-                        </View>
-                        <View style={commonStyles.textContainer}>
-                            <Text style={[commonStyles.cardTitle, { color: textColor }]}>{opcion.id}</Text>
-                            <Text style={[commonStyles.cardDescription, { color: mutedColor }]}>{opcion.desciption}</Text>
-                        </View>
-                    </TouchableOpacity>
-                ))}
-            </View>
-        </ThemedView>
+            <ThemedView style={styles.container}>
+                <ScreenHeader 
+                    title="Aurora Central Hotel"
+                    subtitle="What do you need today?"
+                />
+                
+                <View style={styles.cardsContainer}>
+                    {services.map((service, index) => (
+                        <ServiceCard 
+                            key={index} 
+                            option={service}
+                            onPress={handlePress}
+                        />
+                    ))}
+                </View>
+            </ThemedView>
         </ScrollView>
-    )
+    );
 }
+
+const styles = StyleSheet.create({
+    container: {
+        flex: 1,
+        padding: 20,
+    },
+    cardsContainer: {
+        marginTop: 24,
+        gap: 16,
+    },
+});

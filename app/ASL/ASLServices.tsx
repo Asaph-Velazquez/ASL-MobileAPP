@@ -1,4 +1,4 @@
-import { ThemedView } from "@/components/themed-view";
+import { ThemedView } from "@/components/BothComponents/themed-view";
 import { useThemeColor } from '@/hooks/use-theme-color';
 import { commonStyles } from '@/styles/common';
 import { MaterialCommunityIcons, MaterialIcons } from "@expo/vector-icons";
@@ -10,69 +10,80 @@ export default function ASLServices(){
     const cardBg = useThemeColor({}, 'card');
     const [modalVisible, setModalVisible] = useState(false);
     const [selectedService, setSelectedService] = useState<any>(null);
+    const [selectedGif, setSelectedGif] = useState<any>(require('../../assets/gifs/ComidaGif.gif'));
+    const [modalGif, setModalGif] = useState<any>(null);
+    
+    // Función helper para manejar tanto URLs como rutas locales
+    const getImageSource = (source: any) => {
+        if (typeof source === 'string') {
+            return { uri: source };
+        }
+        return source;
+    };
     
     const ServiceOptions =[{
         id: "Desayuno incluido",
         // GIF de "Desayuno incluido" en ASL
-        gifUrl: "https://placeholder.com/asl-breakfast.gif", // Reemplazar con GIF real
+        gifUrl: require('../../assets/gifs/ComidaGif.gif'),
         icon: "food-bank",
         iconType: "material" as const,
         iconColor: "#FF9800",
         bgColor: "#FFF3E0",
         detalles: {
             // GIF de horario en ASL
-            horarioGif: "https://placeholder.com/asl-breakfast-schedule.gif",
+            horarioGif: require('../../assets/gifs/ComidaGif.gif'),
             // GIF de ubicación en ASL
-            ubicacionGif: "https://placeholder.com/asl-breakfast-location.gif",
+            ubicacionGif: require('../../assets/gifs/ComidaGif.gif'),
             // GIF de lo que incluye en ASL
-            incluyeGif: "https://placeholder.com/asl-breakfast-includes.gif",
+            incluyeGif: require('../../assets/gifs/ComidaGif.gif'),
             // GIF de nota en ASL
-            notaGif: "https://placeholder.com/asl-breakfast-note.gif"
+            notaGif: require('../../assets/gifs/ComidaGif.gif')
         }
         },{
         id: "Alberca",
-        gifUrl: "https://placeholder.com/asl-pool.gif",
+        gifUrl: require('../../assets/gifs/ComidaGif.gif'),
         icon: "pool",
         iconType: "material" as const,
         iconColor: "#00BCD4",
         bgColor: "#E0F7FA",
         detalles: {
-            horarioGif: "https://placeholder.com/asl-pool-schedule.gif",
-            ubicacionGif: "https://placeholder.com/asl-pool-location.gif",
-            incluyeGif: "https://placeholder.com/asl-pool-includes.gif",
-            notaGif: "https://placeholder.com/asl-pool-note.gif"
+            horarioGif: require('../../assets/gifs/ComidaGif.gif'),
+            ubicacionGif: require('../../assets/gifs/ComidaGif.gif'),
+            incluyeGif: require('../../assets/gifs/ComidaGif.gif'),
+            notaGif: require('../../assets/gifs/ComidaGif.gif')
         }
         },{
         id: "Gimnasio",
-        gifUrl: "https://placeholder.com/asl-gym.gif",
+        gifUrl: require('../../assets/gifs/ComidaGif.gif'),
         icon: "fitness-center",
         iconType: "material" as const,
         iconColor: "#F44336",
         bgColor: "#FFEBEE",
         detalles: {
-            horarioGif: "https://placeholder.com/asl-gym-schedule.gif",
-            ubicacionGif: "https://placeholder.com/asl-gym-location.gif",
-            incluyeGif: "https://placeholder.com/asl-gym-includes.gif",
-            notaGif: "https://placeholder.com/asl-gym-note.gif"
+            horarioGif: require('../../assets/gifs/ComidaGif.gif'),
+            ubicacionGif: require('../../assets/gifs/ComidaGif.gif'),
+            incluyeGif: require('../../assets/gifs/ComidaGif.gif'),
+            notaGif: require('../../assets/gifs/ComidaGif.gif')
         }
         },
         {
         id: "Spa",
-        gifUrl: "https://placeholder.com/asl-spa.gif",
+        gifUrl: require('../../assets/gifs/ComidaGif.gif'),
         icon: "spa",
         iconType: "material" as const,
         iconColor: "#9C27B0",
         bgColor: "#F3E5F5",
         detalles: {
-            horarioGif: "https://placeholder.com/asl-spa-schedule.gif",
-            ubicacionGif: "https://placeholder.com/asl-spa-location.gif",
-            incluyeGif: "https://placeholder.com/asl-spa-includes.gif",
-            notaGif: "https://placeholder.com/asl-spa-note.gif"
+            horarioGif: require('../../assets/gifs/ComidaGif.gif'),
+            ubicacionGif: require('../../assets/gifs/ComidaGif.gif'),
+            incluyeGif: require('../../assets/gifs/ComidaGif.gif'),
+            notaGif: require('../../assets/gifs/ComidaGif.gif')
         }
     }];
 
     const handlePress = (opcion: any) => {
         setSelectedService(opcion);
+        setModalGif(opcion.gifUrl); // Iniciar con el GIF del servicio
         setModalVisible(true);
     };
     
@@ -85,51 +96,40 @@ export default function ASLServices(){
           contentContainerStyle={{ paddingBottom: 40 }}
         >
         <ThemedView style={commonStyles.container}>
-            <View style={commonStyles.header}>
-                {/* GIF de "Servicios incluidos" en ASL */}
+            {/* Área de visualización del GIF grande */}
+            <View style={styles.gifPreviewContainer}>
                 <Image 
-                    source={{ uri: "https://placeholder.com/asl-services-title.gif" }}
-                    style={styles.titleGif}
-                    resizeMode="contain"
-                />
-                {/* GIF de "¿Qué necesitas hoy?" en ASL */}
-                <Image 
-                    source={{ uri: "https://placeholder.com/asl-what-need-today.gif" }}
-                    style={styles.subtitleGif}
+                    source={getImageSource(selectedGif)}
+                    style={styles.gifPreview}
                     resizeMode="contain"
                 />
             </View>
             
-            <View style={commonStyles.cardsContainer}>
+            {/* Cuadrícula de opciones */}
+            <View style={styles.gridContainer}>
                 {ServiceOptions.map((opcion, index) => (
                     <TouchableOpacity 
                         key={index}
-                        style={[commonStyles.card, { backgroundColor: cardBg }]}
+                        style={[styles.gridItem, { backgroundColor: cardBg }]}
+                        onPressIn={() => setSelectedGif(opcion.gifUrl)}
+                        onPressOut={() => setSelectedGif(require('../../assets/gifs/ComidaGif.gif'))}
                         onPress={() => handlePress(opcion)}
-                        activeOpacity={0.8}
+                        activeOpacity={0.7}
                     >
-                        <View style={[commonStyles.iconContainer, { backgroundColor: opcion.bgColor }]}>
+                        <View style={[styles.gridIconContainer, { backgroundColor: opcion.bgColor }]}>
                             {opcion.iconType === "material" ? (
                                 <MaterialIcons 
                                     name={opcion.icon as any} 
-                                    size={32} 
+                                    size={40} 
                                     color={opcion.iconColor} 
                                 />
                             ) : (
                                 <MaterialCommunityIcons 
                                     name={opcion.icon as any} 
-                                    size={32} 
+                                    size={40} 
                                     color={opcion.iconColor} 
                                 />
                             )}
-                        </View>
-                        <View style={commonStyles.textContainer}>
-                            {/* GIF de lenguaje de señas en lugar de texto */}
-                            <Image 
-                                source={{ uri: opcion.gifUrl }}
-                                style={styles.cardGif}
-                                resizeMode="contain"
-                            />
                         </View>
                     </TouchableOpacity>
                 ))}
@@ -151,73 +151,100 @@ export default function ASLServices(){
                         onPress={(e) => e.stopPropagation()}
                     >
                         {selectedService && (
-                            <ScrollView showsVerticalScrollIndicator={false}>
+                            <View style={styles.modalInner}>
                                 {/* Header del modal */}
                                 <View style={styles.modalHeader}>
                                     <View style={[styles.modalIcon, { backgroundColor: selectedService.bgColor }]}>
                                         {selectedService.iconType === "material" ? (
                                             <MaterialIcons 
                                                 name={selectedService.icon as any} 
-                                                size={48} 
+                                                size={40} 
                                                 color={selectedService.iconColor} 
                                             />
                                         ) : (
                                             <MaterialCommunityIcons 
                                                 name={selectedService.icon as any} 
-                                                size={48} 
+                                                size={40} 
                                                 color={selectedService.iconColor} 
                                             />
                                         )}
                                     </View>
-                                    {/* GIF del título del servicio */}
+                                </View>
+
+                                {/* Área de visualización del GIF grande */}
+                                <View style={styles.modalGifContainer}>
                                     <Image 
-                                        source={{ uri: selectedService.gifUrl }}
-                                        style={styles.modalTitleGif}
+                                        source={getImageSource(modalGif)}
+                                        style={styles.modalGifPreview}
                                         resizeMode="contain"
                                     />
                                 </View>
 
-                                {/* Detalles del servicio en GIFs */}
-                                <View style={styles.detailsContainer}>
-                                    {/* Horario GIF */}
-                                    <View style={styles.detailRow}>
-                                        <MaterialIcons name="schedule" size={24} color={selectedService.iconColor} />
-                                        <Image 
-                                            source={{ uri: selectedService.detalles.horarioGif }}
-                                            style={styles.detailGif}
-                                            resizeMode="contain"
-                                        />
-                                    </View>
+                                {/* Cuadrícula de detalles */}
+                                <View style={styles.modalGridContainer}>
+                                    {/* Horario */}
+                                    <TouchableOpacity 
+                                        style={[styles.modalGridItem, { backgroundColor: selectedService.bgColor }]}
+                                        onPressIn={() => setModalGif(selectedService.detalles.horarioGif)}
+                                        onPressOut={() => setModalGif(selectedService.gifUrl)}
+                                        activeOpacity={0.7}
+                                    >
+                                        <View style={[styles.modalIconContainer, { backgroundColor: '#FFF' }]}>
+                                            <MaterialIcons 
+                                                name="schedule" 
+                                                size={36} 
+                                                color={selectedService.iconColor} 
+                                            />
+                                        </View>
+                                    </TouchableOpacity>
 
-                                    {/* Ubicación GIF */}
-                                    <View style={styles.detailRow}>
-                                        <MaterialIcons name="location-on" size={24} color={selectedService.iconColor} />
-                                        <Image 
-                                            source={{ uri: selectedService.detalles.ubicacionGif }}
-                                            style={styles.detailGif}
-                                            resizeMode="contain"
-                                        />
-                                    </View>
+                                    {/* Ubicación */}
+                                    <TouchableOpacity 
+                                        style={[styles.modalGridItem, { backgroundColor: selectedService.bgColor }]}
+                                        onPressIn={() => setModalGif(selectedService.detalles.ubicacionGif)}
+                                        onPressOut={() => setModalGif(selectedService.gifUrl)}
+                                        activeOpacity={0.7}
+                                    >
+                                        <View style={[styles.modalIconContainer, { backgroundColor: '#FFF' }]}>
+                                            <MaterialIcons 
+                                                name="location-on" 
+                                                size={36} 
+                                                color={selectedService.iconColor} 
+                                            />
+                                        </View>
+                                    </TouchableOpacity>
 
-                                    {/* Incluye GIF */}
-                                    <View style={styles.detailRow}>
-                                        <MaterialIcons name="check-circle" size={24} color={selectedService.iconColor} />
-                                        <Image 
-                                            source={{ uri: selectedService.detalles.incluyeGif }}
-                                            style={styles.detailGif}
-                                            resizeMode="contain"
-                                        />
-                                    </View>
+                                    {/* Incluye */}
+                                    <TouchableOpacity 
+                                        style={[styles.modalGridItem, { backgroundColor: selectedService.bgColor }]}
+                                        onPressIn={() => setModalGif(selectedService.detalles.incluyeGif)}
+                                        onPressOut={() => setModalGif(selectedService.gifUrl)}
+                                        activeOpacity={0.7}
+                                    >
+                                        <View style={[styles.modalIconContainer, { backgroundColor: '#FFF' }]}>
+                                            <MaterialIcons 
+                                                name="check-circle" 
+                                                size={36} 
+                                                color={selectedService.iconColor} 
+                                            />
+                                        </View>
+                                    </TouchableOpacity>
 
-                                    {/* Nota GIF */}
-                                    <View style={[styles.notaContainer, { backgroundColor: cardBg, borderColor: selectedService.iconColor, borderWidth: 1 }]}>
-                                        <MaterialIcons name="info" size={20} color={selectedService.iconColor} />
-                                        <Image 
-                                            source={{ uri: selectedService.detalles.notaGif }}
-                                            style={styles.notaGif}
-                                            resizeMode="contain"
-                                        />
-                                    </View>
+                                    {/* Nota */}
+                                    <TouchableOpacity 
+                                        style={[styles.modalGridItem, { backgroundColor: selectedService.bgColor }]}
+                                        onPressIn={() => setModalGif(selectedService.detalles.notaGif)}
+                                        onPressOut={() => setModalGif(selectedService.gifUrl)}
+                                        activeOpacity={0.7}
+                                    >
+                                        <View style={[styles.modalIconContainer, { backgroundColor: '#FFF' }]}>
+                                            <MaterialIcons 
+                                                name="info" 
+                                                size={36} 
+                                                color={selectedService.iconColor} 
+                                            />
+                                        </View>
+                                    </TouchableOpacity>
                                 </View>
 
                                 {/* Botón cerrar */}
@@ -228,7 +255,7 @@ export default function ASLServices(){
                                 >
                                     <Text style={styles.closeButtonText}>✕</Text>
                                 </TouchableOpacity>
-                            </ScrollView>
+                            </View>
                         )}
                     </Pressable>
                 </Pressable>
@@ -239,18 +266,59 @@ export default function ASLServices(){
 }
 
 const styles = StyleSheet.create({
-    titleGif: {
-        width: '100%',
-        height: 80,
-        marginBottom: 8,
+    gifPreviewContainer: {
+        marginTop: 20,
+        marginHorizontal: 20,
+        backgroundColor: '#f5f5f5',
+        borderRadius: 20,
+        padding: 20,
+        minHeight: 300,
+        justifyContent: 'center',
+        alignItems: 'center',
+        shadowColor: '#000',
+        shadowOffset: {
+            width: 0,
+            height: 2,
+        },
+        shadowOpacity: 0.1,
+        shadowRadius: 8,
+        elevation: 3,
     },
-    subtitleGif: {
+    gifPreview: {
         width: '100%',
-        height: 60,
+        height: 280,
     },
-    cardGif: {
-        width: '100%',
+    gridContainer: {
+        flexDirection: 'row',
+        flexWrap: 'wrap',
+        paddingHorizontal: 20,
+        paddingTop: 20,
+        paddingBottom: 20,
+        gap: 16,
+        justifyContent: 'space-between',
+    },
+    gridItem: {
+        width: '47%',
+        aspectRatio: 1,
+        borderRadius: 16,
+        padding: 16,
+        justifyContent: 'center',
+        alignItems: 'center',
+        shadowColor: '#000',
+        shadowOffset: {
+            width: 0,
+            height: 2,
+        },
+        shadowOpacity: 0.1,
+        shadowRadius: 8,
+        elevation: 3,
+    },
+    gridIconContainer: {
+        width: 80,
         height: 80,
+        borderRadius: 16,
+        alignItems: 'center',
+        justifyContent: 'center',
     },
     modalOverlay: {
         flex: 1,
@@ -261,10 +329,9 @@ const styles = StyleSheet.create({
     },
     modalContent: {
         borderRadius: 20,
-        padding: 24,
+        padding: 20,
         width: '100%',
         maxWidth: 500,
-        maxHeight: '90%',
         shadowColor: "#000",
         shadowOffset: {
             width: 0,
@@ -274,9 +341,12 @@ const styles = StyleSheet.create({
         shadowRadius: 4,
         elevation: 5,
     },
+    modalInner: {
+        gap: 16,
+    },
     modalHeader: {
         alignItems: 'center',
-        marginBottom: 24,
+        marginBottom: 4,
     },
     modalIcon: {
         width: 80,
@@ -284,36 +354,39 @@ const styles = StyleSheet.create({
         borderRadius: 40,
         justifyContent: 'center',
         alignItems: 'center',
-        marginBottom: 16,
     },
-    modalTitleGif: {
-        width: '100%',
-        height: 80,
-    },
-    detailsContainer: {
-        gap: 20,
-        marginBottom: 24,
-    },
-    detailRow: {
-        flexDirection: 'row',
-        gap: 12,
+    modalGifContainer: {
+        backgroundColor: '#f5f5f5',
+        borderRadius: 16,
+        padding: 12,
+        minHeight: 160,
+        justifyContent: 'center',
         alignItems: 'center',
     },
-    detailGif: {
-        flex: 1,
-        height: 100,
+    modalGifPreview: {
+        width: '100%',
+        height: 160,
     },
-    notaContainer: {
+    modalGridContainer: {
         flexDirection: 'row',
+        flexWrap: 'wrap',
         gap: 8,
-        padding: 12,
+        justifyContent: 'space-between',
+    },
+    modalGridItem: {
+        width: '48%',
+        aspectRatio: 1,
+        borderRadius: 12,
+        padding: 8,
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    modalIconContainer: {
+        width: 56,
+        height: 56,
         borderRadius: 12,
         alignItems: 'center',
-        marginTop: 8,
-    },
-    notaGif: {
-        flex: 1,
-        height: 80,
+        justifyContent: 'center',
     },
     closeButton: {
         borderRadius: 12,

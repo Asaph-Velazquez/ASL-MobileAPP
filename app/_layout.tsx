@@ -5,11 +5,12 @@ import 'react-native-reanimated';
 import { Toaster } from 'sonner-native';
 import { useEffect } from 'react';
 import { View, Text, ActivityIndicator, StyleSheet } from 'react-native';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
-import { ThemeProviderWrapper } from '@/components/theme-provider';
-import { WebSocketProvider } from '@/components/websocket-provider';
-import { AuthProvider, useAuth } from '@/components/auth-provider';
-import { CommunicationModeProvider } from '@/components/communication-mode-provider';
+import { ThemeProviderWrapper } from '@/components/BothComponents/theme-provider';
+import { WebSocketProvider } from '@/components/BothComponents/websocket-provider';
+import { AuthProvider, useAuth } from '@/components/BothComponents/auth-provider';
+import { CommunicationModeProvider } from '@/components/BothComponents/communication-mode-provider';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 
 export const unstable_settings = {
@@ -23,20 +24,20 @@ function RootLayoutNav() {
   const router = useRouter();
 
   useEffect(() => {
-    if (isLoading) return; // Wait for auth check to complete
+    if (isLoading) return; // Esperar a que se complete la verificación de autenticación
 
     const inAuthGroup = segments[0] === 'login';
+    const inOnboarding = segments[0] === 'onboarding';
 
     if (!isAuthenticated && !inAuthGroup) {
-      // Redirect to login if not authenticated
+      // Redirigir a login si no está autenticado
       router.replace('/login');
-    } else if (isAuthenticated && inAuthGroup) {
-      // Redirect to home if already authenticated
-      router.replace('/(tabs)');
+    } else if (isAuthenticated && inAuthGroup && !inOnboarding) {
+      router.replace('/onboarding');
     }
   }, [isAuthenticated, isLoading, segments]);
 
-  // Show loading screen while checking auth
+  // Mostrar pantalla de carga mientras se verifica la autenticación
   if (isLoading) {
     return (
       <View style={styles.loadingContainer}>
@@ -51,6 +52,7 @@ function RootLayoutNav() {
       <Stack>
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
         <Stack.Screen name="login" options={{ headerShown: false }} />
+        <Stack.Screen name="onboarding" options={{ headerShown: false }} />
         <Stack.Screen name="Text" options={{ headerShown: false }} />
         <Stack.Screen name="ASL" options={{ headerShown: false }} />
         <Stack.Screen name="TextHome" options={{ title: 'Text Home' , headerShown: true }} />
@@ -71,15 +73,17 @@ function RootLayoutNav() {
 
 export default function RootLayout() {
   return (
-    <ThemeProviderWrapper>
-      <CommunicationModeProvider>
-        <AuthProvider>
-          <WebSocketProvider>
-            <RootLayoutNav />
-          </WebSocketProvider>
-        </AuthProvider>
-      </CommunicationModeProvider>
-    </ThemeProviderWrapper>
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <ThemeProviderWrapper>
+        <CommunicationModeProvider>
+          <AuthProvider>
+            <WebSocketProvider>
+              <RootLayoutNav />
+            </WebSocketProvider>
+          </AuthProvider>
+        </CommunicationModeProvider>
+      </ThemeProviderWrapper>
+    </GestureHandlerRootView>
   );
 }
 

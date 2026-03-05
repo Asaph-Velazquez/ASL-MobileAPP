@@ -1,4 +1,4 @@
-import { useTheme } from '@/components/theme-provider';
+import { useTheme } from '@/components/BothComponents/theme-provider';
 import { Colors } from '@/constants/theme';
 import { useColorScheme as useSystemColorScheme } from '@/hooks/use-color-scheme';
 

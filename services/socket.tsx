@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
 
-const URL_WS = process.env.EXPO_PUBLIC_WS_URL || 'ws://localhost:8080';
+const URL_WS = process.env.EXPO_PUBLIC_WS_URL || 'ws://localhost:3001';
 
 interface Peticion {
   id: string;
