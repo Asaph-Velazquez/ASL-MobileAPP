@@ -184,7 +184,7 @@ export function useWebSocketMobile(token: string | null) {
       refWs.current.send(
         JSON.stringify({
           type: 'CANCEL_REQUEST',
-          payload: { id: peticionId },
+          payload: { id: peticionId, requestedBy: 'guest' },
         })
       );
 
