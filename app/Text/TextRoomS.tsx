@@ -24,7 +24,7 @@ export default function TextRoomS(){
         {
             id: "Amenities",
             description: "If you need towels, soap or any other item, just ask!",
-            icon: "soap",
+            icon: "sanitizer",
             iconType: "material" as const,
             iconColor: "#4ECDC4",
             bgColor: "#E0F7F5",

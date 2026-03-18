@@ -20,7 +20,7 @@ export default function ASLRoomS(){
     
     const opciones: ASLOption[] = [
         {
-            id: "Comida",
+            id: "Food",
             gifSource: require('../../assets/gifs/ComidaGif.gif'),
             icon: "flatware",
             iconType: "material",
@@ -31,14 +31,14 @@ export default function ASLRoomS(){
         {
             id: "Amenities",
             gifSource: require('../../assets/gifs/ComidaGif.gif'),
-            icon: "soap",
+            icon: "sanitizer",
             iconType: "material",
             iconColor: "#4ECDC4",
             bgColor: "#E0F7F5",
             cameraText: "Show your amenities request in sign language"
         },
         {
-            id: "Lenceria",
+            id: "Linens",
             gifSource: require('../../assets/gifs/ComidaGif.gif'),
             icon: "bed",
             iconType: "material",
@@ -47,7 +47,7 @@ export default function ASLRoomS(){
             cameraText: "Show your linen request in sign language"
         },
         {
-            id: "Comodidad",
+            id: "Comfort Items",
             gifSource: require('../../assets/gifs/ComidaGif.gif'),
             icon: "self-improvement",
             iconType: "material",

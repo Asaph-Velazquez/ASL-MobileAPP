@@ -1,9 +1,10 @@
 import { useThemeColor } from '@/hooks/use-theme-color';
 import { MaterialIcons } from "@expo/vector-icons";
-import { Image, StyleSheet, View, Text, TouchableOpacity } from "react-native";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
+import { StyleSheet, View, TouchableOpacity, Text } from "react-native";
 import { ConfirmationModal } from '../BothComponents/confirmation-modal';
 import { RatingModal } from '../BothComponents/rating-modal';
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 
 interface ASLPetitionHistoryProps {
     peticiones: any[];
@@ -11,47 +12,78 @@ interface ASLPetitionHistoryProps {
     onRate?: (peticionId: string, rating: number) => void;
 }
 
-/**
- * Historial de peticiones en modo ASL
- * Muestra GIFs de mensajes enviados con su estado
- */
 export function ASLPetitionHistory({ peticiones, onCancelar, onRate }: ASLPetitionHistoryProps) {
-    const textColor = useThemeColor({}, 'text');
     const cardBg = useThemeColor({}, 'card');
-    const mutedColor = useThemeColor({}, 'tabIconDefault');
     const shadowColor = useThemeColor({}, 'text');
+    const mutedColor = useThemeColor({}, 'tabIconDefault');
     
     const [modalVisible, setModalVisible] = useState(false);
     const [ratingModalVisible, setRatingModalVisible] = useState(false);
     const [selectedPeticion, setSelectedPeticion] = useState<any>(null);
 
-    // Debug: Ver las peticiones
-    console.log('🤟 ASLPetitionHistory - Peticiones:', peticiones.length, peticiones);
-
-    const handleCancelar = (peticion: any) => {
-        setSelectedPeticion(peticion);
-        setModalVisible(true);
+    const estadoConfig: { [key: string]: { color: string; icon: string } } = {
+        pending: { color: '#FFA726', icon: 'schedule' },
+        'in-progress': { color: '#42A5F5', icon: 'autorenew' },
+        completed: { color: '#66BB6A', icon: 'check-circle' },
+        cancelled: { color: '#F44336', icon: 'cancel' },
     };
 
-    const confirmCancelar = () => {
-        if (selectedPeticion) {
-            onCancelar(selectedPeticion.id);
-            setModalVisible(false);
-            setSelectedPeticion(null);
+    const tipoConfig: { [key: string]: { icon: string; iconType: 'material' | 'community'; color: string } } = {
+        'room-service': { icon: 'silverware-fork-knife', iconType: 'community', color: '#9C27B0' },
+        services: { icon: 'room-service', iconType: 'material', color: '#4A90E2' },
+        problem: { icon: 'warning', iconType: 'material', color: '#F44336' },
+        extra: { icon: 'question-mark', iconType: 'material', color: '#FF9800' },
+    };
+
+    const iconosEspecificos: { [key: string]: { icon: string; iconType: 'material' | 'community'; color: string } } = {
+        comida: { icon: 'flatware', iconType: 'material', color: '#FF6B6B' },
+        amenities: { icon: 'soap', iconType: 'material', color: '#4ECDC4' },
+        lenceria: { icon: 'bed', iconType: 'material', color: '#95E1D3' },
+        comodidad: { icon: 'self-improvement', iconType: 'material', color: 'A29BFE' },
+        desayuno: { icon: 'food-bank', iconType: 'material', color: '#FF9800' },
+        alberca: { icon: 'pool', iconType: 'material', color: '#00BCD4' },
+        gimnasio: { icon: 'fitness-center', iconType: 'material', color: '#F44336' },
+        spa: { icon: 'spa', iconType: 'material', color: '#9C27B0' },
+        'air conditioning': { icon: 'ac-unit', iconType: 'material', color: '#2196F3' },
+        plumbing: { icon: 'plumbing', iconType: 'material', color: '#03A9F4' },
+        electricity: { icon: 'bolt', iconType: 'material', color: '#FFC107' },
+        housekeeping: { icon: 'cleaning-services', iconType: 'material', color: '#4CAF50' },
+        noise: { icon: 'volume-up', iconType: 'material', color: '#FF5722' },
+        furniture: { icon: 'weekend', iconType: 'material', color: '#795548' },
+        tv: { icon: 'wifi-off', iconType: 'material', color: '#9C27B0' },
+        internet: { icon: 'wifi-off', iconType: 'material', color: '#9C27B0' },
+        other: { icon: 'report-problem', iconType: 'material', color: '#F44336' },
+        valet: { icon: 'local-parking', iconType: 'material', color: '#3F51B5' },
+        parking: { icon: 'local-parking', iconType: 'material', color: '#3F51B5' },
+        taxi: { icon: 'local-taxi', iconType: 'material', color: '#FFEB3B' },
+    };
+
+    const getTipoIcono = (peticion: any) => {
+        if (!peticion) return { icon: 'help-outline', iconType: 'material' as const, color: '#9E9E9E' };
+        
+        const serviceName = (peticion.message || '').split(':')[0]?.trim().toLowerCase() || '';
+        
+        for (const [key, value] of Object.entries(iconosEspecificos)) {
+            if (serviceName.includes(key) || key.includes(serviceName)) return value;
         }
+        
+        return tipoConfig[peticion.type] || { icon: 'help-outline', iconType: 'material' as const, color: '#9E9E9E' };
     };
 
-    const handleRate = (peticion: any) => {
-        setSelectedPeticion(peticion);
-        setRatingModalVisible(true);
-    };
+    const peticionesOrdenadas = useMemo(() => {
+        const ordenEstado: { [key: string]: number } = { pending: 1, 'in-progress': 2, completed: 3, cancelled: 4 };
+        return [...peticiones].sort((a, b) => {
+            const diff = (ordenEstado[a.status as string] || 5) - (ordenEstado[b.status as string] || 5);
+            if (diff !== 0) return diff;
+            return new Date(b.timestamp || 0).getTime() - new Date(a.timestamp || 0).getTime();
+        });
+    }, [peticiones]);
 
-    const submitRating = (rating: number) => {
-        if (selectedPeticion && onRate) {
-            onRate(selectedPeticion.id, rating);
-            setRatingModalVisible(false);
-            setSelectedPeticion(null);
-        }
+    const getNumeroPeticion = (peticion: any) => {
+        const ordenadas = [...peticiones].sort((a, b) => 
+            new Date(b.timestamp || 0).getTime() - new Date(a.timestamp || 0).getTime()
+        );
+        return ordenadas.findIndex(p => p.id === peticion.id) + 1;
     };
 
     if (peticiones.length === 0) {
@@ -62,325 +94,101 @@ export function ASLPetitionHistory({ peticiones, onCancelar, onRate }: ASLPetiti
         );
     }
 
-    const estadoConfig = {
-        'pending': { 
-            color: '#FFA726', 
-            icon: 'schedule' as const,
-            text: 'Pending',
-            gif: require('../../assets/gifs/ComidaGif.gif'), // Placeholder - replace with appropriate GIF
-        },
-        'in-progress': { 
-            color: '#42A5F5', 
-            icon: 'autorenew' as const,
-            text: 'In Progress',
-            gif: require('../../assets/gifs/ComidaGif.gif'), // Placeholder - replace with appropriate GIF
-        },
-        'completed': { 
-            color: '#66BB6A', 
-            icon: 'check-circle' as const,
-            text: 'Completed',
-            gif: require('../../assets/gifs/ComidaGif.gif'), // Placeholder - replace with appropriate GIF
-        },
-        'cancelled': { 
-            color: '#F44336', 
-            icon: 'cancel' as const,
-            text: 'Cancelled',
-            gif: require('../../assets/gifs/ComidaGif.gif'), // Placeholder - replace with appropriate GIF
-        }
-    };
-
-    const tipoConfig = {
-        'room-service': { 
-            icon: 'restaurant-menu' as const,
-            color: '#9C27B0'
-        },
-        'services': { 
-            icon: 'room-service' as const,
-            color: '#4A90E2'
-        },
-        'problem': { 
-            icon: 'warning' as const,
-            color: '#F44336'
-        },
-        'extra': { 
-            icon: 'star' as const,
-            color: '#FF9800'
-        }
-    };
-
-    // Ordenar peticiones: activas primero (pending, in-progress), luego finalizadas (completed, cancelled)
-    // Dentro de cada grupo, ordenar por timestamp descendente (más reciente primero)
-    const peticionesOrdenadas = [...peticiones].sort((a, b) => {
-        const ordenEstado: { [key: string]: number } = {
-            'pending': 1,
-            'in-progress': 2,
-            'completed': 3,
-            'cancelled': 4
-        };
-        
-        const estadoA = ordenEstado[a.status] || 5;
-        const estadoB = ordenEstado[b.status] || 5;
-        
-        // Si tienen diferente estado, ordenar por prioridad de estado
-        if (estadoA !== estadoB) {
-            return estadoA - estadoB;
-        }
-        
-        // Si tienen el mismo estado, ordenar por timestamp descendente (más reciente primero)
-        const timestampA = new Date(a.timestamp || 0).getTime();
-        const timestampB = new Date(b.timestamp || 0).getTime();
-        return timestampB - timestampA;
-    });
-
     return (
         <>
             <ConfirmationModal
                 visible={modalVisible}
-                onConfirm={confirmCancelar}
+                onConfirm={() => { if (selectedPeticion) { onCancelar(selectedPeticion.id); setModalVisible(false); setSelectedPeticion(null); } }}
                 onCancel={() => setModalVisible(false)}
                 mode="ASL"
-                title="Cancel Request?"
+                title="Cancelar peticion?"
                 gif={require('../../assets/gifs/ComidaGif.gif')}
                 iconName="warning"
                 iconColor="#F44336"
-                confirmText="Yes"
+                confirmText="Si"
                 cancelText="No"
             />
             <RatingModal
                 visible={ratingModalVisible}
-                onSubmit={submitRating}
+                onSubmit={(rating) => { if (selectedPeticion && onRate) { onRate(selectedPeticion.id, rating); setRatingModalVisible(false); setSelectedPeticion(null); } }}
                 onCancel={() => setRatingModalVisible(false)}
                 mode="ASL"
                 peticionType={selectedPeticion?.type}
             />
             <View style={styles.container}>
                 {peticionesOrdenadas.map((peticion: any, index: number) => {
-                const config = estadoConfig[peticion.status as keyof typeof estadoConfig] || estadoConfig.pending;
-                const tipoInfo = tipoConfig[peticion.type as keyof typeof tipoConfig] || tipoConfig.extra;
-                
-                return (
-                    <View key={peticion.id || index} style={[styles.card, { 
-                        backgroundColor: cardBg,
-                        shadowColor: shadowColor,
-                    }]}>
-                        <View style={styles.cardHeader}>
-                            <View style={styles.tipoContainer}>
-                                <MaterialIcons 
-                                    name={tipoInfo.icon} 
-                                    size={20} 
-                                    color={tipoInfo.color} 
-                                />
-                            </View>
-                            <View style={[styles.estadoBadge, { backgroundColor: config.color }]}>
-                                <MaterialIcons 
-                                    name={config.icon} 
-                                    size={14} 
-                                    color="#FFFFFF" 
-                                />
-                            </View>
-                        </View>
-                        
-                        {/* Información de habitación */}
-                        {peticion.roomNumber && (
-                            <View style={styles.infoRow}>
-                                <MaterialIcons name="hotel" size={16} color={mutedColor} />
-                                <Text style={[styles.infoText, { color: textColor }]}>
-                                    Room {peticion.roomNumber}
-                                </Text>
-                            </View>
-                        )}
-                        
-                        {/* GIF del estado de la petición */}
-                        <View style={styles.statusGifContainer}>
-                            <Text style={[styles.statusLabel, { color: mutedColor }]}>
-                                STATUS: {config.text.toUpperCase()}
-                            </Text>
-                            <Image 
-                                source={config.gif}
-                                style={styles.statusGif}
-                                resizeMode="contain"
-                            />
-                        </View>
-                        
-                        {/* Texto del mensaje si existe */}
-                        {peticion.message && (
-                            <View style={[styles.messageBox, { borderColor: mutedColor }]}>
-                                <Text style={[styles.messageText, { color: textColor }]}>
-                                    "{peticion.message}"
-                                </Text>
-                            </View>
-                        )}
-                        
-                        {/* Botón de cancelación - Solo si está pendiente o en progreso */}
-                        {(peticion.status === 'pending' || peticion.status === 'in-progress') && (
-                            <TouchableOpacity 
-                                style={styles.cancelButton}
-                                onPress={() => handleCancelar(peticion)}
-                            >
-                                <MaterialIcons name="cancel" size={24} color="#F44336" />
-                                <Text style={styles.cancelButtonText}>Cancel</Text>
-                            </TouchableOpacity>
-                        )}
+                    const config = estadoConfig[peticion.status] || estadoConfig.pending;
+                    const tipoInfo = getTipoIcono(peticion);
+                    const esMasReciente = index === 0;
+                    const numeroPeticion = getNumeroPeticion(peticion);
 
-                        {/* Botón de calificación - Solo si está completada y no ha sido calificada */}
-                        {peticion.status === 'completed' && !peticion.rating && onRate && (
-                            <TouchableOpacity 
-                                style={styles.rateButton}
-                                onPress={() => handleRate(peticion)}
-                            >
-                                <MaterialIcons name="star" size={24} color="#FFD700" />
-                                <Text style={styles.rateButtonText}>Rate this request</Text>
-                            </TouchableOpacity>
-                        )}
-
-                        {/* Mostrar calificación si ya fue calificada */}
-                        {peticion.rating && (
-                            <View style={styles.ratedContainer}>
-                                <Text style={[styles.ratedText, { color: mutedColor }]}>
-                                    YOUR RATING:
-                                </Text>
-                                <View style={styles.ratedStars}>
-                                    {[1, 2, 3, 4, 5].map((star) => (
-                                        <MaterialIcons 
-                                            key={star}
-                                            name="star"
-                                            size={20}
-                                            color={star <= peticion.rating ? "#FFD700" : mutedColor}
-                                        />
-                                    ))}
+                    return (
+                        <View key={peticion.id || index} style={styles.cardWrapper}>
+                            <View style={[styles.statusBar, { backgroundColor: config.color }]} />
+                            <View style={[styles.card, { backgroundColor: cardBg, shadowColor }]}>
+                                <View style={styles.mainRow}>
+                                    <View style={[styles.numberIndicator, { backgroundColor: esMasReciente ? '#4CAF50' : 'rgba(128, 128, 128, 0.2)' }]}>
+                                        <Text style={{ fontSize: 16, fontWeight: 'bold', color: esMasReciente ? '#FFFFFF' : mutedColor }}>
+                                            {numeroPeticion}
+                                        </Text>
+                                    </View>
+                                    <View style={[styles.typeContainer, { backgroundColor: `${tipoInfo.color}22` }]}>
+                                        {tipoInfo.iconType === 'community' ? (
+                                            <MaterialCommunityIcons name={tipoInfo.icon as any} size={28} color={tipoInfo.color} />
+                                        ) : (
+                                            <MaterialIcons name={tipoInfo.icon as any} size={28} color={tipoInfo.color} />
+                                        )}
+                                    </View>
+                                    <View style={[styles.stateContainer, { backgroundColor: config.color }]}>
+                                        <MaterialIcons name={config.icon as any} size={20} color="#FFFFFF" />
+                                    </View>
+                                    <View style={styles.spacer} />
+                                    <View style={styles.actionContainer}>
+                                        {(peticion.status === 'pending' || peticion.status === 'in-progress') && (
+                                            <TouchableOpacity style={styles.actionButton} onPress={() => { setSelectedPeticion(peticion); setModalVisible(true); }}>
+                                                <MaterialIcons name="cancel" size={24} color="#F44336" />
+                                            </TouchableOpacity>
+                                        )}
+                                        {peticion.status === 'completed' && !peticion.rating && onRate && (
+                                            <TouchableOpacity style={styles.actionButton} onPress={() => { setSelectedPeticion(peticion); setRatingModalVisible(true); }}>
+                                                <MaterialIcons name="star" size={24} color="#FFD700" />
+                                            </TouchableOpacity>
+                                        )}
+                                        {peticion.status === 'cancelled' && (
+                                            <View style={styles.actionButton}>
+                                                <MaterialIcons name="block" size={24} color={mutedColor} />
+                                            </View>
+                                        )}
+                                        {peticion.rating && (
+                                            <View style={styles.ratingDisplay}>
+                                                {[1, 2, 3, 4, 5].map((star) => (
+                                                    <MaterialIcons key={star} name="star" size={16} color={star <= peticion.rating ? "#FFD700" : mutedColor} />
+                                                ))}
+                                            </View>
+                                        )}
+                                    </View>
                                 </View>
                             </View>
-                        )}
-                    </View>
-                );
-            })}
+                        </View>
+                    );
+                })}
             </View>
         </>
     );
 }
 
 const styles = StyleSheet.create({
-    container: {
-        gap: 12,
-    },
-    emptyContainer: {
-        alignItems: 'center',
-        justifyContent: 'center',
-        paddingVertical: 40,
-        gap: 12,
-    },
-    card: {
-        padding: 16,
-        borderRadius: 12,
-        gap: 8,
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.15,
-        shadowRadius: 4,
-        elevation: 3,
-    },
-    cardHeader: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-    },
-    tipoContainer: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        gap: 6,
-    },
-    estadoBadge: {
-        padding: 6,
-        borderRadius: 12,
-    },
-    infoRow: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        gap: 8,
-        marginTop: 8,
-    },
-    infoText: {
-        fontSize: 13,
-        fontWeight: '500',
-    },
-    statusGifContainer: {
-        marginTop: 12,
-        gap: 8,
-    },
-    statusLabel: {
-        fontSize: 11,
-        fontWeight: '700',
-        textTransform: 'uppercase',
-        letterSpacing: 0.8,
-    },
-    statusGif: {
-        width: '100%',
-        height: 120,
-        borderRadius: 8,
-    },
-    messageBox: {
-        marginTop: 12,
-        padding: 12,
-        borderWidth: 1,
-        borderRadius: 8,
-        borderStyle: 'dashed',
-    },
-    messageText: {
-        fontSize: 14,
-        fontWeight: '400',
-        fontStyle: 'italic',
-        textAlign: 'center',
-    },
-    cancelButton: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'center',
-        gap: 8,
-        paddingVertical: 12,
-        paddingHorizontal: 16,
-        marginTop: 12,
-        borderRadius: 8,
-        borderWidth: 1.5,
-        borderColor: '#F44336',
-        backgroundColor: 'rgba(244, 67, 54, 0.05)',
-    },
-    cancelButtonText: {
-        color: '#F44336',
-        fontSize: 15,
-        fontWeight: '700',
-    },
-    rateButton: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'center',
-        gap: 8,
-        paddingVertical: 12,
-        paddingHorizontal: 16,
-        marginTop: 12,
-        borderRadius: 8,
-        borderWidth: 1.5,
-        borderColor: '#FFD700',
-        backgroundColor: 'rgba(255, 215, 0, 0.1)',
-    },
-    rateButtonText: {
-        color: '#FFD700',
-        fontSize: 15,
-        fontWeight: '700',
-    },
-    ratedContainer: {
-        marginTop: 12,
-        padding: 12,
-        alignItems: 'center',
-        gap: 8,
-        borderRadius: 8,
-        backgroundColor: 'rgba(255, 215, 0, 0.05)',
-    },
-    ratedText: {
-        fontSize: 11,
-        fontWeight: '700',
-        letterSpacing: 0.8,
-    },
-    ratedStars: {
-        flexDirection: 'row',
-        gap: 4,
-    },
+    container: { gap: 12 },
+    cardWrapper: { flexDirection: 'row', borderRadius: 16, overflow: 'hidden' },
+    statusBar: { width: 8 },
+    emptyContainer: { alignItems: 'center', justifyContent: 'center', paddingVertical: 40, gap: 12 },
+    card: { flex: 1, padding: 14, borderTopRightRadius: 16, borderBottomRightRadius: 16, shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.15, shadowRadius: 4, elevation: 3 },
+    mainRow: { flexDirection: 'row', alignItems: 'center', gap: 10 },
+    numberIndicator: { width: 36, height: 36, borderRadius: 18, alignItems: 'center', justifyContent: 'center' },
+    typeContainer: { width: 48, height: 48, borderRadius: 14, alignItems: 'center', justifyContent: 'center' },
+    stateContainer: { width: 36, height: 36, borderRadius: 18, alignItems: 'center', justifyContent: 'center' },
+    spacer: { flex: 1 },
+    actionContainer: { flexDirection: 'row', alignItems: 'center', gap: 6 },
+    actionButton: { width: 44, height: 44, borderRadius: 22, borderWidth: 1.5, borderColor: 'rgba(128, 128, 128, 0.3)', backgroundColor: 'rgba(128, 128, 128, 0.08)', alignItems: 'center', justifyContent: 'center' },
+    ratingDisplay: { flexDirection: 'row', gap: 2 },
 });
