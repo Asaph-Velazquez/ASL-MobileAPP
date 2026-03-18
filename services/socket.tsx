@@ -9,8 +9,13 @@ interface Peticion {
   guestName: string;
   message: string;
   priority: 'low' | 'medium' | 'high' | 'urgent';
-  status: 'pending' | 'in-progress' | 'completed';
+  status: 'pending' | 'in-progress' | 'completed' | 'cancelled';
   timestamp: Date;
+  cancelledBy?: 'staff' | 'guest';
+  cancelledByName?: string;
+  cancelledAt?: string;
+  rating?: number;
+  ratedAt?: string;
 }
 
 export function useWebSocketMobile(token: string | null) {
@@ -26,7 +31,12 @@ export function useWebSocketMobile(token: string | null) {
   const conectar = useCallback(() => {
     try {
       // Build WebSocket URL with token as query parameter
-      const wsUrl = token ? `${URL_WS}?token=${encodeURIComponent(token)}` : URL_WS;
+      // Use wss:// for secure connections (ngrok, https sites)
+      let baseUrl = URL_WS;
+      if (baseUrl.includes('ngrok') || baseUrl.includes('https://')) {
+        baseUrl = baseUrl.replace('ws://', 'wss://').replace('http://', 'wss://');
+      }
+      const wsUrl = token ? `${baseUrl}?token=${encodeURIComponent(token)}` : baseUrl;
       const ws = new WebSocket(wsUrl);
 
       ws.onopen = () => {
@@ -55,6 +65,40 @@ export function useWebSocketMobile(token: string | null) {
               console.log('✅ Petición actualizada:', mensaje.payload);
               break;
 
+            case 'CANCEL_REQUEST':
+              // Marcar petición como cancelada (no eliminar)
+              setMisPeticiones((prev) =>
+                prev.map((pet) =>
+                  pet.id === mensaje.payload.id
+                    ? { 
+                        ...pet, 
+                        status: 'cancelled' as const,
+                        cancelledBy: mensaje.payload.cancelledBy,
+                        cancelledByName: mensaje.payload.cancelledByName,
+                        cancelledAt: mensaje.payload.cancelledAt
+                      }
+                    : pet
+                )
+              );
+              console.log('🚫 Petición cancelada:', mensaje.payload);
+              break;
+
+            case 'RATE_REQUEST':
+              // Actualizar la calificación de una petición
+              setMisPeticiones((prev) =>
+                prev.map((pet) =>
+                  pet.id === mensaje.payload.id
+                    ? { 
+                        ...pet, 
+                        rating: mensaje.payload.rating,
+                        ratedAt: mensaje.payload.ratedAt
+                      }
+                    : pet
+                )
+              );
+              console.log('⭐ Petición calificada:', mensaje.payload);
+              break;
+
             case 'INIT_CONFIG':
               console.log('⚙️ Configuración inicial:', mensaje.payload);
               break;
@@ -72,7 +116,7 @@ export function useWebSocketMobile(token: string | null) {
       };
 
       ws.onerror = (error) => {
-        console.error('❌ Error WebSocket:', error);
+        console.error('❌ Error WebSocket details:', JSON.stringify(error, null, 2));
       };
 
       ws.onclose = () => {
@@ -134,6 +178,66 @@ export function useWebSocketMobile(token: string | null) {
     }
   };
 
+  // Cancelar petición
+  const cancelarPeticion = (peticionId: string) => {
+    if (refWs.current && refWs.current.readyState === WebSocket.OPEN) {
+      refWs.current.send(
+        JSON.stringify({
+          type: 'CANCEL_REQUEST',
+          payload: { id: peticionId },
+        })
+      );
+
+      // Marcar como cancelada en el estado local (no eliminar)
+      setMisPeticiones((prev) => 
+        prev.map((pet) =>
+          pet.id === peticionId
+            ? { ...pet, status: 'cancelled' as const, cancelledBy: 'guest' as const }
+            : pet
+        )
+      );
+
+      console.log('🚫 Cancelación enviada:', peticionId);
+      return true;
+    } else {
+      console.warn('⚠️ No hay conexión con el servidor');
+      return false;
+    }
+  };
+
+  // Calificar petición
+  const ratePeticion = (peticionId: string, rating: number) => {
+    if (refWs.current && refWs.current.readyState === WebSocket.OPEN) {
+      const ratedAt = new Date().toISOString();
+      
+      refWs.current.send(
+        JSON.stringify({
+          type: 'RATE_REQUEST',
+          payload: { 
+            id: peticionId, 
+            rating,
+            ratedAt
+          },
+        })
+      );
+
+      // Actualizar en el estado local
+      setMisPeticiones((prev) => 
+        prev.map((pet) =>
+          pet.id === peticionId
+            ? { ...pet, rating, ratedAt }
+            : pet
+        )
+      );
+
+      console.log('⭐ Calificación enviada:', peticionId, rating);
+      return true;
+    } else {
+      console.warn('⚠️ No hay conexión con el servidor');
+      return false;
+    }
+  };
+
   // Iniciar conexión al montar el componente
   useEffect(() => {
     conectar();
@@ -151,6 +255,8 @@ export function useWebSocketMobile(token: string | null) {
   return {
     estaConectado,
     enviarPeticion,
+    cancelarPeticion,
+    ratePeticion,
     misPeticiones,       
     ultimaActualizacion, 
   };

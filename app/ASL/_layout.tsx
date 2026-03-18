@@ -47,7 +47,7 @@ export default function TabLayout() {
         name="ASLHome"
         options={{
           title: 'Home',
-          headerTitle: 'Home',
+          headerTitle: '',
           headerRight: () => (
             <HeaderButtons currentScreen="ASLHome" colorScheme={colorScheme} />
           ),
@@ -60,7 +60,7 @@ export default function TabLayout() {
         name="ASLRoomS"
         options={{
           title: 'Room Service',
-          headerTitle: 'Room Service',
+          headerTitle: '',
           headerRight: () => (
             <HeaderButtons currentScreen="ASLRoomS" colorScheme={colorScheme} />
           ),
@@ -71,7 +71,7 @@ export default function TabLayout() {
         name="ASLServices"
         options={{
           title: 'Hotel Services',
-          headerTitle: 'Hotel Services',
+          headerTitle: '',
           headerRight: () => (
             <HeaderButtons currentScreen="ASLServices" colorScheme={colorScheme} />
           ),
@@ -82,7 +82,7 @@ export default function TabLayout() {
         name="ASLReportProblem"
         options={{
           title: 'Report Problem',
-          headerTitle: 'Report Problem',
+          headerTitle: '',
           headerRight: () => (
             <HeaderButtons currentScreen="ASLReportProblem" colorScheme={colorScheme} />
           ),
@@ -93,7 +93,7 @@ export default function TabLayout() {
         name="ASLMovilidad"
         options={{
           title: 'Mobility',
-          headerTitle: 'Mobility',
+          headerTitle: '',
           headerRight: () => (
             <HeaderButtons currentScreen="ASLMovilidad" colorScheme={colorScheme} />
           ),

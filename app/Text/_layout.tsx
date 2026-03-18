@@ -47,7 +47,7 @@ export default function TabLayout() {
         name="TextHome"
         options={{
           title: 'Home',
-          headerTitle: 'Home',
+          headerTitle: '',
           headerRight: () => (
             <HeaderButtons currentScreen="TextHome" colorScheme={colorScheme} />
           ),
@@ -60,7 +60,7 @@ export default function TabLayout() {
         name="TextRoomS"
         options={{
           title: 'Room Service',
-          headerTitle: 'Room Service',
+          headerTitle: '',
           headerRight: () => (
             <HeaderButtons currentScreen="TextRoomS" colorScheme={colorScheme} />
           ),
@@ -71,7 +71,7 @@ export default function TabLayout() {
         name="TextServices"
         options={{
           title: 'Hotel Services',
-          headerTitle: 'Hotel Services',
+          headerTitle: '',
           headerRight: () => (
             <HeaderButtons currentScreen="TextServices" colorScheme={colorScheme} />
           ),
@@ -82,7 +82,7 @@ export default function TabLayout() {
         name="TextReportProblem"
         options={{
           title: 'Report Problem',
-          headerTitle: 'Report Problem',
+          headerTitle: '',
           headerRight: () => (
             <HeaderButtons currentScreen="TextReportProblem" colorScheme={colorScheme} />
           ),
@@ -93,7 +93,7 @@ export default function TabLayout() {
         name="TextMovilidad"
         options={{
           title: 'Mobility',
-          headerTitle: 'Mobility',
+          headerTitle: '',
           headerRight: () => (
             <HeaderButtons currentScreen="TextMovilidad" colorScheme={colorScheme} />
           ),

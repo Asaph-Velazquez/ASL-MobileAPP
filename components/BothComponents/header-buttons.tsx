@@ -6,6 +6,8 @@ import { useCommunicationMode } from './communication-mode-provider';
 import { useAuth } from './auth-provider';
 import { CallModal } from './call-modal';
 import { LogoutModal } from './logout-modal';
+import { HistoryModal } from './history-modal';
+import { useWebSocket } from './websocket-provider';
 
 interface HeaderButtonsProps {
   currentScreen: string;
@@ -15,8 +17,10 @@ interface HeaderButtonsProps {
 export function HeaderButtons({ currentScreen, colorScheme }: HeaderButtonsProps) {
   const { mode, setMode } = useCommunicationMode();
   const { logout } = useAuth();
+  const { misPeticiones, cancelarPeticion, ratePeticion } = useWebSocket();
   const [callModalVisible, setCallModalVisible] = useState(false);
   const [logoutModalVisible, setLogoutModalVisible] = useState(false);
+  const [historyModalVisible, setHistoryModalVisible] = useState(false);
 
   // Función de toggle entre modos
   const handleToggle = () => {
@@ -67,9 +71,14 @@ export function HeaderButtons({ currentScreen, colorScheme }: HeaderButtonsProps
     router.replace('/login');
   };
 
-  const isASLMode = mode === 'ASL' || currentScreen.startsWith('ASL');
+  // Determinar el modo basándose en el nombre de la pantalla actual
+  // Esto es más confiable que depender del contexto que puede no actualizarse a tiempo
+  const isASLMode = currentScreen.startsWith('ASL');
   const iconColor = colorScheme === 'dark' ? '#FFFFFF' : '#000000';
   const toggleBgColor = isASLMode ? '#4A90E2' : '#9C27B0';
+  
+  // Debug: Verificar modo actual
+  console.log('🔍 HeaderButtons - currentScreen:', currentScreen, 'context mode:', mode, 'isASLMode:', isASLMode);
   
   return (
     <View style={styles.container}>
@@ -99,6 +108,29 @@ export function HeaderButtons({ currentScreen, colorScheme }: HeaderButtonsProps
         </TouchableOpacity>
       )}
 
+      {/* Botón de historial de peticiones */}
+      <TouchableOpacity 
+        onPress={() => setHistoryModalVisible(true)}
+        style={[styles.iconButton, { backgroundColor: '#FF9800' }]}
+      >
+        <View>
+          <MaterialIcons name="notifications" size={22} color="#FFFFFF" />
+          {(() => {
+            // Contar solo peticiones activas (pending e in-progress)
+            const peticionesActivas = misPeticiones.filter(
+              pet => pet.status === 'pending' || pet.status === 'in-progress'
+            ).length;
+            return peticionesActivas > 0 && (
+              <View style={styles.badge}>
+                <Text style={styles.badgeText}>
+                  {peticionesActivas > 9 ? '9+' : peticionesActivas}
+                </Text>
+              </View>
+            );
+          })()}
+        </View>
+      </TouchableOpacity>
+
       {/* Botón de logout */}
       <TouchableOpacity 
         onPress={handleLogout}
@@ -120,6 +152,16 @@ export function HeaderButtons({ currentScreen, colorScheme }: HeaderButtonsProps
         onConfirm={handleConfirmLogout}
         onCancel={() => setLogoutModalVisible(false)}
       />
+
+      {/* Modal de historial de peticiones */}
+      <HistoryModal
+        visible={historyModalVisible}
+        onClose={() => setHistoryModalVisible(false)}
+        peticiones={misPeticiones}
+        mode={isASLMode ? 'ASL' : 'Text'}
+        onCancelarPeticion={cancelarPeticion}
+        onRatePeticion={ratePeticion}
+      />
     </View>
   );
 }
@@ -128,7 +170,7 @@ const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
+    gap: 20,
     marginRight: 15,
   },
   button: {
@@ -154,5 +196,22 @@ const styles = StyleSheet.create({
     borderRadius: 18,
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  badge: {
+    position: 'absolute',
+    top: -4,
+    right: -4,
+    backgroundColor: '#F44336',
+    borderRadius: 10,
+    minWidth: 18,
+    height: 18,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 4,
+  },
+  badgeText: {
+    color: '#FFFFFF',
+    fontSize: 10,
+    fontWeight: '700',
   },
 });

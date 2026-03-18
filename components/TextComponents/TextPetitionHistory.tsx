@@ -1,21 +1,21 @@
 import { useThemeColor } from '@/hooks/use-theme-color';
 import { MaterialIcons } from "@expo/vector-icons";
-import { Image, StyleSheet, View, Text, TouchableOpacity } from "react-native";
+import { StyleSheet, View, Text, TouchableOpacity } from "react-native";
 import { ConfirmationModal } from '../BothComponents/confirmation-modal';
 import { RatingModal } from '../BothComponents/rating-modal';
 import { useState } from 'react';
 
-interface ASLPetitionHistoryProps {
+interface TextPetitionHistoryProps {
     peticiones: any[];
     onCancelar: (peticionId: string) => void;
     onRate?: (peticionId: string, rating: number) => void;
 }
 
 /**
- * Historial de peticiones en modo ASL
- * Muestra GIFs de mensajes enviados con su estado
+ * Historial de peticiones en modo Text
+ * Muestra mensajes de texto enviados con su estado
  */
-export function ASLPetitionHistory({ peticiones, onCancelar, onRate }: ASLPetitionHistoryProps) {
+export function TextPetitionHistory({ peticiones, onCancelar, onRate }: TextPetitionHistoryProps) {
     const textColor = useThemeColor({}, 'text');
     const cardBg = useThemeColor({}, 'card');
     const mutedColor = useThemeColor({}, 'tabIconDefault');
@@ -26,7 +26,7 @@ export function ASLPetitionHistory({ peticiones, onCancelar, onRate }: ASLPetiti
     const [selectedPeticion, setSelectedPeticion] = useState<any>(null);
 
     // Debug: Ver las peticiones
-    console.log('🤟 ASLPetitionHistory - Peticiones:', peticiones.length, peticiones);
+    console.log('📋 TextPetitionHistory - Peticiones:', peticiones.length, peticiones);
 
     const handleCancelar = (peticion: any) => {
         setSelectedPeticion(peticion);
@@ -58,6 +58,9 @@ export function ASLPetitionHistory({ peticiones, onCancelar, onRate }: ASLPetiti
         return (
             <View style={styles.emptyContainer}>
                 <MaterialIcons name="inbox" size={48} color={mutedColor} />
+                <Text style={[styles.emptyText, { color: mutedColor }]}>
+                    No requests registered
+                </Text>
             </View>
         );
     }
@@ -66,45 +69,45 @@ export function ASLPetitionHistory({ peticiones, onCancelar, onRate }: ASLPetiti
         'pending': { 
             color: '#FFA726', 
             icon: 'schedule' as const,
-            text: 'Pending',
-            gif: require('../../assets/gifs/ComidaGif.gif'), // Placeholder - replace with appropriate GIF
+            text: 'Pending'
         },
         'in-progress': { 
             color: '#42A5F5', 
             icon: 'autorenew' as const,
-            text: 'In Progress',
-            gif: require('../../assets/gifs/ComidaGif.gif'), // Placeholder - replace with appropriate GIF
+            text: 'In Progress'
         },
         'completed': { 
             color: '#66BB6A', 
             icon: 'check-circle' as const,
-            text: 'Completed',
-            gif: require('../../assets/gifs/ComidaGif.gif'), // Placeholder - replace with appropriate GIF
+            text: 'Completed'
         },
         'cancelled': { 
             color: '#F44336', 
             icon: 'cancel' as const,
-            text: 'Cancelled',
-            gif: require('../../assets/gifs/ComidaGif.gif'), // Placeholder - replace with appropriate GIF
+            text: 'Cancelled'
         }
     };
 
     const tipoConfig = {
         'room-service': { 
             icon: 'restaurant-menu' as const,
-            color: '#9C27B0'
+            color: '#9C27B0',
+            text: 'Room Service'
         },
         'services': { 
             icon: 'room-service' as const,
-            color: '#4A90E2'
+            color: '#4A90E2',
+            text: 'Services'
         },
         'problem': { 
             icon: 'warning' as const,
-            color: '#F44336'
+            color: '#F44336',
+            text: 'Problem'
         },
         'extra': { 
             icon: 'star' as const,
-            color: '#FF9800'
+            color: '#FF9800',
+            text: 'Other'
         }
     };
 
@@ -138,78 +141,96 @@ export function ASLPetitionHistory({ peticiones, onCancelar, onRate }: ASLPetiti
                 visible={modalVisible}
                 onConfirm={confirmCancelar}
                 onCancel={() => setModalVisible(false)}
-                mode="ASL"
+                mode="Text"
                 title="Cancel Request?"
-                gif={require('../../assets/gifs/ComidaGif.gif')}
+                description="This action will notify the hotel staff that you no longer need this service. You cannot undo this action."
                 iconName="warning"
                 iconColor="#F44336"
-                confirmText="Yes"
-                cancelText="No"
+                confirmText="Yes, cancel"
+                cancelText="No, keep it"
             />
             <RatingModal
                 visible={ratingModalVisible}
                 onSubmit={submitRating}
                 onCancel={() => setRatingModalVisible(false)}
-                mode="ASL"
+                mode="Text"
                 peticionType={selectedPeticion?.type}
             />
             <View style={styles.container}>
                 {peticionesOrdenadas.map((peticion: any, index: number) => {
-                const config = estadoConfig[peticion.status as keyof typeof estadoConfig] || estadoConfig.pending;
+                const estadoInfo = estadoConfig[peticion.status as keyof typeof estadoConfig] || estadoConfig.pending;
                 const tipoInfo = tipoConfig[peticion.type as keyof typeof tipoConfig] || tipoConfig.extra;
                 
                 return (
-                    <View key={peticion.id || index} style={[styles.card, { 
-                        backgroundColor: cardBg,
-                        shadowColor: shadowColor,
-                    }]}>
-                        <View style={styles.cardHeader}>
+                    <View key={peticion.id || index} style={styles.cardWrapper}>
+                        {/* Barra de color lateral para indicar el estado */}
+                        <View style={[styles.statusBar, { backgroundColor: estadoInfo.color }]} />
+                        
+                        <View style={[styles.card, { 
+                            backgroundColor: cardBg,
+                            shadowColor: shadowColor,
+                        }]}>
+                            <View style={styles.cardHeader}>
                             <View style={styles.tipoContainer}>
                                 <MaterialIcons 
                                     name={tipoInfo.icon} 
                                     size={20} 
                                     color={tipoInfo.color} 
                                 />
+                                <Text style={[styles.tipoText, { color: textColor }]}>
+                                    {tipoInfo.text}
+                                </Text>
                             </View>
-                            <View style={[styles.estadoBadge, { backgroundColor: config.color }]}>
+                            <View style={[styles.estadoBadge, { backgroundColor: estadoInfo.color }]}>
                                 <MaterialIcons 
-                                    name={config.icon} 
-                                    size={14} 
+                                    name={estadoInfo.icon} 
+                                    size={16} 
                                     color="#FFFFFF" 
                                 />
+                                <Text style={styles.estadoText}>{estadoInfo.text}</Text>
                             </View>
                         </View>
                         
-                        {/* Información de habitación */}
-                        {peticion.roomNumber && (
-                            <View style={styles.infoRow}>
-                                <MaterialIcons name="hotel" size={16} color={mutedColor} />
-                                <Text style={[styles.infoText, { color: textColor }]}>
-                                    Room {peticion.roomNumber}
-                                </Text>
-                            </View>
-                        )}
+                        {/* Información de habitación y huésped */}
+                        <View style={styles.infoContainer}>
+                            {peticion.roomNumber && (
+                                <View style={styles.infoRow}>
+                                    <MaterialIcons name="hotel" size={16} color={mutedColor} />
+                                    <Text style={[styles.infoText, { color: textColor }]}>
+                                        Room {peticion.roomNumber}
+                                    </Text>
+                                </View>
+                            )}
+                            {peticion.guestName && (
+                                <View style={styles.infoRow}>
+                                    <MaterialIcons name="person" size={16} color={mutedColor} />
+                                    <Text style={[styles.infoText, { color: textColor }]}>
+                                        {peticion.guestName}
+                                    </Text>
+                                </View>
+                            )}
+                        </View>
                         
-                        {/* GIF del estado de la petición */}
-                        <View style={styles.statusGifContainer}>
-                            <Text style={[styles.statusLabel, { color: mutedColor }]}>
-                                STATUS: {config.text.toUpperCase()}
+                        {/* Mensaje de la petición */}
+                        <View style={styles.messageContainer}>
+                            <Text style={[styles.messageLabel, { color: mutedColor }]}>
+                                MESSAGE:
                             </Text>
-                            <Image 
-                                source={config.gif}
-                                style={styles.statusGif}
-                                resizeMode="contain"
-                            />
+                            <Text style={[styles.messageText, { color: textColor }]}>
+                                {peticion.message || 'No message'}
+                            </Text>
                         </View>
                         
-                        {/* Texto del mensaje si existe */}
-                        {peticion.message && (
-                            <View style={[styles.messageBox, { borderColor: mutedColor }]}>
-                                <Text style={[styles.messageText, { color: textColor }]}>
-                                    "{peticion.message}"
-                                </Text>
-                            </View>
-                        )}
+                        <View style={styles.footer}>
+                            <Text style={[styles.timestamp, { color: mutedColor }]}>
+                                {new Date(peticion.timestamp || Date.now()).toLocaleString('es-ES', {
+                                    day: '2-digit',
+                                    month: '2-digit',
+                                    hour: '2-digit',
+                                    minute: '2-digit'
+                                })}
+                            </Text>
+                        </View>
                         
                         {/* Botón de cancelación - Solo si está pendiente o en progreso */}
                         {(peticion.status === 'pending' || peticion.status === 'in-progress') && (
@@ -217,8 +238,8 @@ export function ASLPetitionHistory({ peticiones, onCancelar, onRate }: ASLPetiti
                                 style={styles.cancelButton}
                                 onPress={() => handleCancelar(peticion)}
                             >
-                                <MaterialIcons name="cancel" size={24} color="#F44336" />
-                                <Text style={styles.cancelButtonText}>Cancel</Text>
+                                <MaterialIcons name="cancel" size={20} color="#F44336" />
+                                <Text style={styles.cancelButtonText}>Cancel Request</Text>
                             </TouchableOpacity>
                         )}
 
@@ -228,7 +249,7 @@ export function ASLPetitionHistory({ peticiones, onCancelar, onRate }: ASLPetiti
                                 style={styles.rateButton}
                                 onPress={() => handleRate(peticion)}
                             >
-                                <MaterialIcons name="star" size={24} color="#FFD700" />
+                                <MaterialIcons name="star" size={20} color="#FFD700" />
                                 <Text style={styles.rateButtonText}>Rate this request</Text>
                             </TouchableOpacity>
                         )}
@@ -237,20 +258,21 @@ export function ASLPetitionHistory({ peticiones, onCancelar, onRate }: ASLPetiti
                         {peticion.rating && (
                             <View style={styles.ratedContainer}>
                                 <Text style={[styles.ratedText, { color: mutedColor }]}>
-                                    YOUR RATING:
+                                    Your Rating:
                                 </Text>
                                 <View style={styles.ratedStars}>
                                     {[1, 2, 3, 4, 5].map((star) => (
                                         <MaterialIcons 
                                             key={star}
                                             name="star"
-                                            size={20}
+                                            size={18}
                                             color={star <= peticion.rating ? "#FFD700" : mutedColor}
                                         />
                                     ))}
                                 </View>
                             </View>
                         )}
+                        </View>
                     </View>
                 );
             })}
@@ -263,16 +285,30 @@ const styles = StyleSheet.create({
     container: {
         gap: 12,
     },
+    cardWrapper: {
+        flexDirection: 'row',
+        borderRadius: 12,
+        overflow: 'hidden',
+    },
+    statusBar: {
+        width: 6,
+    },
     emptyContainer: {
         alignItems: 'center',
         justifyContent: 'center',
         paddingVertical: 40,
         gap: 12,
     },
+    emptyText: {
+        fontSize: 16,
+        textAlign: 'center',
+    },
     card: {
+        flex: 1,
         padding: 16,
-        borderRadius: 12,
-        gap: 8,
+        borderTopRightRadius: 12,
+        borderBottomRightRadius: 12,
+        gap: 12,
         shadowOffset: { width: 0, height: 2 },
         shadowOpacity: 0.15,
         shadowRadius: 4,
@@ -286,49 +322,69 @@ const styles = StyleSheet.create({
     tipoContainer: {
         flexDirection: 'row',
         alignItems: 'center',
-        gap: 6,
+        gap: 8,
+    },
+    tipoText: {
+        fontSize: 14,
+        fontWeight: '600',
     },
     estadoBadge: {
-        padding: 6,
-        borderRadius: 12,
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 6,
+        paddingHorizontal: 12,
+        paddingVertical: 6,
+        borderRadius: 16,
+        shadowOffset: { width: 0, height: 1 },
+        shadowOpacity: 0.2,
+        shadowRadius: 2,
+        elevation: 2,
+    },
+    estadoText: {
+        color: '#FFFFFF',
+        fontSize: 13,
+        fontWeight: '700',
+        letterSpacing: 0.3,
+    },
+    infoContainer: {
+        gap: 6,
+        paddingVertical: 4,
     },
     infoRow: {
         flexDirection: 'row',
         alignItems: 'center',
         gap: 8,
-        marginTop: 8,
     },
     infoText: {
         fontSize: 13,
         fontWeight: '500',
     },
-    statusGifContainer: {
-        marginTop: 12,
-        gap: 8,
+    messageContainer: {
+        gap: 6,
+        paddingVertical: 8,
+        paddingHorizontal: 12,
+        backgroundColor: 'rgba(128, 128, 128, 0.05)',
+        borderRadius: 8,
+        borderLeftWidth: 3,
+        borderLeftColor: '#4A90E2',
     },
-    statusLabel: {
+    messageLabel: {
         fontSize: 11,
         fontWeight: '700',
         textTransform: 'uppercase',
         letterSpacing: 0.8,
     },
-    statusGif: {
-        width: '100%',
-        height: 120,
-        borderRadius: 8,
-    },
-    messageBox: {
-        marginTop: 12,
-        padding: 12,
-        borderWidth: 1,
-        borderRadius: 8,
-        borderStyle: 'dashed',
-    },
     messageText: {
-        fontSize: 14,
+        fontSize: 15,
+        lineHeight: 22,
         fontWeight: '400',
-        fontStyle: 'italic',
-        textAlign: 'center',
+    },
+    footer: {
+        marginTop: 4,
+        alignItems: 'flex-end',
+    },
+    timestamp: {
+        fontSize: 12,
     },
     cancelButton: {
         flexDirection: 'row',
@@ -345,8 +401,8 @@ const styles = StyleSheet.create({
     },
     cancelButtonText: {
         color: '#F44336',
-        fontSize: 15,
-        fontWeight: '700',
+        fontSize: 14,
+        fontWeight: '600',
     },
     rateButton: {
         flexDirection: 'row',
@@ -363,24 +419,25 @@ const styles = StyleSheet.create({
     },
     rateButtonText: {
         color: '#FFD700',
-        fontSize: 15,
-        fontWeight: '700',
+        fontSize: 14,
+        fontWeight: '600',
     },
     ratedContainer: {
         marginTop: 12,
         padding: 12,
+        flexDirection: 'row',
         alignItems: 'center',
+        justifyContent: 'center',
         gap: 8,
         borderRadius: 8,
         backgroundColor: 'rgba(255, 215, 0, 0.05)',
     },
     ratedText: {
-        fontSize: 11,
-        fontWeight: '700',
-        letterSpacing: 0.8,
+        fontSize: 13,
+        fontWeight: '600',
     },
     ratedStars: {
         flexDirection: 'row',
-        gap: 4,
+        gap: 2,
     },
 });

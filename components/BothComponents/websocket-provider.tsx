@@ -10,6 +10,8 @@ interface WebSocketContextType {
     message: string;
     priority: 'low' | 'medium' | 'high' | 'urgent';
   }) => boolean;
+  cancelarPeticion: (peticionId: string) => boolean;
+  ratePeticion: (peticionId: string, rating: number) => boolean;
   misPeticiones: any[];
   ultimaActualizacion: any;
 }
@@ -18,7 +20,7 @@ const WebSocketContext = createContext<WebSocketContextType | undefined>(undefin
 
 export function WebSocketProvider({ children }: { children: ReactNode }) {
   const { guestName, roomNumber, token, isAuthenticated } = useAuth();
-  const socketData = useWebSocketMobile();
+  const socketData = useWebSocketMobile(token);
   
   // Hook de notificaciones global
   useNotifications({ ultimaActualizacion: socketData.ultimaActualizacion });
@@ -53,8 +55,12 @@ export function WebSocketProvider({ children }: { children: ReactNode }) {
 
   return (
     <WebSocketContext.Provider value={{
-      ...socketData,
+      estaConectado: socketData.estaConectado,
       enviarPeticion: enviarPeticionWrapper,
+      cancelarPeticion: socketData.cancelarPeticion,
+      ratePeticion: socketData.ratePeticion,
+      misPeticiones: socketData.misPeticiones,
+      ultimaActualizacion: socketData.ultimaActualizacion,
     }}>
       {children}
     </WebSocketContext.Provider>

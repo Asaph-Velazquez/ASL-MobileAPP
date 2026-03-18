@@ -6,7 +6,6 @@ import { ScrollView } from "react-native";
 import { ASLPetitionModal } from '@/components/ASLComponents/asl-petition-modal';
 import { GifPreviewContainer } from "@/components/ASLComponents/GifPreviewContainer";
 import { ASLGridView, ASLOption } from "@/components/ASLComponents/ASLGridView";
-import { ASLPetitionHistory } from "@/components/ASLComponents/ASLPetitionHistory";
 import { useWebSocket } from '@/components/BothComponents/websocket-provider';
 
 export default function ASLReportProblem(){
@@ -21,48 +20,75 @@ export default function ASLReportProblem(){
        
     const problemOptions: ASLOption[] = [
         {
-            id: "Limpieza",
+            id: "Air Conditioning",
             gifSource: require('../../assets/gifs/ComidaGif.gif'),
-            icon: "cleaning-services",
+            icon: "ac-unit",
             iconType: "material",
             iconColor: "#2196F3",
             bgColor: "#E3F2FD",
-            cameraText: "Show the cleaning problem in sign language"
+            cameraText: "Show the air conditioning problem in sign language"
         },
         {
-            id: "Mantenimiento",
+            id: "Plumbing",
             gifSource: require('../../assets/gifs/ComidaGif.gif'),
-            icon: "build",
+            icon: "plumbing",
             iconType: "material",
-            iconColor: "#FF9800",
-            bgColor: "#FFF3E0",
-            cameraText: "Show the maintenance problem in sign language"
+            iconColor: "#03A9F4",
+            bgColor: "#E1F5FE",
+            cameraText: "Show the plumbing problem in sign language"
         },
         {
-            id: "Ruido",
+            id: "Electricity",
+            gifSource: require('../../assets/gifs/ComidaGif.gif'),
+            icon: "bolt",
+            iconType: "material",
+            iconColor: "#FFC107",
+            bgColor: "#FFF8E1",
+            cameraText: "Show the electricity problem in sign language"
+        },
+        {
+            id: "Housekeeping",
+            gifSource: require('../../assets/gifs/ComidaGif.gif'),
+            icon: "cleaning-services",
+            iconType: "material",
+            iconColor: "#4CAF50",
+            bgColor: "#E8F5E9",
+            cameraText: "Show the housekeeping problem in sign language"
+        },
+        {
+            id: "Noise",
             gifSource: require('../../assets/gifs/ComidaGif.gif'),
             icon: "volume-up",
             iconType: "material",
-            iconColor: "#F44336",
-            bgColor: "#FFEBEE",
+            iconColor: "#FF5722",
+            bgColor: "#FBE9E7",
             cameraText: "Show the noise problem in sign language"
         },
         {
-            id: "Temperatura",
+            id: "Furniture",
             gifSource: require('../../assets/gifs/ComidaGif.gif'),
-            icon: "thermostat",
+            icon: "weekend",
+            iconType: "material",
+            iconColor: "#795548",
+            bgColor: "#EFEBE9",
+            cameraText: "Show the furniture problem in sign language"
+        },
+        {
+            id: "TV / Internet",
+            gifSource: require('../../assets/gifs/ComidaGif.gif'),
+            icon: "wifi-off",
             iconType: "material",
             iconColor: "#9C27B0",
             bgColor: "#F3E5F5",
-            cameraText: "Show the temperature problem in sign language"
+            cameraText: "Show the TV/Internet problem in sign language"
         },
         {
-            id: "Otro",
+            id: "Other Problem",
             gifSource: require('../../assets/gifs/ComidaGif.gif'),
-            icon: "more-horiz",
+            icon: "report-problem",
             iconType: "material",
-            iconColor: "#607D8B",
-            bgColor: "#ECEFF1",
+            iconColor: "#F44336",
+            bgColor: "#FFEBEE",
             cameraText: "Show your problem in sign language"
         }
     ];
@@ -115,8 +141,6 @@ export default function ASLReportProblem(){
                 onCloseCamera={handleCloseCamera}
                 cameraText="Describe the problem in sign language"
             />
-
-            <ASLPetitionHistory peticiones={misPeticiones} />
 
         </ThemedView>
         </ScrollView>

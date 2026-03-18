@@ -1,7 +1,6 @@
 import { ThemedView } from "@/components/BothComponents/themed-view";
 import { GifPreviewContainer } from "@/components/ASLComponents/GifPreviewContainer";
 import { ASLGridView, ASLOption } from "@/components/ASLComponents/ASLGridView";
-import { ASLPetitionHistory } from "@/components/ASLComponents/ASLPetitionHistory";
 import { ASLPetitionModal } from '@/components/ASLComponents/asl-petition-modal';
 import { useCameraPermissions } from 'expo-camera';
 import { useState } from 'react';
@@ -114,8 +113,6 @@ export default function ASLRoomS(){
                 onCloseCamera={handleCloseCamera}
                 cameraText="Show your message in sign language"
             />
-
-            <ASLPetitionHistory peticiones={misPeticiones} />
 
         </ThemedView>
         </ScrollView>

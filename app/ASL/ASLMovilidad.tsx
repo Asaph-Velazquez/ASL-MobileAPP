@@ -6,7 +6,6 @@ import { ScrollView } from "react-native";
 import { ASLPetitionModal } from '@/components/ASLComponents/asl-petition-modal';
 import { GifPreviewContainer } from "@/components/ASLComponents/GifPreviewContainer";
 import { ASLGridView, ASLOption } from "@/components/ASLComponents/ASLGridView";
-import { ASLPetitionHistory } from "@/components/ASLComponents/ASLPetitionHistory";
 import { useWebSocket } from '@/components/BothComponents/websocket-provider';
 
 export default function ASLMovilidad(){
@@ -84,8 +83,6 @@ export default function ASLMovilidad(){
                 onCloseCamera={handleCloseCamera}
                 cameraText="Show your message in sign language"
             />
-
-            <ASLPetitionHistory peticiones={misPeticiones} />
 
         </ThemedView>
         </ScrollView>

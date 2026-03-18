@@ -10,19 +10,19 @@ export function useNotifications({ ultimaActualizacion }: NotificationConfig) {
     if (ultimaActualizacion) {
       const { status } = ultimaActualizacion;
 
-      // Configuración de mensajes según el estado
+      // Notification messages by request status
       const mensajes = {
         'in-progress': {
-          titulo: 'Petición en proceso',
-          mensaje: 'El personal del hotel está atendiendo tu solicitud.',
+          titulo: 'Request in progress',
+          mensaje: 'Hotel staff is currently handling your request.',
         },
         'completed': {
-          titulo: 'Petición completada',
-          mensaje: '¡Tu solicitud ha sido atendida exitosamente!',
+          titulo: 'Request completed',
+          mensaje: 'Your request has been successfully completed!',
         },
         'pending': {
-          titulo: 'Petición pendiente',
-          mensaje: 'Tu solicitud está en espera de ser atendida.',
+          titulo: 'Request pending',
+          mensaje: 'Your request is waiting to be handled.',
         },
       };
 
@@ -47,7 +47,7 @@ export function useNotifications({ ultimaActualizacion }: NotificationConfig) {
             break;
         }
 
-        console.log(`Notificación [${status}]:`, config.titulo);
+        console.log(`Notification [${status}]:`, config.titulo);
       }
     }
   }, [ultimaActualizacion]);
