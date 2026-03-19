@@ -78,7 +78,6 @@ export function HeaderButtons({ currentScreen, colorScheme }: HeaderButtonsProps
   const toggleBgColor = isASLMode ? '#4A90E2' : '#9C27B0';
   
   // Debug: Verificar modo actual
-  console.log('🔍 HeaderButtons - currentScreen:', currentScreen, 'context mode:', mode, 'isASLMode:', isASLMode);
   
   return (
     <View style={styles.container}>

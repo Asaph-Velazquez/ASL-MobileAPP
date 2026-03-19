@@ -47,7 +47,6 @@ export function useNotifications({ ultimaActualizacion }: NotificationConfig) {
             break;
         }
 
-        console.log(`Notification [${status}]:`, config.titulo);
       }
     }
   }, [ultimaActualizacion]);

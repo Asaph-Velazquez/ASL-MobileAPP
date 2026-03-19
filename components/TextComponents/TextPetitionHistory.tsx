@@ -26,7 +26,6 @@ export function TextPetitionHistory({ peticiones, onCancelar, onRate }: TextPeti
     const [selectedPeticion, setSelectedPeticion] = useState<any>(null);
 
     // Debug: Ver las peticiones
-    console.log('📋 TextPetitionHistory - Peticiones:', peticiones.length, peticiones);
 
     const handleCancelar = (peticion: any) => {
         setSelectedPeticion(peticion);

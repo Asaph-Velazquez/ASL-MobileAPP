@@ -46,9 +46,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setIsAuthenticated(true);
       setIsLoading(false);
 
-      console.log('✅ Login successful:', { guestName: newGuestName, roomNumber: newRoomNumber });
     } catch (error) {
-      console.error('❌ Error storing auth data:', error);
       setIsLoading(false);
     }
   };
@@ -66,12 +64,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setGuestName(null);
       setRoomNumber(null);
       setIsAuthenticated(false);
-
-      console.log('✅ Logout successful');
-
       // Nota: No se puede navegar a /login - la pantalla aún no existe
     } catch (error) {
-      console.error('❌ Error clearing auth data:', error);
     }
   };
 
@@ -84,8 +78,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           AsyncStorage.getItem(GUEST_NAME_KEY),
           AsyncStorage.getItem(ROOM_NUMBER_KEY),
         ]);
-
-
         if (storedToken && storedGuestName && storedRoomNumber) {
           // Validar token con el backend
           const validationResult = await validateToken(storedToken);
@@ -96,10 +88,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             setGuestName(storedGuestName);
             setRoomNumber(storedRoomNumber);
             setIsAuthenticated(true);
-            console.log('✅ Session restored from AsyncStorage');
           } else {
             // Token es inválido, limpiar almacenamiento
-            console.log('⚠️ Stored token is invalid:', validationResult.reason);
             await Promise.all([
               AsyncStorage.removeItem(AUTH_TOKEN_KEY),
               AsyncStorage.removeItem(GUEST_NAME_KEY),
@@ -108,7 +98,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           }
         }
       } catch (error) {
-        console.error('❌ Error checking stored auth:', error);
       } finally {
         setIsLoading(false);
       }
@@ -128,11 +117,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         const validationResult = await validateToken(token);
 
         if (!validationResult.valid) {
-          console.log('⚠️ Session expired:', validationResult.reason);
           await logout();
         }
       } catch (error) {
-        console.error('❌ Error validating session:', error);
       }
     }, SESSION_CHECK_INTERVAL);
 

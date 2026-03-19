@@ -40,7 +40,6 @@ export async function validateToken(token: string): Promise<ValidateTokenRespons
     const data = await response.json();
     return data;
   } catch (error) {
-    console.error('Error validating token:', error);
     return {
       valid: false,
       reason: error instanceof Error ? error.message : 'Network error',
@@ -73,7 +72,6 @@ export async function registerGuest(token: string, guestName: string): Promise<R
     const data = await response.json();
     return data;
   } catch (error) {
-    console.error('Error registering guest:', error);
     throw error;
   }
 }

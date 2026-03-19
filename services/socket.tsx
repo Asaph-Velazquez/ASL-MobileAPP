@@ -40,7 +40,6 @@ export function useWebSocketMobile(token: string | null) {
       const ws = new WebSocket(wsUrl);
 
       ws.onopen = () => {
-        console.log('✅ Conectado al servidor');
         setEstaConectado(true);
         refIntentosReconexion.current = 0;
       };
@@ -49,7 +48,6 @@ export function useWebSocketMobile(token: string | null) {
       ws.onmessage = (evento) => {
         try {
           const mensaje = JSON.parse(evento.data);
-          console.log('📨 Mensaje recibido:', mensaje);
 
           switch (mensaje.type) {
             case 'UPDATE_REQUEST':
@@ -62,7 +60,6 @@ export function useWebSocketMobile(token: string | null) {
                 )
               );
               setUltimaActualizacion(mensaje.payload);
-              console.log('✅ Petición actualizada:', mensaje.payload);
               break;
 
             case 'CANCEL_REQUEST':
@@ -80,7 +77,6 @@ export function useWebSocketMobile(token: string | null) {
                     : pet
                 )
               );
-              console.log('🚫 Petición cancelada:', mensaje.payload);
               break;
 
             case 'RATE_REQUEST':
@@ -96,51 +92,41 @@ export function useWebSocketMobile(token: string | null) {
                     : pet
                 )
               );
-              console.log('⭐ Petición calificada:', mensaje.payload);
               break;
 
             case 'INIT_CONFIG':
-              console.log('⚙️ Configuración inicial:', mensaje.payload);
               break;
 
             case 'CONFIG_UPDATED':
-              console.log('⚙️ Configuración actualizada:', mensaje.payload);
               break;
 
             default:
-              console.log('⚠️ Mensaje no manejado:', mensaje.type);
           }
         } catch (error) {
-          console.error('❌ Error al procesar mensaje:', error);
         }
       };
 
       ws.onerror = (error) => {
-        console.error('❌ Error WebSocket details:', JSON.stringify(error, null, 2));
       };
 
       ws.onclose = () => {
-        console.log('🔌 Desconectado del servidor');
         setEstaConectado(false);
         refWs.current = null;
 
         // Reconexión automática con backoff exponencial
         if (refIntentosReconexion.current < maxIntentosReconexion) {
           const timeout = Math.min(1000 * Math.pow(2, refIntentosReconexion.current), 30000);
-          console.log(`🔄 Reintentando conexión en ${timeout}ms...`);
 
           refTimeoutReconexion.current = setTimeout(() => {
             refIntentosReconexion.current++;
             conectar();
           }, timeout) as any;
         } else {
-          console.log('❌ Máximo de intentos de reconexión alcanzado');
         }
       };
 
       refWs.current = ws;
     } catch (error) {
-      console.error('❌ Error al crear WebSocket:', error);
     }
   }, [token]);
 
@@ -170,10 +156,8 @@ export function useWebSocketMobile(token: string | null) {
       // Guardar en el estado local para seguimiento
       setMisPeticiones((prev) => [...prev, carga]);
 
-      console.log('📤 Petición enviada:', carga);
       return true;
     } else {
-      console.warn('⚠️ No hay conexión con el servidor');
       return false;
     }
   };
@@ -197,10 +181,8 @@ export function useWebSocketMobile(token: string | null) {
         )
       );
 
-      console.log('🚫 Cancelación enviada:', peticionId);
       return true;
     } else {
-      console.warn('⚠️ No hay conexión con el servidor');
       return false;
     }
   };
@@ -230,10 +212,8 @@ export function useWebSocketMobile(token: string | null) {
         )
       );
 
-      console.log('⭐ Calificación enviada:', peticionId, rating);
       return true;
     } else {
-      console.warn('⚠️ No hay conexión con el servidor');
       return false;
     }
   };

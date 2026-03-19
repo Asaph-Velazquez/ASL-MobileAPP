@@ -21,7 +21,6 @@ export function HistoryModal({ visible, onClose, peticiones, mode, onCancelarPet
   const shadowColor = useThemeColor({}, 'text');
 
   // Debug: Verificar el modo recibido
-  console.log('📜 HistoryModal - mode recibido:', mode, 'peticiones:', peticiones.length);
 
   return (
     <Modal
@@ -57,7 +56,6 @@ export function HistoryModal({ visible, onClose, peticiones, mode, onCancelarPet
           >
             {mode === 'Text' ? (
               <>
-                {console.log('📝 Renderizando TextPetitionHistory')}
                 <TextPetitionHistory 
                   peticiones={peticiones} 
                   onCancelar={onCancelarPeticion}
@@ -66,7 +64,6 @@ export function HistoryModal({ visible, onClose, peticiones, mode, onCancelarPet
               </>
             ) : (
               <>
-                {console.log('🤟 Renderizando ASLPetitionHistory')}
                 <ASLPetitionHistory 
                   peticiones={peticiones}
                   onCancelar={onCancelarPeticion}

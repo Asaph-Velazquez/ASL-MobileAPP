@@ -30,7 +30,6 @@ export function WebSocketProvider({ children }: { children: ReactNode }) {
   React.useEffect(() => {
     if (prevIsAuthenticatedRef.current && !isAuthenticated) {
       // Usuario cerró sesión, WebSocket se desconectará en la próxima reconexión
-      console.log('🔌 Usuario cerró sesión, WebSocket se desconectará en la próxima reconexión');
     }
     prevIsAuthenticatedRef.current = isAuthenticated;
   }, [isAuthenticated]);
@@ -42,7 +41,6 @@ export function WebSocketProvider({ children }: { children: ReactNode }) {
     priority: 'low' | 'medium' | 'high' | 'urgent';
   }) => {
     if (!guestName || !roomNumber) {
-      console.warn('⚠️ Cannot send request: user not authenticated');
       return false;
     }
 

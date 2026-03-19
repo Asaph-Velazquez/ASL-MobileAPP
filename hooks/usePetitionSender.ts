@@ -82,7 +82,6 @@ export function usePetitionSender() {
         return false;
       }
     } catch (error) {
-      console.error('Error sending petition:', error);
       toast.error('Unexpected error', {
         description: 'An error occurred while sending your request.',
       });

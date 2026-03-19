@@ -43,7 +43,6 @@ export default function LoginScreen() {
     } catch (err) {
       setError('Error al validar el código QR');
       setFlowState('error');
-      console.error('Error validating token:', err);
     }
   };
 
