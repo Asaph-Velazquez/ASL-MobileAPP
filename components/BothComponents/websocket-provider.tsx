@@ -15,6 +15,7 @@ interface WebSocketContextType {
   ratePeticion: (peticionId: string, rating: number) => boolean;
   misPeticiones: any[];
   ultimaActualizacion: any;
+  reconectar: () => void;
 }
 
 const WebSocketContext = createContext<WebSocketContextType | undefined>(undefined);
@@ -70,6 +71,7 @@ export function WebSocketProvider({ children }: { children: ReactNode }) {
       ratePeticion: socketData.ratePeticion,
       misPeticiones: socketData.misPeticiones,
       ultimaActualizacion: socketData.ultimaActualizacion,
+      reconectar: socketData.reconectar,
     }}>
       {children}
     </WebSocketContext.Provider>

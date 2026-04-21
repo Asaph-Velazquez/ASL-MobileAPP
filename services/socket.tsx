@@ -25,6 +25,7 @@ export function useWebSocketMobile(token: string | null) {
   const refWs = useRef<WebSocket | null>(null);
   const refTimeoutReconexion = useRef<number | undefined>(undefined);
   const refIntentosReconexion = useRef(0);
+  const refReconectandoManual = useRef(false);
   const maxIntentosReconexion = 5;
 
   // Conexión WebSocket con reconexión automática
@@ -112,6 +113,11 @@ export function useWebSocketMobile(token: string | null) {
       ws.onclose = () => {
         setEstaConectado(false);
         refWs.current = null;
+
+        if (refReconectandoManual.current) {
+          refReconectandoManual.current = false;
+          return;
+        }
 
         // Reconexión automática con backoff exponencial
         if (refIntentosReconexion.current < maxIntentosReconexion) {
@@ -218,6 +224,25 @@ export function useWebSocketMobile(token: string | null) {
     }
   };
 
+  const reconectar = useCallback(() => {
+    refReconectandoManual.current = true;
+
+    if (refTimeoutReconexion.current) {
+      clearTimeout(refTimeoutReconexion.current);
+      refTimeoutReconexion.current = undefined;
+    }
+
+    refIntentosReconexion.current = 0;
+
+    if (refWs.current) {
+      refWs.current.close();
+      return;
+    }
+
+    refReconectandoManual.current = false;
+    conectar();
+  }, [conectar]);
+
   // Iniciar conexión al montar el componente
   useEffect(() => {
     conectar();
@@ -239,5 +264,6 @@ export function useWebSocketMobile(token: string | null) {
     ratePeticion,
     misPeticiones,       
     ultimaActualizacion, 
+    reconectar,
   };
 }
