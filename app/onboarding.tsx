@@ -49,7 +49,7 @@ const slides: OnboardingSlide[] = [
 
 export default function OnboardingScreen() {
   const [currentSlide, setCurrentSlide] = useState(0);
-  const { roomNumber } = useAuth();
+  const { roomNumber, isOffline } = useAuth();
   const textColor = useThemeColor({}, 'text');
   const mutedColor = useThemeColor({}, 'muted');
   const cardBg = useThemeColor({}, 'card');
@@ -85,6 +85,14 @@ export default function OnboardingScreen() {
         <TouchableOpacity style={styles.skipButton} onPress={handleSkip}>
           <Text style={[styles.skipText, { color: mutedColor }]}>Skip</Text>
         </TouchableOpacity>
+      )}
+
+      {/* Offline indicator */}
+      {isOffline && (
+        <View style={styles.offlineBadge}>
+          <MaterialIcons name="wifi-off" size={16} color="#FFA000" />
+          <Text style={styles.offlineBadgeText}>Offline Mode</Text>
+        </View>
       )}
 
       {/* Room number badge */}
@@ -198,6 +206,24 @@ const styles = StyleSheet.create({
   roomBadgeText: {
     fontSize: 14,
     fontWeight: '600',
+  },
+  offlineBadge: {
+    position: 'absolute',
+    top: 60,
+    left: 20,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    backgroundColor: '#FFF3E0',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 16,
+    zIndex: 10,
+  },
+  offlineBadgeText: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#FFA000',
   },
   content: {
     flex: 1,

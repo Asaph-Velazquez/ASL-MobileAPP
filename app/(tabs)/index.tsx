@@ -1,17 +1,20 @@
 import { router } from 'expo-router';
 import React, { useState } from 'react';
-import { Pressable, StyleSheet, Text, useColorScheme, View, Image } from 'react-native';
+import { Pressable, StyleSheet, Text, useColorScheme, View, Image, ScrollView, RefreshControl } from 'react-native';
 import { MaterialIcons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { ThemedView } from '@/components/BothComponents/themed-view';
 import { useThemeColor } from '@/hooks/use-theme-color';
 import { useAuth } from '@/components/BothComponents/auth-provider';
+import { useWebSocket } from '@/components/BothComponents/websocket-provider';
 export default function HomeScreen() {
   const scheme = useColorScheme();
   const isDark = scheme === 'dark';
   const textColor = useThemeColor({}, 'text');
   const mutedColor = useThemeColor({}, 'muted');
   const { guestName, roomNumber } = useAuth();
+  const { reconectar, estaConectado } = useWebSocket();
   const [selectedGif, setSelectedGif] = useState<any>(require('../../assets/gifs/ModASL.gif'));
+  const [refreshing, setRefreshing] = useState(false);
 
   // Función helper para manejar tanto URLs como rutas locales
   const getImageSource = (source: any) => {
@@ -21,13 +24,35 @@ export default function HomeScreen() {
     return source;
   };
 
+  const onRefresh = async () => {
+    setRefreshing(true);
+    try {
+      reconectar();
+      await new Promise(resolve => setTimeout(resolve, 900));
+    } finally {
+      setRefreshing(false);
+    }
+  };
+
   const colors = {
     background: isDark ? '#0E1116' : '#F5F5F5',
     cardShadow: isDark ? 'rgba(0,0,0,0.7)' : 'rgba(0,0,0,0.15)',
   } as const;
 
   return (
-    <ThemedView style={styles.container}>
+    <ScrollView
+      style={styles.scroll}
+      contentContainerStyle={styles.scrollContent}
+      showsVerticalScrollIndicator={false}
+      refreshControl={
+        <RefreshControl 
+          refreshing={refreshing}
+          onRefresh={onRefresh}
+          tintColor={isDark ? '#E0E0E0' : '#4A90E2'}
+        />
+      }
+    >
+      <ThemedView style={styles.container}>
       <View style={styles.inner}>
         {/* Header con icono del hotel */}
         <View style={styles.header}>
@@ -37,6 +62,9 @@ export default function HomeScreen() {
           <Text style={[styles.title, { color: textColor }]}>Aurora Central Hotel</Text>
           <Text style={[styles.subtitle, { color: mutedColor }]}>
             Welcome, {guestName} - Room {roomNumber}
+          </Text>
+          <Text style={[styles.connectionStatus, { color: estaConectado ? '#2E7D32' : '#D32F2F' }]}>
+            {estaConectado ? 'Connected' : 'Reconnecting...'}
           </Text>
         </View>
 
@@ -105,10 +133,17 @@ export default function HomeScreen() {
         </View>
       </View>
     </ThemedView>
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
+  scroll: {
+    flex: 1,
+  },
+  scrollContent: {
+    flexGrow: 1,
+  },
   container: {
     flex: 1,
   },
@@ -144,6 +179,12 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     lineHeight: 20,
     maxWidth: 280,
+  },
+  connectionStatus: {
+    fontSize: 12,
+    fontWeight: '600',
+    letterSpacing: 0.4,
+    textTransform: 'uppercase',
   },
   buttons: {
     width: '100%',

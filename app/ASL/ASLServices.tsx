@@ -3,7 +3,7 @@ import { useThemeColor } from '@/hooks/use-theme-color';
 import { commonStyles } from '@/styles/common';
 import { MaterialCommunityIcons, MaterialIcons } from "@expo/vector-icons";
 import { useState } from "react";
-import { Image, Modal, Pressable, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { Image, Modal, Pressable, ScrollView, RefreshControl, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
 export default function ASLServices(){
     const textColor = useThemeColor({}, 'text');
@@ -12,6 +12,7 @@ export default function ASLServices(){
     const [selectedService, setSelectedService] = useState<any>(null);
     const [selectedGif, setSelectedGif] = useState<any>(require('../../assets/gifs/ComidaGif.gif'));
     const [modalGif, setModalGif] = useState<any>(null);
+    const [refreshing, setRefreshing] = useState(false);
     
     // Función helper para manejar tanto URLs como rutas locales
     const getImageSource = (source: any) => {
@@ -86,6 +87,16 @@ export default function ASLServices(){
         setModalGif(opcion.gifUrl); // Iniciar con el GIF del servicio
         setModalVisible(true);
     };
+
+    const onRefresh = async () => {
+        setRefreshing(true);
+        try {
+            // Recargar servicios disponibles
+            await new Promise(resolve => setTimeout(resolve, 1000));
+        } finally {
+            setRefreshing(false);
+        }
+    };
     
     return(
         <ScrollView
@@ -94,6 +105,13 @@ export default function ASLServices(){
           nestedScrollEnabled={true}
           showsVerticalScrollIndicator={false}
           contentContainerStyle={{ paddingBottom: 40 }}
+          refreshControl={
+              <RefreshControl 
+                  refreshing={refreshing}
+                  onRefresh={onRefresh}
+                  tintColor="#4A90E2"
+              />
+          }
         >
         <ThemedView style={commonStyles.container}>
             {/* Área de visualización del GIF grande */}

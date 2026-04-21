@@ -5,6 +5,7 @@ import { useAuth } from './auth-provider';
 
 interface WebSocketContextType {
   estaConectado: boolean;
+  puedeEnviar: boolean;
   enviarPeticion: (peticion: {
     type: 'services' | 'room-service' | 'problem' | 'extra';
     message: string;
@@ -19,7 +20,7 @@ interface WebSocketContextType {
 const WebSocketContext = createContext<WebSocketContextType | undefined>(undefined);
 
 export function WebSocketProvider({ children }: { children: ReactNode }) {
-  const { guestName, roomNumber, token, isAuthenticated } = useAuth();
+  const { guestName, roomNumber, token, isAuthenticated, isOffline } = useAuth();
   const socketData = useWebSocketMobile(token);
   
   // Hook de notificaciones global
@@ -34,26 +35,36 @@ export function WebSocketProvider({ children }: { children: ReactNode }) {
     prevIsAuthenticatedRef.current = isAuthenticated;
   }, [isAuthenticated]);
 
+  /**
+   * Determina si se puede enviar peticiones
+   * No se puede enviar si:
+   * - Está offline
+   * - No está autenticado
+   * - No tiene datos de sesión
+   */
+  const puedeEnviar = !isOffline && isAuthenticated && !!guestName && !!roomNumber;
+
   // Función envolvente que inyecta automáticamente roomNumber y guestName del contexto de autenticación
   const enviarPeticionWrapper = (peticion: {
     type: 'services' | 'room-service' | 'problem' | 'extra';
     message: string;
     priority: 'low' | 'medium' | 'high' | 'urgent';
   }) => {
-    if (!guestName || !roomNumber) {
+    if (!puedeEnviar) {
       return false;
     }
 
     return socketData.enviarPeticion({
       ...peticion,
-      guestName,
-      roomNumber,
+      guestName: guestName!,
+      roomNumber: roomNumber!,
     });
   };
 
   return (
     <WebSocketContext.Provider value={{
       estaConectado: socketData.estaConectado,
+      puedeEnviar,
       enviarPeticion: enviarPeticionWrapper,
       cancelarPeticion: socketData.cancelarPeticion,
       ratePeticion: socketData.ratePeticion,

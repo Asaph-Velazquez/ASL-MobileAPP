@@ -4,7 +4,7 @@ import { ASLGridView, ASLOption } from "@/components/ASLComponents/ASLGridView";
 import { ASLPetitionModal } from '@/components/ASLComponents/asl-petition-modal';
 import { useCameraPermissions } from 'expo-camera';
 import { useState } from 'react';
-import { ScrollView } from "react-native";
+import { ScrollView, RefreshControl } from "react-native";
 import { useWebSocket } from '@/components/BothComponents/websocket-provider';
 import { commonStyles } from '@/styles/common';
 
@@ -15,6 +15,7 @@ export default function ASLRoomS(){
     const [permission, requestPermission] = useCameraPermissions();
     const { misPeticiones } = useWebSocket();
     const [selectedGif, setSelectedGif] = useState<any>(require('../../assets/gifs/ComidaGif.gif'));
+    const [refreshing, setRefreshing] = useState(false);
     
     const defaultGif = require('../../assets/gifs/ComidaGif.gif');
     
@@ -92,8 +93,26 @@ export default function ASLRoomS(){
         setModalVisible(false);
     };
 
+    const onRefresh = async () => {
+        setRefreshing(true);
+        try {
+            // Recargar datos de peticiones o estado
+            await new Promise(resolve => setTimeout(resolve, 1000));
+        } finally {
+            setRefreshing(false);
+        }
+    };
+
     return(
-        <ScrollView>
+        <ScrollView
+            refreshControl={
+                <RefreshControl 
+                    refreshing={refreshing}
+                    onRefresh={onRefresh}
+                    tintColor="#4A90E2"
+                />
+            }
+        >
         <ThemedView style={commonStyles.container}>
             <GifPreviewContainer gifSource={selectedGif} />
             

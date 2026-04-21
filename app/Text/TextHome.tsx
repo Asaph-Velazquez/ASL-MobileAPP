@@ -2,9 +2,11 @@ import { ThemedView } from "@/components/BothComponents/themed-view";
 import { ScreenHeader } from "@/components/BothComponents/ScreenHeader";
 import { ServiceCard, ServiceOption } from "@/components/TextComponents/ServiceCard";
 import { router } from "expo-router";
-import { ScrollView, StyleSheet, View } from "react-native";
+import { ScrollView, RefreshControl, StyleSheet, View } from "react-native";
+import { useState } from "react";
 
 export default function TextHome() {
+    const [refreshing, setRefreshing] = useState(false);
     const services: ServiceOption[] = [
         {
             id: "Services",
@@ -57,8 +59,26 @@ export default function TextHome() {
         }
     };
 
+    const onRefresh = async () => {
+        setRefreshing(true);
+        try {
+            // Recargar servicios disponibles
+            await new Promise(resolve => setTimeout(resolve, 1000));
+        } finally {
+            setRefreshing(false);
+        }
+    };
+
     return (
-        <ScrollView>
+        <ScrollView
+            refreshControl={
+                <RefreshControl 
+                    refreshing={refreshing}
+                    onRefresh={onRefresh}
+                    tintColor="#4A90E2"
+                />
+            }
+        >
             <ThemedView style={styles.container}>
                 <ScreenHeader 
                     title="Aurora Central Hotel"

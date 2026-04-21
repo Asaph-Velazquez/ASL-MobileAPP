@@ -3,11 +3,12 @@ import { ServiceCard, ServiceOption } from "@/components/TextComponents/ServiceC
 import { ScreenHeader } from "@/components/BothComponents/ScreenHeader";
 import { InfoModal } from "@/components/TextComponents/InfoModal";
 import { useState } from "react";
-import { ScrollView, StyleSheet, View } from "react-native";
+import { ScrollView, RefreshControl, StyleSheet, View } from "react-native";
 
 export default function TextServices(){
     const [modalVisible, setModalVisible] = useState(false);
     const [selectedService, setSelectedService] = useState<ServiceOption | null>(null);
+    const [refreshing, setRefreshing] = useState(false);
     
     const ServiceOptions: ServiceOption[] = [{
             id: "Breakfast included",
@@ -68,10 +69,29 @@ export default function TextServices(){
         setSelectedService(option);
         setModalVisible(true);
     };
+
+    const onRefresh = async () => {
+        setRefreshing(true);
+        try {
+            // Recargar servicios disponibles
+            await new Promise(resolve => setTimeout(resolve, 1000));
+        } finally {
+            setRefreshing(false);
+        }
+    };
     
     return(
         <ThemedView style={styles.container}>
-            <ScrollView showsVerticalScrollIndicator={false}>
+            <ScrollView
+                showsVerticalScrollIndicator={false}
+                refreshControl={
+                    <RefreshControl 
+                        refreshing={refreshing}
+                        onRefresh={onRefresh}
+                        tintColor="#4A90E2"
+                    />
+                }
+            >
                 <ScreenHeader 
                     title="Included Services"
                     subtitle="What do you need today?"

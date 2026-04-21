@@ -1,13 +1,14 @@
 import { ThemedView } from "@/components/BothComponents/themed-view";
 import { commonStyles } from '@/styles/common';
 import { router } from "expo-router";
-import { ScrollView } from "react-native";
+import { ScrollView, RefreshControl } from "react-native";
 import { useState } from "react";
 import { GifPreviewContainer } from "@/components/ASLComponents/GifPreviewContainer";
 import { ASLGridView, ASLOption } from "@/components/ASLComponents/ASLGridView";
 
 export default function ASLHome(){
     const [selectedGif, setSelectedGif] = useState<any>(require('../../assets/gifs/ComidaGif.gif'));
+    const [refreshing, setRefreshing] = useState(false);
     
     const defaultGif = require('../../assets/gifs/ComidaGif.gif');
     
@@ -63,8 +64,27 @@ export default function ASLHome(){
         }
     };
 
+    const onRefresh = async () => {
+        setRefreshing(true);
+        try {
+            // Aquí puedes agregar lógica para recargar datos
+            // Por ejemplo: llamar a una API para actualizar el contenido
+            await new Promise(resolve => setTimeout(resolve, 1000));
+        } finally {
+            setRefreshing(false);
+        }
+    };
+
     return(
-        <ScrollView>
+        <ScrollView
+            refreshControl={
+                <RefreshControl 
+                    refreshing={refreshing}
+                    onRefresh={onRefresh}
+                    tintColor="#4A90E2"
+                />
+            }
+        >
         <ThemedView style={commonStyles.container}>
             <GifPreviewContainer gifSource={selectedGif} />
             

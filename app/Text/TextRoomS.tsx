@@ -4,11 +4,12 @@ import { ScreenHeader } from "@/components/BothComponents/ScreenHeader";
 import { PetitionModal } from "@/components/TextComponents/PetitionModal";
 import { usePetitionSender } from "@/hooks/usePetitionSender";
 import { useState } from 'react';
-import { ScrollView, StyleSheet, View } from "react-native";
+import { ScrollView, RefreshControl, StyleSheet, View } from "react-native";
 
 export default function TextRoomS(){
     const [selectedService, setSelectedService] = useState<ServiceOption | null>(null);
     const [modalVisible, setModalVisible] = useState(false);
+    const [refreshing, setRefreshing] = useState(false);
     const { sendPetition, isLoading } = usePetitionSender();
 
     const opciones: ServiceOption[] = [
@@ -80,9 +81,27 @@ export default function TextRoomS(){
         }
     };
 
+    const onRefresh = async () => {
+        setRefreshing(true);
+        try {
+            // Recargar servicios de habitación
+            await new Promise(resolve => setTimeout(resolve, 1000));
+        } finally {
+            setRefreshing(false);
+        }
+    };
+
     return(
         <ThemedView style={styles.container}>
-            <ScrollView>
+            <ScrollView
+                refreshControl={
+                    <RefreshControl 
+                        refreshing={refreshing}
+                        onRefresh={onRefresh}
+                        tintColor="#4A90E2"
+                    />
+                }
+            >
                 <ScreenHeader 
                     title="Room Service"
                     subtitle="How can we help you today?"

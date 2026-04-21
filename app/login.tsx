@@ -28,8 +28,13 @@ export default function LoginScreen() {
       const result = await validateToken(data);
       
       if (result.valid) {
-        // Iniciar sesión automáticamente con el token
-        await login(data, 'Guest', result.roomNumber || '');
+        // Iniciar sesión con expiresAt del servidor
+        await login(
+          data, 
+          'Guest', 
+          result.roomNumber || '',
+          result.expiresAt
+        );
         
         // Pequeño delay para asegurar que el estado de autenticación se estabilice
         setTimeout(() => {

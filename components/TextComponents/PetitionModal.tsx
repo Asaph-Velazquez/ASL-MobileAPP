@@ -32,10 +32,11 @@ export function PetitionModal({
   const mutedColor = useThemeColor({}, 'muted');
   const cardBg = useThemeColor({}, 'card');
   const bgColor = useThemeColor({}, 'background');
-  const { estaConectado } = useWebSocket();
+  const { estaConectado, puedeEnviar } = useWebSocket();
   const [description, setDescription] = useState('');
 
   const handleSend = async () => {
+    if (!puedeEnviar) return;
     await onSend(description);
     setDescription('');
   };
@@ -44,6 +45,19 @@ export function PetitionModal({
     setDescription('');
     onClose();
   };
+
+  // Determinar mensaje de estado de conexión
+  const getConnectionStatus = () => {
+    if (!estaConectado) {
+      return { color: '#F44336', text: 'Disconnected' };
+    }
+    if (!puedeEnviar) {
+      return { color: '#FFA000', text: 'Offline - Cannot send' };
+    }
+    return { color: '#4CAF50', text: 'Connected' };
+  };
+
+  const connectionStatus = getConnectionStatus();
 
   if (!selectedOption) return null;
 
@@ -88,9 +102,9 @@ export function PetitionModal({
               
               {/* Indicador de conexión */}
               <View style={styles.connectionIndicator}>
-                <View style={[styles.connectionDot, { backgroundColor: estaConectado ? '#4CAF50' : '#F44336' }]} />
-                <Text style={[styles.connectionText, { color: mutedColor }]}>
-                  {estaConectado ? 'Connected' : 'Disconnected'}
+                <View style={[styles.connectionDot, { backgroundColor: connectionStatus.color }]} />
+                <Text style={[styles.connectionText, { color: connectionStatus.color }]}>
+                  {connectionStatus.text}
                 </Text>
               </View>
               
@@ -120,10 +134,10 @@ export function PetitionModal({
               <TouchableOpacity 
                 style={[styles.sendButton, { 
                   backgroundColor: selectedOption.iconColor,
-                  opacity: isLoading || !description.trim() ? 0.5 : 1
+                  opacity: isLoading || !description.trim() || !puedeEnviar ? 0.5 : 1
                 }]} 
                 onPress={handleSend}
-                disabled={isLoading || !description.trim()}
+                disabled={isLoading || !description.trim() || !puedeEnviar}
                 activeOpacity={0.8}
               >
                 {isLoading ? (
@@ -131,7 +145,9 @@ export function PetitionModal({
                 ) : (
                   <>
                     <MaterialIcons name="send" size={20} color="#FFFFFF" />
-                    <Text style={styles.sendButtonText}>{sendButtonText}</Text>
+                    <Text style={styles.sendButtonText}>
+                      {!puedeEnviar ? 'Offline' : sendButtonText}
+                    </Text>
                   </>
                 )}
               </TouchableOpacity>
