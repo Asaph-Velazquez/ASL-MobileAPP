@@ -63,9 +63,6 @@ export default function HomeScreen() {
           <Text style={[styles.subtitle, { color: mutedColor }]}>
             Welcome, {guestName} - Room {roomNumber}
           </Text>
-          <Text style={[styles.connectionStatus, { color: estaConectado ? '#2E7D32' : '#D32F2F' }]}>
-            {estaConectado ? 'Connected' : 'Reconnecting...'}
-          </Text>
         </View>
 
         {/* Botones de selección */}
