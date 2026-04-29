@@ -59,7 +59,7 @@ export default function HomeScreen() {
           <View style={styles.logoContainer}>
             <MaterialIcons name="hotel" size={48} color="#4A90E2" />
           </View>
-          <Text style={[styles.title, { color: textColor }]}>Aurora Central Hotel</Text>
+          <Text style={[styles.title, { color: textColor }]}>Canada Central Hotel</Text>
           <Text style={[styles.subtitle, { color: mutedColor }]}>
             Welcome, {guestName} - Room {roomNumber}
           </Text>

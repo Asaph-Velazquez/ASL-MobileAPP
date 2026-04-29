@@ -19,7 +19,7 @@ interface OnboardingSlide {
 const slides: OnboardingSlide[] = [
   {
     id: 1,
-    title: 'Welcome to Aurora Central Hotel',
+    title: 'Welcome to Canada Central Hotel',
     description: 'Your comfort is our priority. This app will help you communicate with our staff easily.',
     icon: 'hotel',
     gif: require('../assets/gifs/ComidaGif.gif'), // Cambiar por GIF de "Bienvenida" en ASL

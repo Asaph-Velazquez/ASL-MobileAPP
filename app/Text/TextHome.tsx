@@ -81,7 +81,7 @@ export default function TextHome() {
         >
             <ThemedView style={styles.container}>
                 <ScreenHeader 
-                    title="Aurora Central Hotel"
+                    title="Canada Central Hotel"
                     subtitle="What do you need today?"
                 />
                 
