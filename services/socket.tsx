@@ -18,6 +18,40 @@ interface Peticion {
   ratedAt?: string;
 }
 
+interface PersistedRequestPayload {
+  requestId: string;
+  type: Peticion['type'];
+  roomNumber: string;
+  guestName: string;
+  message: string;
+  priority: Peticion['priority'];
+  status: Peticion['status'];
+  timestamp: string;
+  cancelledBy?: Peticion['cancelledBy'];
+  cancelledByName?: string;
+  cancelledAt?: string;
+  rating?: number;
+  ratedAt?: string;
+}
+
+function mapPersistedRequestToPeticion(request: PersistedRequestPayload): Peticion {
+  return {
+    id: request.requestId,
+    type: request.type,
+    roomNumber: request.roomNumber,
+    guestName: request.guestName,
+    message: request.message,
+    priority: request.priority,
+    status: request.status,
+    timestamp: new Date(request.timestamp),
+    cancelledBy: request.cancelledBy,
+    cancelledByName: request.cancelledByName,
+    cancelledAt: request.cancelledAt,
+    rating: request.rating,
+    ratedAt: request.ratedAt,
+  };
+}
+
 export function useWebSocketMobile(token: string | null) {
   const [estaConectado, setEstaConectado] = useState(false);
   const [misPeticiones, setMisPeticiones] = useState<Peticion[]>([]);
@@ -96,6 +130,14 @@ export function useWebSocketMobile(token: string | null) {
               break;
 
             case 'INIT_CONFIG':
+              break;
+
+            case 'INIT_REQUESTS':
+              setMisPeticiones(
+                Array.isArray(mensaje.payload?.requests)
+                  ? mensaje.payload.requests.map(mapPersistedRequestToPeticion)
+                  : []
+              );
               break;
 
             case 'CONFIG_UPDATED':
