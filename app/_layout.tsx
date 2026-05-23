@@ -6,19 +6,24 @@ import { Toaster } from 'sonner-native';
 import { useEffect } from 'react';
 import { View, Text, ActivityIndicator, StyleSheet } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import { useThemeColor } from '@/hooks/use-theme-color';
 
 import { ThemeProviderWrapper } from '@/components/BothComponents/theme-provider';
 import { WebSocketProvider } from '@/components/BothComponents/websocket-provider';
 import { AuthProvider, useAuth } from '@/components/BothComponents/auth-provider';
 import { CommunicationModeProvider } from '@/components/BothComponents/communication-mode-provider';
 import { useColorScheme } from '@/hooks/use-color-scheme';
+import { useTheme } from '@/components/BothComponents/theme-provider';
 
 export const unstable_settings = {
   anchor: '(tabs)',
 };
 
 function RootLayoutNav() {
-  const colorScheme = useColorScheme();
+  const systemColorScheme = useColorScheme();
+  const themeCtx = useTheme();
+  const colorScheme = themeCtx?.scheme ?? systemColorScheme;
+  const backgroundColor = useThemeColor({}, 'background');
   const { isAuthenticated, isLoading } = useAuth();
   const segments = useSegments();
   const router = useRouter();
@@ -40,7 +45,7 @@ function RootLayoutNav() {
   // Mostrar pantalla de carga mientras se verifica la autenticación
   if (isLoading) {
     return (
-      <View style={styles.loadingContainer}>
+      <View style={[styles.loadingContainer, { backgroundColor }]}>
         <ActivityIndicator size="large" color="#4A90E2" />
         <Text style={styles.loadingText}>Cargando...</Text>
       </View>
@@ -59,7 +64,7 @@ function RootLayoutNav() {
         <Stack.Screen name="TextRoomS" options={{ title: 'Text Room Services' , headerShown: true }} />
         <Stack.Screen name="TextServices" options={{ title: 'Text Hotel Services' , headerShown: true }} />
       </Stack>
-      <StatusBar style="auto" />
+      <StatusBar style={colorScheme === 'dark' ? 'light' : 'dark'} />
       <Toaster
         position="top-center"
         duration={4000}
@@ -93,7 +98,6 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#F5F5F5',
     gap: 16,
   },
   loadingText: {

@@ -18,7 +18,7 @@ interface TextPetitionHistoryProps {
 export function TextPetitionHistory({ peticiones, onCancelar, onRate }: TextPetitionHistoryProps) {
     const textColor = useThemeColor({}, 'text');
     const cardBg = useThemeColor({}, 'card');
-    const mutedColor = useThemeColor({}, 'tabIconDefault');
+    const mutedColor = useThemeColor({}, 'muted');
     const shadowColor = useThemeColor({}, 'text');
     
     const [modalVisible, setModalVisible] = useState(false);
@@ -309,9 +309,9 @@ const styles = StyleSheet.create({
         borderBottomRightRadius: 12,
         gap: 12,
         shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.15,
-        shadowRadius: 4,
-        elevation: 3,
+        shadowOpacity: 0.25,
+        shadowRadius: 8,
+        elevation: 6,
     },
     cardHeader: {
         flexDirection: 'row',

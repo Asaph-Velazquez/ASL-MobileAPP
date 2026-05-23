@@ -8,7 +8,7 @@ export interface ASLOption {
     icon: string;
     iconType: 'material' | 'community';
     iconColor: string;
-    bgColor: string;
+    bgColor: string; // Se mantiene para compatibilidad pero se usa como borderColor
     cameraText?: string;
 }
 
@@ -30,6 +30,7 @@ export function ASLGridView({
     defaultGif 
 }: ASLGridViewProps) {
     const cardBg = useThemeColor({}, 'card');
+    const backgroundColor = useThemeColor({}, 'background');
 
     return (
         <View style={styles.gridContainer}>
@@ -42,7 +43,14 @@ export function ASLGridView({
                     onPress={() => onOptionPress(option)}
                     activeOpacity={0.7}
                 >
-                    <View style={[styles.iconContainer, { backgroundColor: option.bgColor }]}>
+                    <View style={[
+                        styles.iconContainer, 
+                        { 
+                            backgroundColor,
+                            borderColor: option.iconColor,
+                            borderWidth: 2
+                        }
+                    ]}>
                         {option.iconType === "material" ? (
                             <MaterialIcons 
                                 name={option.icon as any} 
@@ -85,9 +93,9 @@ const styles = StyleSheet.create({
             width: 0,
             height: 2,
         },
-        shadowOpacity: 0.1,
-        shadowRadius: 8,
-        elevation: 3,
+        shadowOpacity: 0.2,
+        shadowRadius: 12,
+        elevation: 6,
     },
     iconContainer: {
         width: 80,

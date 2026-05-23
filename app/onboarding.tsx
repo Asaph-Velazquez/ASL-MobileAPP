@@ -53,6 +53,7 @@ export default function OnboardingScreen() {
   const textColor = useThemeColor({}, 'text');
   const mutedColor = useThemeColor({}, 'muted');
   const cardBg = useThemeColor({}, 'card');
+  const backgroundColor = useThemeColor({}, 'background');
 
   const isLastSlide = currentSlide === slides.length - 1;
   const isFirstSlide = currentSlide === 0;
@@ -106,7 +107,7 @@ export default function OnboardingScreen() {
         {/* GIF/Icon area */}
         <View style={styles.iconContainer}>
           {slide.gif ? (
-            <View style={styles.gifContainer}>
+            <View style={[styles.gifContainer, { backgroundColor }]}>
               <Image 
                 source={slide.gif}
                 style={styles.gif}
@@ -114,7 +115,7 @@ export default function OnboardingScreen() {
               />
             </View>
           ) : (
-            <View style={[styles.iconCircle, { backgroundColor: cardBg }]}>
+            <View style={[styles.iconCircle, { backgroundColor }]}>
               <MaterialIcons name={slide.icon as any} size={80} color="#4A90E2" />
             </View>
           )}
@@ -239,7 +240,6 @@ const styles = StyleSheet.create({
     width: 280,
     height: 240,
     borderRadius: 20,
-    backgroundColor: '#f5f5f5',
     justifyContent: 'center',
     alignItems: 'center',
     padding: 20,

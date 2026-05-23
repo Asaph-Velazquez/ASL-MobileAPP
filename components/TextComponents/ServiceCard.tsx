@@ -30,6 +30,7 @@ export function ServiceCard({ option, onPress, isSelected = false }: ServiceCard
   const textColor = useThemeColor({}, 'text');
   const mutedColor = useThemeColor({}, 'muted');
   const cardBg = useThemeColor({}, 'card');
+  const backgroundColor = useThemeColor({}, 'background');
 
   const description = option.desciption || option.description || '';
 
@@ -43,7 +44,14 @@ export function ServiceCard({ option, onPress, isSelected = false }: ServiceCard
       onPress={() => onPress(option)}
       activeOpacity={0.8}
     >
-      <View style={[styles.iconContainer, { backgroundColor: option.bgColor }]}>
+      <View style={[
+        styles.iconContainer, 
+        { 
+          backgroundColor,
+          borderColor: option.iconColor,
+          borderWidth: 2
+        }
+      ]}>
         {option.iconType === "material" ? (
           <MaterialIcons
             name={option.icon as any}
@@ -81,9 +89,9 @@ const styles = StyleSheet.create({
       width: 0,
       height: 2,
     },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 3,
+    shadowOpacity: 0.2,
+    shadowRadius: 12,
+    elevation: 6,
   },
   cardSelected: {
     borderWidth: 2,

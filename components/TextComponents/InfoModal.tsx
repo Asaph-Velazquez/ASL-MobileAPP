@@ -28,6 +28,7 @@ export function InfoModal({
   const textColor = useThemeColor({}, 'text');
   const mutedColor = useThemeColor({}, 'muted');
   const cardBg = useThemeColor({}, 'card');
+  const backgroundColor = useThemeColor({}, 'background');
 
   if (!selectedOption || !selectedOption.detalles) return null;
 
@@ -45,13 +46,20 @@ export function InfoModal({
         onPress={onClose}
       >
         <Pressable 
-          style={[styles.modalContent, { backgroundColor: cardBg }]}
+          style={[styles.modalContent, { backgroundColor: backgroundColor }]}
           onPress={(e) => e.stopPropagation()}
         >
           <ScrollView showsVerticalScrollIndicator={false}>
             {/* Header del modal */}
             <View style={styles.modalHeader}>
-              <View style={[styles.modalIcon, { backgroundColor: selectedOption.bgColor }]}>
+              <View style={[
+                styles.modalIcon, 
+                { 
+                  backgroundColor: backgroundColor,
+                  borderColor: selectedOption.iconColor,
+                  borderWidth: 2
+                }
+              ]}>
                 {selectedOption.iconType === "material" ? (
                   <MaterialIcons 
                     name={selectedOption.icon as any} 
@@ -120,7 +128,7 @@ export function InfoModal({
               {/* Nota */}
               {detalles.nota && (
                 <View style={[styles.notaContainer, { 
-                  backgroundColor: cardBg,
+                  backgroundColor,
                   borderColor: selectedOption.iconColor 
                 }]}>
                   <MaterialIcons name="info" size={20} color={selectedOption.iconColor} />

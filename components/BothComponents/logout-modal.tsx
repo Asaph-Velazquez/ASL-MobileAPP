@@ -12,10 +12,9 @@ interface LogoutModalProps {
 }
 
 export function LogoutModal({ visible, onConfirm, onCancel }: LogoutModalProps) {
-  const bgColor = useThemeColor({}, 'background');
+  const backgroundColor = useThemeColor({}, 'background');
   const textColor = useThemeColor({}, 'text');
   const mutedColor = useThemeColor({}, 'muted');
-  const cardBg = useThemeColor({}, 'card');
 
   return (
     <Modal
@@ -25,7 +24,7 @@ export function LogoutModal({ visible, onConfirm, onCancel }: LogoutModalProps) 
       onRequestClose={onCancel}
     >
       <View style={styles.overlay}>
-        <View style={[styles.modalContainer, { backgroundColor: cardBg }]}>
+        <View style={[styles.modalContainer, { backgroundColor: backgroundColor }]}>
           {/* Icon */}
           <View style={styles.iconContainer}>
             <View style={styles.iconCircle}>
@@ -34,7 +33,7 @@ export function LogoutModal({ visible, onConfirm, onCancel }: LogoutModalProps) 
           </View>
 
           {/* GIF explicativo en ASL */}
-          <View style={styles.gifContainer}>
+          <View style={[styles.gifContainer, { backgroundColor: backgroundColor }]}>
             <Image 
               source={require('../../assets/gifs/ComidaGif.gif')} // Cambiar por GIF de "Logout" en ASL
               style={styles.gif}
@@ -55,7 +54,7 @@ export function LogoutModal({ visible, onConfirm, onCancel }: LogoutModalProps) 
           {/* Buttons */}
           <View style={styles.buttonContainer}>
             <TouchableOpacity 
-              style={[styles.button, styles.cancelButton]}
+              style={[styles.button, styles.cancelButton, { backgroundColor: backgroundColor }]}
               onPress={onCancel}
               activeOpacity={0.7}
             >
@@ -124,7 +123,6 @@ const styles = StyleSheet.create({
     width: '100%',
     height: 160,
     borderRadius: 16,
-    backgroundColor: '#f5f5f5',
     justifyContent: 'center',
     alignItems: 'center',
     padding: 16,
@@ -173,7 +171,6 @@ const styles = StyleSheet.create({
     elevation: 3,
   },
   cancelButton: {
-    backgroundColor: '#F3F4F6',
     borderWidth: 1.5,
     borderColor: '#E5E7EB',
   },

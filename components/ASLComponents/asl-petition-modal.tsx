@@ -29,8 +29,8 @@ export function ASLPetitionModal({
     onCloseCamera,
     cameraText = "Show your message in sign language"
 }: ASLPetitionModalProps) {
-    const cardBg = useThemeColor({}, 'card');
     const textColor = useThemeColor({}, 'text');
+    const backgroundColor = useThemeColor({}, 'background');
 
     if (!selectedOption) return null;
 
@@ -46,14 +46,21 @@ export function ASLPetitionModal({
                 onPress={onClose}
             >
                 <Pressable 
-                    style={[styles.modalContent, { backgroundColor: cardBg }]}
+                    style={[styles.modalContent, { backgroundColor: backgroundColor }]}
                     onPress={(e) => e.stopPropagation()}
                 >
                     {!cameraActive ? (
                         <View style={styles.modalInner}>
                             {/* Header del modal */}
                             <View style={styles.modalHeader}>
-                                <View style={[styles.modalIcon, { backgroundColor: selectedOption.bgColor }]}>
+                                <View style={[
+                                    styles.modalIcon, 
+                                    { 
+                                        backgroundColor,
+                                        borderColor: selectedOption.iconColor,
+                                        borderWidth: 2
+                                    }
+                                ]}>
                                     {selectedOption.iconType === "material" ? (
                                         <MaterialIcons 
                                             name={selectedOption.icon as any} 
@@ -76,7 +83,6 @@ export function ASLPetitionModal({
                                 style={styles.instructionGif}
                                 resizeMode="contain"
                             />
-
                             {/* Botones */}
                             <View style={styles.buttonContainer}>
                                 <TouchableOpacity 

@@ -16,6 +16,7 @@ interface GridCardProps {
  */
 export function GridCard({ option, onPress, onPressIn, onPressOut }: GridCardProps) {
   const cardBg = useThemeColor({}, 'card');
+  const backgroundColor = useThemeColor({}, 'background');
 
   return (
     <TouchableOpacity
@@ -25,7 +26,14 @@ export function GridCard({ option, onPress, onPressIn, onPressOut }: GridCardPro
       onPress={() => onPress(option)}
       activeOpacity={0.7}
     >
-      <View style={[styles.iconContainer, { backgroundColor: option.bgColor }]}>
+      <View style={[
+        styles.iconContainer, 
+        { 
+          backgroundColor,
+          borderColor: option.iconColor,
+          borderWidth: 2
+        }
+      ]}>
         {option.iconType === "material" ? (
           <MaterialIcons
             name={option.icon as any}
@@ -57,9 +65,9 @@ const styles = StyleSheet.create({
       width: 0,
       height: 2,
     },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 3,
+    shadowOpacity: 0.2,
+    shadowRadius: 12,
+    elevation: 6,
   },
   iconContainer: {
     width: 80,

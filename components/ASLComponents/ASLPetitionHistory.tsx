@@ -19,7 +19,7 @@ export function ASLPetitionHistory({
 }: ASLPetitionHistoryProps) {
   const cardBg = useThemeColor({}, "card");
   const shadowColor = useThemeColor({}, "text");
-  const mutedColor = useThemeColor({}, "tabIconDefault");
+  const mutedColor = useThemeColor({}, "muted");
   const numberColor = "#7A7A7A";
 
   const [modalVisible, setModalVisible] = useState(false);
@@ -345,9 +345,9 @@ const styles = StyleSheet.create({
     borderTopRightRadius: 16,
     borderBottomRightRadius: 16,
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.15,
-    shadowRadius: 4,
-    elevation: 3,
+    shadowOpacity: 0.25,
+    shadowRadius: 8,
+    elevation: 6,
   },
   mainRow: { flexDirection: "row", alignItems: "center", gap: 10 },
   numberIndicator: {

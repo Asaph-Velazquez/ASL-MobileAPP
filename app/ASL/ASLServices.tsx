@@ -8,6 +8,7 @@ import { Image, Modal, Pressable, ScrollView, RefreshControl, StyleSheet, Text, 
 export default function ASLServices(){
     const textColor = useThemeColor({}, 'text');
     const cardBg = useThemeColor({}, 'card');
+    const backgroundColor = useThemeColor({}, 'background');
     const [modalVisible, setModalVisible] = useState(false);
     const [selectedService, setSelectedService] = useState<any>(null);
     const [selectedGif, setSelectedGif] = useState<any>(require('../../assets/gifs/ComidaGif.gif'));
@@ -134,7 +135,7 @@ export default function ASLServices(){
                         onPress={() => handlePress(opcion)}
                         activeOpacity={0.7}
                     >
-                        <View style={[styles.gridIconContainer, { backgroundColor: opcion.bgColor }]}>
+                        <View style={[styles.gridIconContainer, { backgroundColor: backgroundColor, borderColor: opcion.iconColor, borderWidth: 2 }]}>
                             {opcion.iconType === "material" ? (
                                 <MaterialIcons 
                                     name={opcion.icon as any} 
@@ -172,7 +173,7 @@ export default function ASLServices(){
                             <View style={styles.modalInner}>
                                 {/* Header del modal */}
                                 <View style={styles.modalHeader}>
-                                    <View style={[styles.modalIcon, { backgroundColor: selectedService.bgColor }]}>
+                                    <View style={[styles.modalIcon, { backgroundColor: backgroundColor, borderColor: selectedService.iconColor, borderWidth: 2 }]}>
                                         {selectedService.iconType === "material" ? (
                                             <MaterialIcons 
                                                 name={selectedService.icon as any} 
@@ -207,7 +208,7 @@ export default function ASLServices(){
                                         onPressOut={() => setModalGif(selectedService.gifUrl)}
                                         activeOpacity={0.7}
                                     >
-                                        <View style={[styles.modalIconContainer, { backgroundColor: '#FFF' }]}>
+                                        <View style={[styles.modalIconContainer, { backgroundColor: backgroundColor }]}>
                                             <MaterialIcons 
                                                 name="schedule" 
                                                 size={36} 
@@ -223,7 +224,7 @@ export default function ASLServices(){
                                         onPressOut={() => setModalGif(selectedService.gifUrl)}
                                         activeOpacity={0.7}
                                     >
-                                        <View style={[styles.modalIconContainer, { backgroundColor: '#FFF' }]}>
+                                        <View style={[styles.modalIconContainer, { backgroundColor: backgroundColor }]}>
                                             <MaterialIcons 
                                                 name="location-on" 
                                                 size={36} 
@@ -239,7 +240,7 @@ export default function ASLServices(){
                                         onPressOut={() => setModalGif(selectedService.gifUrl)}
                                         activeOpacity={0.7}
                                     >
-                                        <View style={[styles.modalIconContainer, { backgroundColor: '#FFF' }]}>
+                                        <View style={[styles.modalIconContainer, { backgroundColor: backgroundColor }]}>
                                             <MaterialIcons 
                                                 name="check-circle" 
                                                 size={36} 
@@ -255,7 +256,7 @@ export default function ASLServices(){
                                         onPressOut={() => setModalGif(selectedService.gifUrl)}
                                         activeOpacity={0.7}
                                     >
-                                        <View style={[styles.modalIconContainer, { backgroundColor: '#FFF' }]}>
+                                        <View style={[styles.modalIconContainer, { backgroundColor: backgroundColor }]}>
                                             <MaterialIcons 
                                                 name="info" 
                                                 size={36} 
@@ -287,7 +288,6 @@ const styles = StyleSheet.create({
     gifPreviewContainer: {
         marginTop: 20,
         marginHorizontal: 20,
-        backgroundColor: '#f5f5f5',
         borderRadius: 20,
         padding: 20,
         minHeight: 300,
@@ -374,7 +374,6 @@ const styles = StyleSheet.create({
         alignItems: 'center',
     },
     modalGifContainer: {
-        backgroundColor: '#f5f5f5',
         borderRadius: 16,
         padding: 12,
         minHeight: 160,

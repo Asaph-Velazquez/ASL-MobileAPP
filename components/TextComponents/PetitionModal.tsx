@@ -30,8 +30,7 @@ export function PetitionModal({
 }: PetitionModalProps) {
   const textColor = useThemeColor({}, 'text');
   const mutedColor = useThemeColor({}, 'muted');
-  const cardBg = useThemeColor({}, 'card');
-  const bgColor = useThemeColor({}, 'background');
+  const backgroundColor = useThemeColor({}, 'background');
   const { estaConectado, puedeEnviar } = useWebSocket();
   const [description, setDescription] = useState('');
 
@@ -75,13 +74,19 @@ export function PetitionModal({
         onPress={handleClose}
       >
         <Pressable 
-          style={[styles.modalContent, { backgroundColor: cardBg }]}
+          style={[styles.modalContent, { backgroundColor: backgroundColor }]}
           onPress={(e) => e.stopPropagation()}
         >
           <ScrollView showsVerticalScrollIndicator={false}>
             {/* Header del modal */}
             <View style={styles.modalHeader}>
-              <View style={[styles.modalIcon, { backgroundColor: selectedOption.bgColor }]}>
+              <View style={[
+                styles.modalIcon, 
+                { 
+                  borderColor: selectedOption.iconColor,
+                  borderWidth: 2
+                }
+              ]}>
                 {selectedOption.iconType === "material" ? (
                   <MaterialIcons 
                     name={selectedOption.icon as any} 
@@ -117,7 +122,7 @@ export function PetitionModal({
             <TextInput
               style={[styles.textArea, { 
                 color: textColor, 
-                backgroundColor: bgColor,
+                backgroundColor: backgroundColor,
                 borderColor: selectedOption.iconColor 
               }]}
               placeholder={finalPlaceholder}

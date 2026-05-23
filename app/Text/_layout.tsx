@@ -51,9 +51,11 @@ export default function TabLayout() {
           headerRight: () => (
             <HeaderButtons currentScreen="TextHome" colorScheme={colorScheme} />
           ),
-          tabBarIcon: ({ color, size }) => (
-            <IconSymbol size={size ?? 28} name="house.fill" color={color} />
-          ),
+          tabBarIcon: ({ color, size }) => {
+            // Home icon: blanco en modo oscuro, negro en modo claro
+            const homeColor = colorScheme === 'dark' ? '#FFFFFF' : '#000000';
+            return <IconSymbol size={size ?? 28} name="house.fill" color={homeColor} />;
+          },
         }}
       />
       <Tabs.Screen

@@ -15,7 +15,7 @@ export function CallModal({
     onMakeCall,
     gifSource = require('../../assets/gifs/ComidaGif.gif'), // GIF por defecto, cambiar por el de llamada
 }: CallModalProps) {
-    const cardBg = useThemeColor({}, 'card');
+    const backgroundColor = useThemeColor({}, 'background');
     const textColor = useThemeColor({}, 'text');
 
     return (
@@ -30,7 +30,7 @@ export function CallModal({
                 onPress={onClose}
             >
                 <Pressable 
-                    style={[styles.modalContent, { backgroundColor: cardBg }]}
+                    style={[styles.modalContent, { backgroundColor: backgroundColor }]}
                     onPress={(e) => e.stopPropagation()}
                 >
                     <View style={styles.modalInner}>

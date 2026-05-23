@@ -16,7 +16,7 @@ interface RatingModalProps {
  * Soporta modo ASL (visual con GIFs) y modo Text
  */
 export function RatingModal({ visible, onSubmit, onCancel, mode }: RatingModalProps) {
-    const cardBg = useThemeColor({}, 'card');
+    const backgroundColor = useThemeColor({}, 'background');
     const mutedColor = useThemeColor({}, 'tabIconDefault');
     
     const [rating, setRating] = useState(0);
@@ -53,7 +53,7 @@ export function RatingModal({ visible, onSubmit, onCancel, mode }: RatingModalPr
                 <TouchableOpacity 
                     activeOpacity={1} 
                     onPress={(e) => e.stopPropagation()}
-                    style={[styles.modalContainer, { backgroundColor: cardBg }]}
+                    style={[styles.modalContainer, { backgroundColor: backgroundColor }]}
                 >
                     <View style={styles.starsContainer}>
                         {[1, 2, 3, 4, 5].map((star) => (

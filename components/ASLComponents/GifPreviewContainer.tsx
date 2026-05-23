@@ -1,4 +1,5 @@
 import { Image, StyleSheet, View } from "react-native";
+import { useThemeColor } from '@/hooks/use-theme-color';
 
 interface GifPreviewContainerProps {
     gifSource: any;
@@ -9,6 +10,7 @@ interface GifPreviewContainerProps {
  * Usado en todas las pantallas ASL para preview
  */
 export function GifPreviewContainer({ gifSource }: GifPreviewContainerProps) {
+    const backgroundColor = useThemeColor({}, 'background');
     // Función helper para manejar tanto URLs como rutas locales
     const getImageSource = (source: any) => {
         if (typeof source === 'string') {
@@ -18,7 +20,7 @@ export function GifPreviewContainer({ gifSource }: GifPreviewContainerProps) {
     };
 
     return (
-        <View style={styles.container}>
+        <View style={[styles.container, { backgroundColor }]}>
             <Image 
                 source={getImageSource(gifSource)}
                 style={styles.gif}
@@ -32,7 +34,6 @@ const styles = StyleSheet.create({
     container: {
         marginTop: 20,
         marginHorizontal: 20,
-        backgroundColor: '#f5f5f5',
         borderRadius: 20,
         padding: 20,
         minHeight: 300,
