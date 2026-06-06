@@ -20,8 +20,6 @@ export function HistoryModal({ visible, onClose, peticiones, mode, onCancelarPet
   const borderColor = useThemeColor({}, 'tabIconDefault');
   const shadowColor = useThemeColor({}, 'text');
 
-  // Debug: Verificar el modo recibido
-
   return (
     <Modal
       animationType="slide"
@@ -77,7 +75,7 @@ export function HistoryModal({ visible, onClose, peticiones, mode, onCancelarPet
           {peticiones.length > 0 && (
             <View style={[styles.footer, { borderTopColor: borderColor }]}>
               <Text style={[styles.footerText, { color: textColor }]}>
-                REQUEST TOTAL: {peticiones.length}
+                TOTAL REQUEST: {peticiones.length}
               </Text>
             </View>
           )}

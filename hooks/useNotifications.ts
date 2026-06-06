@@ -13,16 +13,20 @@ export function useNotifications({ ultimaActualizacion }: NotificationConfig) {
       // Notification messages by request status
       const mensajes = {
         'in-progress': {
-          titulo: 'Request in progress',
-          mensaje: 'Hotel staff is currently handling your request.',
+          titulo: 'REQUEST IN PROGRESS',
+          mensaje: 'HOTEL STAFF YOUR REQUEST HANDLE NOW.',
         },
         'completed': {
-          titulo: 'Request completed',
-          mensaje: 'Your request has been successfully completed!',
+          titulo: 'REQUEST COMPLETED',
+          mensaje: 'YOUR REQUEST FINISH SUCCESS.',
         },
         'pending': {
-          titulo: 'Request pending',
-          mensaje: 'Your request is waiting to be handled.',
+          titulo: 'REQUEST PENDING',
+          mensaje: 'YOUR REQUEST WAIT. HOTEL STAFF HANDLE SOON.',
+        },
+        'cancelled': {
+          titulo: 'REQUEST CANCELLED',
+          mensaje: 'YOUR REQUEST CANCELLED.',
         },
       };
 
@@ -42,6 +46,11 @@ export function useNotifications({ ultimaActualizacion }: NotificationConfig) {
             break;
           case 'pending':
             toast.warning(config.titulo, {
+              description: config.mensaje,
+            });
+            break;
+          case 'cancelled':
+            toast.error(config.titulo, {
               description: config.mensaje,
             });
             break;
