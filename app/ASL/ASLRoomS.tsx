@@ -21,49 +21,49 @@ export default function ASLRoomS(){
     
     const opciones: ASLOption[] = [
         {
-            id: "Food",
+            id: "FOOD",
             gifSource: require('../../assets/gifs/ComidaGif.gif'),
             icon: "flatware",
             iconType: "material",
             iconColor: "#FF6B6B",
             bgColor: "#FFE5E5",
-            cameraText: "Show your food request in sign language"
+            cameraText: "FOOD REQUEST SHOW IN SIGN LANGUAGE"
         },
         {
-            id: "Amenities",
+            id: "AMENITIES",
             gifSource: require('../../assets/gifs/ComidaGif.gif'),
             icon: "sanitizer",
             iconType: "material",
             iconColor: "#4ECDC4",
             bgColor: "#E0F7F5",
-            cameraText: "Show your amenities request in sign language"
+            cameraText: "AMENITIES REQUEST SHOW IN SIGN LANGUAGE"
         },
         {
-            id: "Linens",
+            id: "LINENS",
             gifSource: require('../../assets/gifs/ComidaGif.gif'),
             icon: "bed",
             iconType: "material",
             iconColor: "#95E1D3",
             bgColor: "#E8F8F5",
-            cameraText: "Show your linen request in sign language"
+            cameraText: "LINEN REQUEST SHOW IN SIGN LANGUAGE"
         },
         {
-            id: "Comfort Items",
+            id: "COMFORT ITEMS",
             gifSource: require('../../assets/gifs/ComidaGif.gif'),
             icon: "self-improvement",
             iconType: "material",
             iconColor: "#A29BFE",
             bgColor: "#F0EFFF",
-            cameraText: "Show your comfort request in sign language"
+            cameraText: "COMFORT REQUEST SHOW IN SIGN LANGUAGE"
         },
         {
-            id: "Extra",
+            id: "EXTRA",
             gifSource: require('../../assets/gifs/ComidaGif.gif'),
             icon: "question-mark",
             iconType: "material",
             iconColor: "#FDCB6E",
             bgColor: "#FFF6E0",
-            cameraText: "Show your extra request in sign language"
+            cameraText: "EXTRA REQUEST SHOW IN SIGN LANGUAGE"
         }       
     ];
 
@@ -80,7 +80,7 @@ export default function ASLRoomS(){
         if (!permission.granted) {
             const { granted } = await requestPermission();
             if (!granted) {
-                alert('Camera permissions are needed to use this feature');
+                alert('CAMERA PERMISSION NEED FOR THIS FEATURE');
                 return;
             }
         }
@@ -130,7 +130,7 @@ export default function ASLRoomS(){
                 cameraActive={cameraActive}
                 onActivateCamera={handleActivateCamera}
                 onCloseCamera={handleCloseCamera}
-                cameraText="Show your message in sign language"
+                cameraText="YOUR MESSAGE SHOW IN SIGN LANGUAGE"
             />
 
         </ThemedView>

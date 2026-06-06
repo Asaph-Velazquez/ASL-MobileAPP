@@ -20,21 +20,21 @@ export default function ASLMovilidad(){
     const defaultGif = require('../../assets/gifs/ComidaGif.gif');
     
     const MovilidadOptions: ASLOption[] = [{
-        id: "Valet Parking",
+        id: "VALET PARKING",
         gifSource: require('../../assets/gifs/ComidaGif.gif'),
         icon: "local-parking",
         iconType: "material",
         iconColor: "#3F51B5",
         bgColor: "#E8EAF6",
-        cameraText: "Request valet parking in sign language"
+        cameraText: "VALET PARKING REQUEST IN SIGN LANGUAGE"
     }, {
-        id: "Taxi o Ride-hailing",
+        id: "TAXI OR RIDE-HAIL",
         gifSource: require('../../assets/gifs/ComidaGif.gif'),
         icon: "local-taxi",
         iconType: "material",
         iconColor: "#FFEB3B",
         bgColor: "#FFFDE7",
-        cameraText: "Request a taxi in sign language"
+        cameraText: "TAXI REQUEST IN SIGN LANGUAGE"
     }];
 
     const handlePress = (opcion: ASLOption) => {
@@ -50,7 +50,7 @@ export default function ASLMovilidad(){
         if (!permission.granted) {
             const { granted } = await requestPermission();
             if (!granted) {
-                alert('Camera permissions are needed to use this feature');
+                alert('CAMERA PERMISSION NEED FOR THIS FEATURE');
                 return;
             }
         }
@@ -100,7 +100,7 @@ export default function ASLMovilidad(){
                 cameraActive={cameraActive}
                 onActivateCamera={handleActivateCamera}
                 onCloseCamera={handleCloseCamera}
-                cameraText="Show your message in sign language"
+                cameraText="YOUR MESSAGE SHOW IN SIGN LANGUAGE"
             />
 
         </ThemedView>

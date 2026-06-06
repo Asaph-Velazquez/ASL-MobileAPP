@@ -14,49 +14,49 @@ export default function TextRoomS(){
 
     const opciones: ServiceOption[] = [
         {
-            id: "Food",
-            description: "Enjoy a delicious meal in your room.",
+            id: "FOOD",
+            description: "FOOD DELIVER ROOM, YOU REQUEST.",
             icon: "flatware",
             iconType: "material" as const,
             iconColor: "#FF6B6B",
             bgColor: "#FFE5E5",
-            placeholder: "Ex: I want to order dinner for 2 people at 8:00 PM..."
+            placeholder: "EX: WANT DINNER 2 PEOPLE 8:00 PM."
         },
         {
-            id: "Amenities",
-            description: "If you need towels, soap or any other item, just ask!",
+            id: "AMENITIES",
+            description: "TOWELS, SOAP, OTHER ITEM, YOU REQUEST.",
             icon: "sanitizer",
             iconType: "material" as const,
             iconColor: "#4ECDC4",
             bgColor: "#E0F7F5",
-            placeholder: "Ex: I request extra towels and soap, please."
+            placeholder: "EX: NEED EXTRA TOWELS AND SOAP."
         },
         {
-            id: "Linens",
-            description: "Request replacement of sheets, towels or pillowcases.",
+            id: "LINENS",
+            description: "NEW SHEETS, TOWELS, PILLOWCASES, YOU REQUEST.",
             icon: "bed",
             iconType: "material" as const,
             iconColor: "#95E1D3",
             bgColor: "#E8F8F5",
-            placeholder: "Ex: I need fresh sheets and towels, please."
+            placeholder: "EX: NEED CLEAN SHEETS AND TOWELS."
         },
         {
-            id: "Comfort Items",
-            description: "Request extra pillows, blankets or items to improve your rest.",
+            id: "COMFORT ITEMS",
+            description: "EXTRA PILLOWS, BLANKETS, COMFORT ITEMS REQUEST.",
             icon: "self-improvement",
             iconType: "material" as const,
             iconColor: "#A29BFE",
             bgColor: "#F0EFFF",
-            placeholder: "Ex: I request an extra pillow and an additional blanket."
+            placeholder: "EX: NEED EXTRA PILLOW AND BLANKET."
         },
         {
-            id: "Extra",
-            description: "For additional services, we'll connect you with reception (additional charges may apply, availability not guaranteed).",
+            id: "EXTRA",
+            description: "OTHER SERVICE REQUEST. RECEPTION HELP. EXTRA COST MAY APPLY.",
             icon: "question-mark",
             iconType: "material" as const,
             iconColor: "#FDCB6E",
             bgColor: "#FFF6E0",
-            placeholder: "Ex: I would like to request an additional service, please describe..."
+            placeholder: "EX: NEED OTHER SERVICE. PLEASE DESCRIBE."
         }       
     ];
 
@@ -103,8 +103,8 @@ export default function TextRoomS(){
                 }
             >
                 <ScreenHeader 
-                    title="Room Service"
-                    subtitle="How can we help you today?"
+                    title="ROOM SERVICE"
+                    subtitle="TODAY, YOU NEED WHAT?"
                 />
                 
                 <View style={styles.cardsContainer}>
@@ -127,7 +127,7 @@ export default function TextRoomS(){
                 }}
                 selectedOption={selectedService}
                 onSend={handleSend}
-                sendButtonText="Send Request"
+                sendButtonText="SEND REQUEST"
                 isLoading={isLoading}
             />
         </ThemedView>

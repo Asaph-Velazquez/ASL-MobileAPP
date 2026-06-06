@@ -60,9 +60,9 @@ function RootLayoutNav() {
         <Stack.Screen name="onboarding" options={{ headerShown: false }} />
         <Stack.Screen name="Text" options={{ headerShown: false }} />
         <Stack.Screen name="ASL" options={{ headerShown: false }} />
-        <Stack.Screen name="TextHome" options={{ title: 'Text Home' , headerShown: true }} />
-        <Stack.Screen name="TextRoomS" options={{ title: 'Text Room Services' , headerShown: true }} />
-        <Stack.Screen name="TextServices" options={{ title: 'Text Hotel Services' , headerShown: true }} />
+        <Stack.Screen name="TextHome" options={{ title: 'TEXT HOME' , headerShown: true }} />
+        <Stack.Screen name="TextRoomS" options={{ title: 'TEXT ROOM SERVICES' , headerShown: true }} />
+        <Stack.Screen name="TextServices" options={{ title: 'TEXT HOTEL SERVICES' , headerShown: true }} />
       </Stack>
       <StatusBar style={colorScheme === 'dark' ? 'light' : 'dark'} />
       <Toaster

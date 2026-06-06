@@ -73,10 +73,10 @@ export default function LoginScreen() {
     return (
       <View style={styles.container}>
         <MaterialIcons name="camera-alt" size={64} color="#666" />
-        <Text style={styles.title}>Camera access needed</Text>
-        <Text style={styles.subtitle}>To scan your room QR code</Text>
+        <Text style={styles.title}>CAMERA ACCESS NEED</Text>
+        <Text style={styles.subtitle}>ROOM QR CODE SCAN, CAMERA ACCESS NEED</Text>
         <TouchableOpacity style={styles.button} onPress={requestPermission}>
-          <Text style={styles.buttonText}>Grant Permission</Text>
+          <Text style={styles.buttonText}>ALLOW CAMERA</Text>
         </TouchableOpacity>
       </View>
     );
@@ -87,7 +87,7 @@ export default function LoginScreen() {
     return (
       <View style={styles.container}>
         <ActivityIndicator size="large" color="#2563eb" />
-        <Text style={styles.title}>Validating code...</Text>
+        <Text style={styles.title}>QR CODE CHECK...</Text>
       </View>
     );
   }
@@ -99,7 +99,7 @@ export default function LoginScreen() {
         <MaterialIcons name="error-outline" size={64} color="#dc2626" />
         <Text style={styles.title}>{error}</Text>
         <TouchableOpacity style={styles.button} onPress={handleScanAgain}>
-          <Text style={styles.buttonText}>Scan again</Text>
+          <Text style={styles.buttonText}>SCAN AGAIN</Text>
         </TouchableOpacity>
       </View>
     );
@@ -116,7 +116,7 @@ export default function LoginScreen() {
       >
         <View style={styles.overlay}>
           <View style={styles.header}>
-            <Text style={styles.headerTitle}>Scan your room QR code</Text>
+            <Text style={styles.headerTitle}>SCAN YOUR ROOM QR CODE</Text>
           </View>
           <View style={styles.scanFrame}>
             <View style={[styles.corner, styles.topLeft]} />
@@ -126,7 +126,7 @@ export default function LoginScreen() {
           </View>
           <View style={styles.footer}>
             <MaterialIcons name="qr-code-scanner" size={24} color="white" />
-            <Text style={styles.footerText}>Position the QR code inside the frame</Text>
+            <Text style={styles.footerText}>QR CODE PUT INSIDE FRAME</Text>
           </View>
         </View>
       </CameraView>

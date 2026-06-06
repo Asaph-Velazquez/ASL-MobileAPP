@@ -79,7 +79,7 @@ export function RatingModal({ visible, onSubmit, onCancel, mode }: RatingModalPr
                             onPress={handleCancel}
                         >
                             <MaterialIcons name="close" size={20} color="#999999" />
-                            {mode === 'Text' && <Text style={styles.cancelButtonText}>Cancel</Text>}
+                            {mode === 'Text' && <Text style={styles.cancelButtonText}>CANCEL</Text>}
                         </TouchableOpacity>
 
                         <TouchableOpacity 
@@ -92,7 +92,7 @@ export function RatingModal({ visible, onSubmit, onCancel, mode }: RatingModalPr
                             disabled={rating === 0}
                         >
                             <MaterialIcons name="send" size={20} color="#FFFFFF" />
-                            {mode === 'Text' && <Text style={styles.submitButtonText}>Submit</Text>}
+                            {mode === 'Text' && <Text style={styles.submitButtonText}>SEND</Text>}
                         </TouchableOpacity>
                     </View>
                 </TouchableOpacity>

@@ -89,7 +89,7 @@ export function InfoModal({
                 <View style={styles.detailRow}>
                   <MaterialIcons name="schedule" size={24} color={selectedOption.iconColor} />
                   <View style={styles.detailText}>
-                    <Text style={[styles.detailLabel, { color: textColor }]}>Schedule</Text>
+                    <Text style={[styles.detailLabel, { color: textColor }]}>SCHEDULE</Text>
                     <Text style={[styles.detailValue, { color: mutedColor }]}>
                       {detalles.horario}
                     </Text>
@@ -102,7 +102,7 @@ export function InfoModal({
                 <View style={styles.detailRow}>
                   <MaterialIcons name="location-on" size={24} color={selectedOption.iconColor} />
                   <View style={styles.detailText}>
-                    <Text style={[styles.detailLabel, { color: textColor }]}>Location</Text>
+                    <Text style={[styles.detailLabel, { color: textColor }]}>LOCATION</Text>
                     <Text style={[styles.detailValue, { color: mutedColor }]}>
                       {detalles.ubicacion}
                     </Text>
@@ -115,7 +115,7 @@ export function InfoModal({
                 <View style={styles.detailRow}>
                   <MaterialIcons name="check-circle" size={24} color={selectedOption.iconColor} />
                   <View style={styles.detailText}>
-                    <Text style={[styles.detailLabel, { color: textColor }]}>Includes</Text>
+                    <Text style={[styles.detailLabel, { color: textColor }]}>INCLUDES</Text>
                     {detalles.incluye.map((item: string, idx: number) => (
                       <Text key={idx} style={[styles.detailValue, { color: mutedColor }]}>
                         • {item}
@@ -133,7 +133,7 @@ export function InfoModal({
                 }]}>
                   <MaterialIcons name="info" size={20} color={selectedOption.iconColor} />
                   <Text style={styles.notaText}>
-                    <Text style={{ color: selectedOption.iconColor, fontWeight: '600' }}>Note: </Text>
+                    <Text style={{ color: selectedOption.iconColor, fontWeight: '600' }}>NOTE: </Text>
                     <Text style={{ color: textColor }}>{detalles.nota}</Text>
                   </Text>
                 </View>
@@ -146,7 +146,7 @@ export function InfoModal({
               onPress={onClose}
               activeOpacity={0.8}
             >
-              <Text style={styles.closeButtonText}>Close</Text>
+              <Text style={styles.closeButtonText}>CLOSE</Text>
             </TouchableOpacity>
           </ScrollView>
         </Pressable>

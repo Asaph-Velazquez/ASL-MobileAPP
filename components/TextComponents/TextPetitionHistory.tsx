@@ -58,7 +58,7 @@ export function TextPetitionHistory({ peticiones, onCancelar, onRate }: TextPeti
             <View style={styles.emptyContainer}>
                 <MaterialIcons name="inbox" size={48} color={mutedColor} />
                 <Text style={[styles.emptyText, { color: mutedColor }]}>
-                    No requests registered
+                    NO REQUEST REGISTERED
                 </Text>
             </View>
         );
@@ -68,22 +68,22 @@ export function TextPetitionHistory({ peticiones, onCancelar, onRate }: TextPeti
         'pending': { 
             color: '#FFA726', 
             icon: 'schedule' as const,
-            text: 'Pending'
+            text: 'PENDING'
         },
         'in-progress': { 
             color: '#42A5F5', 
             icon: 'autorenew' as const,
-            text: 'In Progress'
+            text: 'IN PROGRESS'
         },
         'completed': { 
             color: '#66BB6A', 
             icon: 'check-circle' as const,
-            text: 'Completed'
+            text: 'COMPLETED'
         },
         'cancelled': { 
             color: '#F44336', 
             icon: 'cancel' as const,
-            text: 'Cancelled'
+            text: 'CANCELLED'
         }
     };
 
@@ -91,22 +91,22 @@ export function TextPetitionHistory({ peticiones, onCancelar, onRate }: TextPeti
         'room-service': { 
             icon: 'restaurant-menu' as const,
             color: '#9C27B0',
-            text: 'Room Service'
+            text: 'ROOM SERVICE'
         },
         'services': { 
             icon: 'room-service' as const,
             color: '#4A90E2',
-            text: 'Services'
+            text: 'SERVICES'
         },
         'problem': { 
             icon: 'warning' as const,
             color: '#F44336',
-            text: 'Problem'
+            text: 'PROBLEM'
         },
         'extra': { 
             icon: 'star' as const,
             color: '#FF9800',
-            text: 'Other'
+            text: 'OTHER'
         }
     };
 
@@ -141,12 +141,12 @@ export function TextPetitionHistory({ peticiones, onCancelar, onRate }: TextPeti
                 onConfirm={confirmCancelar}
                 onCancel={() => setModalVisible(false)}
                 mode="Text"
-                title="Cancel Request?"
-                description="This action will notify the hotel staff that you no longer need this service. You cannot undo this action."
+                title="CANCEL REQUEST?"
+                description="THIS SERVICE YOU NOT NEED NOW. HOTEL STAFF RECEIVE NOTICE. ACTION CANNOT UNDO."
                 iconName="warning"
                 iconColor="#F44336"
-                confirmText="Yes, cancel"
-                cancelText="No, keep it"
+                confirmText="YES CANCEL"
+                cancelText="NO KEEP"
             />
             <RatingModal
                 visible={ratingModalVisible}
@@ -196,7 +196,7 @@ export function TextPetitionHistory({ peticiones, onCancelar, onRate }: TextPeti
                                 <View style={styles.infoRow}>
                                     <MaterialIcons name="hotel" size={16} color={mutedColor} />
                                     <Text style={[styles.infoText, { color: textColor }]}>
-                                        Room {peticion.roomNumber}
+                                        ROOM {peticion.roomNumber}
                                     </Text>
                                 </View>
                             )}
@@ -216,7 +216,7 @@ export function TextPetitionHistory({ peticiones, onCancelar, onRate }: TextPeti
                                 MESSAGE:
                             </Text>
                             <Text style={[styles.messageText, { color: textColor }]}>
-                                {peticion.message || 'No message'}
+                                {peticion.message || 'NO MESSAGE'}
                             </Text>
                         </View>
                         
@@ -238,7 +238,7 @@ export function TextPetitionHistory({ peticiones, onCancelar, onRate }: TextPeti
                                 onPress={() => handleCancelar(peticion)}
                             >
                                 <MaterialIcons name="cancel" size={20} color="#F44336" />
-                                <Text style={styles.cancelButtonText}>Cancel Request</Text>
+                                <Text style={styles.cancelButtonText}>CANCEL REQUEST</Text>
                             </TouchableOpacity>
                         )}
 
@@ -249,7 +249,7 @@ export function TextPetitionHistory({ peticiones, onCancelar, onRate }: TextPeti
                                 onPress={() => handleRate(peticion)}
                             >
                                 <MaterialIcons name="star" size={20} color="#FFD700" />
-                                <Text style={styles.rateButtonText}>Rate this request</Text>
+                                <Text style={styles.rateButtonText}>RATE REQUEST</Text>
                             </TouchableOpacity>
                         )}
 
@@ -257,7 +257,7 @@ export function TextPetitionHistory({ peticiones, onCancelar, onRate }: TextPeti
                         {peticion.rating && (
                             <View style={styles.ratedContainer}>
                                 <Text style={[styles.ratedText, { color: mutedColor }]}>
-                                    Your Rating:
+                                    YOUR RATING:
                                 </Text>
                                 <View style={styles.ratedStars}>
                                     {[1, 2, 3, 4, 5].map((star) => (

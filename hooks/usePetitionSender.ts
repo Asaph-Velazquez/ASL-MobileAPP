@@ -33,24 +33,24 @@ export function usePetitionSender() {
     try {
       // Validar descripción
       if (!description.trim()) {
-        toast.error('Incomplete fields', {
-          description: 'Please add a description for your request',
+        toast.error('FIELDS INCOMPLETE', {
+          description: 'REQUEST DESCRIPTION ADD.',
         });
         return false;
       }
 
       // Validar autenticación
       if (!roomNumber || !guestName) {
-        toast.error('Not authenticated', {
-          description: 'Please log in with your QR code',
+        toast.error('NOT AUTHENTICATED', {
+          description: 'QR CODE LOGIN.',
         });
         return false;
       }
 
       // Validar conexión
       if (!estaConectado) {
-        toast.error('Connection error', {
-          description: 'No connection to server. Check your connection.',
+        toast.error('CONNECTION ERROR', {
+          description: 'SERVER CONNECTION NONE. INTERNET CHECK.',
         });
         return false;
       }
@@ -65,25 +65,25 @@ export function usePetitionSender() {
       if (success) {
         // Mensajes personalizados según tipo
         const messages = {
-          'services': 'Service Request Sent',
-          'room-service': 'Room Service Requested',
-          'problem': 'Problem Reported',
-          'extra': 'Request Sent',
+          'services': 'SERVICE REQUEST SENT',
+          'room-service': 'ROOM SERVICE REQUEST SENT',
+          'problem': 'PROBLEM REPORT SENT',
+          'extra': 'REQUEST SENT',
         };
 
-        toast.success(messages[type] || 'Request Sent', {
-          description: `Your ${serviceName} request has been sent to hotel staff.`,
+        toast.success(messages[type] || 'REQUEST SENT', {
+          description: `${serviceName} REQUEST HOTEL STAFF RECEIVE.`,
         });
         return true;
       } else {
-        toast.error('Failed to send', {
-          description: 'Could not send your request. Please try again.',
+        toast.error('SEND FAIL', {
+          description: 'REQUEST SEND NOT. TRY AGAIN.',
         });
         return false;
       }
     } catch (error) {
-      toast.error('Unexpected error', {
-        description: 'An error occurred while sending your request.',
+      toast.error('UNEXPECTED ERROR', {
+        description: 'REQUEST SEND, ERROR HAPPEN.',
       });
       return false;
     } finally {

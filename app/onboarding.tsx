@@ -19,29 +19,29 @@ interface OnboardingSlide {
 const slides: OnboardingSlide[] = [
   {
     id: 1,
-    title: 'Welcome to Canada Central Hotel',
-    description: 'Your comfort is our priority. This app will help you communicate with our staff easily.',
+    title: 'HOTEL WELCOME',
+    description: 'THIS APP HELP YOU COMMUNICATE WITH HOTEL STAFF. YOUR COMFORT IMPORTANT.',
     icon: 'hotel',
     gif: require('../assets/gifs/ComidaGif.gif'), // Cambiar por GIF de "Bienvenida" en ASL
   },
   {
     id: 2,
-    title: 'Choose Your Communication Mode',
-    description: 'Select between Sign Language (ASL) or Text to communicate with hotel staff.',
+    title: 'COMMUNICATION MODE CHOOSE',
+    description: 'ASL OR TEXT YOU CHOOSE. BOTH HELP YOU COMMUNICATE WITH STAFF.',
     icon: 'compare-arrows',
     gif: require('../assets/gifs/ComidaGif.gif'), // Cambiar por GIF de "Elegir modo" en ASL
   },
   {
     id: 3,
-    title: 'Request Services Easily',
-    description: 'Order room service, request housekeeping, report issues, and more with just a few taps.',
+    title: 'SERVICE REQUEST EASY',
+    description: 'ROOM SERVICE ORDER, HOUSEKEEPING REQUEST, PROBLEM REPORT, MORE.',
     icon: 'room-service',
     gif: require('../assets/gifs/ComidaGif.gif'), // Cambiar por GIF de "Servicios" en ASL
   },
   {
     id: 4,
-    title: 'Get Started',
-    description: 'Let\'s begin! Choose your preferred communication method on the next screen.',
+    title: 'START NOW',
+    description: 'NEXT SCREEN, YOUR PREFERRED MODE YOU CHOOSE.',
     icon: 'check-circle',
     gif: require('../assets/gifs/ComidaGif.gif'), // Cambiar por GIF de "Comenzar" en ASL
   },
@@ -84,7 +84,7 @@ export default function OnboardingScreen() {
       {/* Skip button */}
       {!isLastSlide && (
         <TouchableOpacity style={styles.skipButton} onPress={handleSkip}>
-          <Text style={[styles.skipText, { color: mutedColor }]}>Skip</Text>
+          <Text style={[styles.skipText, { color: mutedColor }]}>SKIP</Text>
         </TouchableOpacity>
       )}
 
@@ -92,14 +92,14 @@ export default function OnboardingScreen() {
       {isOffline && (
         <View style={styles.offlineBadge}>
           <MaterialIcons name="wifi-off" size={16} color="#FFA000" />
-          <Text style={styles.offlineBadgeText}>Offline Mode</Text>
+          <Text style={styles.offlineBadgeText}>MODE OFFLINE</Text>
         </View>
       )}
 
       {/* Room number badge */}
       <View style={[styles.roomBadge, { backgroundColor: cardBg }]}>
         <MaterialIcons name="door-front" size={20} color="#4A90E2" />
-        <Text style={[styles.roomBadgeText, { color: textColor }]}>Room {roomNumber}</Text>
+        <Text style={[styles.roomBadgeText, { color: textColor }]}>ROOM {roomNumber}</Text>
       </View>
 
       {/* Content */}
@@ -153,14 +153,14 @@ export default function OnboardingScreen() {
           {!isFirstSlide && (
             <TouchableOpacity style={styles.backButton} onPress={handleBack}>
               <MaterialIcons name="arrow-back" size={24} color="#4A90E2" />
-              <Text style={styles.backButtonText}>Back</Text>
+              <Text style={styles.backButtonText}>BACK</Text>
             </TouchableOpacity>
           )}
 
           {/* Next button */}
           <TouchableOpacity style={styles.nextButton} onPress={handleNext}>
             <Text style={styles.nextButtonText}>
-              {isLastSlide ? 'Get Started' : 'Next'}
+              {isLastSlide ? 'START NOW' : 'NEXT'}
             </Text>
             <MaterialIcons name="arrow-forward" size={24} color="#FFFFFF" />
           </TouchableOpacity>

@@ -61,7 +61,7 @@ export default function HomeScreen() {
           </View>
           <Text style={[styles.title, { color: textColor }]}>Canada Central Hotel</Text>
           <Text style={[styles.subtitle, { color: mutedColor }]}>
-            Welcome, {guestName} - Room {roomNumber}
+            ROOM {roomNumber} - WELCOME {guestName}
           </Text>
         </View>
 
@@ -111,9 +111,9 @@ export default function HomeScreen() {
                 <MaterialIcons name="chat-bubble" size={32} color="#FFFFFF" />
               </View>
               <View style={styles.cardTextContainer}>
-                <Text style={styles.cardTitle}>Text Mode</Text>
+                <Text style={styles.cardTitle}>TEXT MODE</Text>
                 <Text style={styles.cardDescription}>
-                  Write your requests and messages to communicate with staff
+                  REQUEST WRITE, MESSAGE WRITE, STAFF COMMUNICATE
                 </Text>
               </View>
               <MaterialIcons name="arrow-forward-ios" size={20} color="rgba(255,255,255,0.8)" />
@@ -125,7 +125,7 @@ export default function HomeScreen() {
         <View style={styles.footer}>
           <MaterialIcons name="info-outline" size={16} color={mutedColor} />
           <Text style={[styles.footerText, { color: mutedColor }]}>
-            You can change your preference at any time
+            MODE YOU CAN CHANGE ANY TIME
           </Text>
         </View>
       </View>

@@ -44,10 +44,10 @@ export function LogoutModal({ visible, onConfirm, onCancel }: LogoutModalProps) 
           {/* Text Content */}
           <View style={styles.textContainer}>
             <Text style={[styles.title, { color: textColor }]}>
-              Logout
+              LOGOUT
             </Text>
             <Text style={[styles.description, { color: mutedColor }]}>
-              Are you sure you want to logout from your account?
+              ACCOUNT LOGOUT, YOU SURE?
             </Text>
           </View>
 
@@ -59,7 +59,7 @@ export function LogoutModal({ visible, onConfirm, onCancel }: LogoutModalProps) 
               activeOpacity={0.7}
             >
               <MaterialIcons name="close" size={20} color="#6B7280" />
-              <Text style={styles.cancelButtonText}>Cancel</Text>
+              <Text style={styles.cancelButtonText}>CANCEL</Text>
             </TouchableOpacity>
 
             <TouchableOpacity 
@@ -68,7 +68,7 @@ export function LogoutModal({ visible, onConfirm, onCancel }: LogoutModalProps) 
               activeOpacity={0.7}
             >
               <MaterialIcons name="logout" size={20} color="#FFFFFF" />
-              <Text style={styles.confirmButtonText}>Logout</Text>
+              <Text style={styles.confirmButtonText}>LOGOUT</Text>
             </TouchableOpacity>
           </View>
         </View>

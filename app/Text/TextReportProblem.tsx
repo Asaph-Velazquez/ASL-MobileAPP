@@ -14,76 +14,76 @@ export default function ReportProblem() {
 
     const problemOptions: ServiceOption[] = [
         {
-            id: "Air Conditioning",
-            description: "Report problems with air conditioning or heating.",
+            id: "AIR CONDITIONING",
+            description: "AC OR HEAT PROBLEM, REPORT.",
             icon: "ac-unit",
             iconType: "material",
             iconColor: "#2196F3",
             bgColor: "#E3F2FD",
-            placeholder: "Ex: The AC is not cooling well, temperature won't drop below 77°F..."
+            placeholder: "EX: AC NOT COOL. ROOM STILL HOT."
         },
         {
-            id: "Plumbing",
-            description: "Problems with water, drainage or sanitary facilities.",
+            id: "PLUMBING",
+            description: "WATER, DRAIN, TOILET PROBLEM, REPORT.",
             icon: "plumbing",
             iconType: "material",
             iconColor: "#03A9F4",
             bgColor: "#E1F5FE",
-            placeholder: "Ex: The shower has no hot water, there's a leak in the sink..."
+            placeholder: "EX: SHOWER NO HOT WATER. SINK LEAK."
         },
         {
-            id: "Electricity",
-            description: "Electrical failures, power outages or outlet problems.",
+            id: "ELECTRICITY",
+            description: "POWER OR OUTLET PROBLEM, REPORT.",
             icon: "bolt",
             iconType: "material",
             iconColor: "#FFC107",
             bgColor: "#FFF8E1",
-            placeholder: "Ex: The outlet near the bed doesn't work, lights are flickering..."
+            placeholder: "EX: BED OUTLET NOT WORK. LIGHT FLICKER."
         },
         {
-            id: "Housekeeping",
-            description: "Request additional cleaning or report hygiene issues.",
+            id: "HOUSEKEEPING",
+            description: "CLEANING REQUEST OR HYGIENE PROBLEM REPORT.",
             icon: "cleaning-services",
             iconType: "material",
             iconColor: "#4CAF50",
             bgColor: "#E8F5E9",
-            placeholder: "Ex: I need additional cleaning in the bathroom, missing towel replacement..."
+            placeholder: "EX: NEED EXTRA BATHROOM CLEANING. TOWELS MISSING."
         },
         {
-            id: "Noise",
-            description: "Report disturbances from excessive noise.",
+            id: "NOISE",
+            description: "LOUD NOISE DISTURBANCE, REPORT.",
             icon: "volume-up",
             iconType: "material",
             iconColor: "#FF5722",
             bgColor: "#FBE9E7",
-            placeholder: "Ex: There's a lot of noise coming from the next room..."
+            placeholder: "EX: NEXT ROOM TOO LOUD."
         },
         {
-            id: "Furniture",
-            description: "Damaged furniture or items needing repair.",
+            id: "FURNITURE",
+            description: "BROKEN FURNITURE OR ITEM, REPORT.",
             icon: "weekend",
             iconType: "material",
             iconColor: "#795548",
             bgColor: "#EFEBE9",
-            placeholder: "Ex: The desk chair is broken, the drawer won't close properly..."
+            placeholder: "EX: CHAIR BROKEN. DRAWER NOT CLOSE."
         },
         {
-            id: "TV / Internet",
-            description: "Problems with television, WiFi or connectivity.",
+            id: "TV / INTERNET",
+            description: "TV, WIFI, CONNECTION PROBLEM, REPORT.",
             icon: "wifi-off",
             iconType: "material",
             iconColor: "#9C27B0",
             bgColor: "#F3E5F5",
-            placeholder: "Ex: WiFi is not working, TV won't turn on or has no signal..."
+            placeholder: "EX: WIFI NOT WORK. TV NO SIGNAL."
         },
         {
-            id: "Other Problem",
-            description: "Describe any other problem you need to report.",
+            id: "OTHER PROBLEM",
+            description: "OTHER PROBLEM, DESCRIBE.",
             icon: "report-problem",
             iconType: "material",
             iconColor: "#F44336",
             bgColor: "#FFEBEE",
-            placeholder: "Ex: Describe the problem you're experiencing..."
+            placeholder: "EX: DESCRIBE PROBLEM HERE."
         }
     ];
 
@@ -130,8 +130,8 @@ export default function ReportProblem() {
         >
             <ThemedView style={styles.container}>
                 <ScreenHeader 
-                    title="Report Problem"
-                    subtitle="What problem do you need to report?"
+                    title="REPORT PROBLEM"
+                    subtitle="WHAT PROBLEM YOU NEED REPORT?"
                 />
                 
                 <View style={styles.cardsContainer}>
@@ -151,7 +151,7 @@ export default function ReportProblem() {
                     onClose={() => setModalVisible(false)}
                     onSend={handleSend}
                     isLoading={isLoading}
-                    sendButtonText="Send Report"
+                    sendButtonText="SEND REPORT"
                 />
             </ThemedView>
         </ScrollView>

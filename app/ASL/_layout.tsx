@@ -46,7 +46,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="ASLHome"
         options={{
-          title: 'Home',
+          title: 'HOME',
           headerTitle: '',
           headerRight: () => (
             <HeaderButtons currentScreen="ASLHome" colorScheme={colorScheme} />
@@ -61,7 +61,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="ASLRoomS"
         options={{
-          title: 'Room Service',
+          title: 'ROOM SERVICE',
           headerTitle: '',
           headerRight: () => (
             <HeaderButtons currentScreen="ASLRoomS" colorScheme={colorScheme} />
@@ -72,7 +72,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="ASLServices"
         options={{
-          title: 'Hotel Services',
+          title: 'HOTEL SERVICES',
           headerTitle: '',
           headerRight: () => (
             <HeaderButtons currentScreen="ASLServices" colorScheme={colorScheme} />
@@ -83,7 +83,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="ASLReportProblem"
         options={{
-          title: 'Report Problem',
+          title: 'REPORT PROBLEM',
           headerTitle: '',
           headerRight: () => (
             <HeaderButtons currentScreen="ASLReportProblem" colorScheme={colorScheme} />
@@ -94,7 +94,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="ASLMovilidad"
         options={{
-          title: 'Mobility',
+          title: 'MOBILITY',
           headerTitle: '',
           headerRight: () => (
             <HeaderButtons currentScreen="ASLMovilidad" colorScheme={colorScheme} />

@@ -14,7 +14,7 @@ export default function ASLHome(){
     
     const opciones: ASLOption[] = [
         {
-            id: "Servicios",
+            id: "SERVICES",
             gifSource: require('../../assets/gifs/ComidaGif.gif'),
             icon: "room-service",
             iconType: "material",
@@ -22,7 +22,7 @@ export default function ASLHome(){
             bgColor: "#E3F2FD"
         },
         {
-            id: "Room Service",
+            id: "ROOM SERVICE",
             gifSource: require('../../assets/gifs/ComidaGif.gif'),
             icon: "silverware-fork-knife",
             iconType: "community",
@@ -30,7 +30,7 @@ export default function ASLHome(){
             bgColor: "#F3E5F5"
         },
         {
-            id: "Problema",
+            id: "PROBLEM",
             gifSource: require('../../assets/gifs/ComidaGif.gif'),
             icon: "warning",
             iconType: "material",
@@ -38,7 +38,7 @@ export default function ASLHome(){
             bgColor: "#FFEBEE"
         },
         {
-            id: "Movilidad",
+            id: "MOBILITY",
             gifSource: require('../../assets/gifs/ComidaGif.gif'),
             icon: "local-taxi",
             iconType: "material",
@@ -49,16 +49,16 @@ export default function ASLHome(){
 
     const handlePress = (opcion: ASLOption) => {
         switch(opcion.id) {
-            case "Servicios":
+            case "SERVICES":
                 router.push('/ASL/ASLServices');
                 break;
-            case "Room Service":
+            case "ROOM SERVICE":
                 router.push('/ASL/ASLRoomS');
                 break;
-            case "Problema":
+            case "PROBLEM":
                 router.push('/ASL/ASLReportProblem');
                 break;
-            case "Movilidad":
+            case "MOBILITY":
                 router.push('/ASL/ASLMovilidad');
                 break;
         }
@@ -67,8 +67,6 @@ export default function ASLHome(){
     const onRefresh = async () => {
         setRefreshing(true);
         try {
-            // Aquí puedes agregar lógica para recargar datos
-            // Por ejemplo: llamar a una API para actualizar el contenido
             await new Promise(resolve => setTimeout(resolve, 1000));
         } finally {
             setRefreshing(false);

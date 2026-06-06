@@ -25,7 +25,7 @@ export function PetitionModal({
   selectedOption,
   onSend,
   placeholder,
-  sendButtonText = "Send Request",
+  sendButtonText = "SEND REQUEST",
   isLoading = false
 }: PetitionModalProps) {
   const textColor = useThemeColor({}, 'text');
@@ -48,19 +48,19 @@ export function PetitionModal({
   // Determinar mensaje de estado de conexión
   const getConnectionStatus = () => {
     if (!estaConectado) {
-      return { color: '#F44336', text: 'Disconnected' };
+      return { color: '#F44336', text: 'DISCONNECTED' };
     }
     if (!puedeEnviar) {
-      return { color: '#FFA000', text: 'Offline - Cannot send' };
+      return { color: '#FFA000', text: 'OFFLINE - SEND CANNOT' };
     }
-    return { color: '#4CAF50', text: 'Connected' };
+    return { color: '#4CAF50', text: 'CONNECTED' };
   };
 
   const connectionStatus = getConnectionStatus();
 
   if (!selectedOption) return null;
 
-  const finalPlaceholder = placeholder || selectedOption.placeholder || 'Describe your request...';
+  const finalPlaceholder = placeholder || selectedOption.placeholder || 'YOUR REQUEST DESCRIBE.';
 
   return (
     <Modal
@@ -151,7 +151,7 @@ export function PetitionModal({
                   <>
                     <MaterialIcons name="send" size={20} color="#FFFFFF" />
                     <Text style={styles.sendButtonText}>
-                      {!puedeEnviar ? 'Offline' : sendButtonText}
+                      {!puedeEnviar ? 'OFFLINE' : sendButtonText}
                     </Text>
                   </>
                 )}
@@ -164,7 +164,7 @@ export function PetitionModal({
                 activeOpacity={0.8}
               >
                 <Text style={[styles.cancelButtonText, { color: textColor }]}>
-                  Cancel
+                  CANCEL
                 </Text>
               </TouchableOpacity>
             </View>

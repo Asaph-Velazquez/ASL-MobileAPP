@@ -57,7 +57,7 @@ export function HeaderButtons({ currentScreen, colorScheme }: HeaderButtonsProps
   const handleMakeCall = () => {
     setCallModalVisible(false);
     // TODO: Implementar lógica de llamada
-    Alert.alert('Call', 'Implemetar llamada mas adelante');
+    Alert.alert('CALL', 'CALL FEATURE LATER');
   };
 
   // Función de logout
@@ -92,7 +92,7 @@ export function HeaderButtons({ currentScreen, colorScheme }: HeaderButtonsProps
           ) : (
             <MaterialIcons name="chat-bubble" size={20} color="#FFFFFF" />
           )}
-          <Text style={styles.buttonText}>{isASLMode ? 'ASL' : 'Text'}</Text>
+          <Text style={styles.buttonText}>{isASLMode ? 'ASL' : 'TEXT'}</Text>
           <MaterialIcons name="swap-horiz" size={18} color="#FFFFFF" />
         </View>
       </TouchableOpacity>

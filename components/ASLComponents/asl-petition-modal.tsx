@@ -27,7 +27,7 @@ export function ASLPetitionModal({
     cameraActive,
     onActivateCamera,
     onCloseCamera,
-    cameraText = "Show your message in sign language"
+    cameraText = "YOUR MESSAGE SHOW IN SIGN LANGUAGE"
 }: ASLPetitionModalProps) {
     const textColor = useThemeColor({}, 'text');
     const backgroundColor = useThemeColor({}, 'background');

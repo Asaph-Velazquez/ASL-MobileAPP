@@ -11,57 +11,57 @@ export default function TextServices(){
     const [refreshing, setRefreshing] = useState(false);
     
     const ServiceOptions: ServiceOption[] = [{
-            id: "Breakfast included",
-            description: "Enjoy a delicious breakfast at our cafeteria.",
+            id: "BREAKFAST INCLUDED",
+            description: "BREAKFAST CAFETERIA AVAILABLE.",
             icon: "food-bank",
             iconType: "material" as const,
             iconColor: "#FF9800",
             bgColor: "#FFF3E0",
             detalles: {
             horario: "6:00 AM - 11:00 AM",
-            ubicacion: "Main restaurant, 1st floor",
-            incluye: ["Continental buffet", "Fresh fruits", "Coffee and juices", "Freshly baked bread"],
-            nota: "Book 1 day in advance for special options"
+            ubicacion: "MAIN RESTAURANT, 1ST FLOOR",
+            incluye: ["CONTINENTAL BUFFET", "FRESH FRUIT", "COFFEE AND JUICE", "FRESH BREAD"],
+            nota: "BOOK 1 DAY BEFORE FOR SPECIAL OPTIONS"
         }
         },{
-            id: "Pool",
-            description: "Enjoy a refreshing experience at our pool.",
+            id: "POOL",
+            description: "POOL OPEN. RELAX, SWIM.",
             icon: "pool",
             iconType: "material" as const,
             iconColor: "#00BCD4",
             bgColor: "#E0F7FA",
             detalles: {
             horario: "7:00 AM - 10:00 PM",
-            ubicacion: "Terrace, 5th floor",
-            incluye: ["Towels included", "Lounge chairs available", "Pool bar", "Children's area"],
-            nota: "Maximum capacity: 50 people. Recommended to reserve lounge chairs during high season"
+            ubicacion: "TERRACE, 5TH FLOOR",
+            incluye: ["TOWELS INCLUDED", "LOUNGE CHAIRS AVAILABLE", "POOL BAR", "CHILDREN AREA"],
+            nota: "MAX CAPACITY 50 PEOPLE. RESERVE LOUNGE CHAIRS IN HIGH SEASON"
         }
         },{
-            id: "Gym",
-            description: "Don't let your routine slip.",
+            id: "GYM",
+            description: "GYM OPEN. YOUR ROUTINE CONTINUE.",
             icon: "fitness-center",
             iconType: "material" as const,
             iconColor: "#F44336",
             bgColor: "#FFEBEE",
             detalles: {
             horario: "24 hours",
-            ubicacion: "2nd floor, next to spa",
-            incluye: ["Cardio equipment", "Weights and dumbbells", "Towels and water", "Trainer available by appointment"],
-            nota: "Access with room key. Recommended to bring athletic shoes"
+            ubicacion: "2ND FLOOR, NEXT TO SPA",
+            incluye: ["CARDIO EQUIPMENT", "WEIGHTS AND DUMBBELLS", "TOWELS AND WATER", "TRAINER BY APPOINTMENT"],
+            nota: "USE ROOM KEY. BRING ATHLETIC SHOES"
         }
         },
         {
-            id: "Spa",
-            description: "Enjoy a relaxing spa day.",
+            id: "SPA",
+            description: "SPA OPEN. RELAX DAY ENJOY.",
             icon: "spa",
             iconType: "material" as const,
             iconColor: "#9C27B0",
             bgColor: "#F3E5F5",
             detalles: {
             horario: "9:00 AM - 8:00 PM",
-            ubicacion: "2nd floor, west wing",
-            incluye: ["Therapeutic massages", "Facials", "Sauna and steam", "Aromatherapy"],
-            nota: "Book 24 hours in advance. Services with additional cost"
+            ubicacion: "2ND FLOOR, WEST WING",
+            incluye: ["THERAPY MASSAGE", "FACIAL", "SAUNA AND STEAM", "AROMATHERAPY"],
+            nota: "BOOK 24 HOURS BEFORE. EXTRA COST SERVICE"
         }
     }];
 
@@ -93,8 +93,8 @@ export default function TextServices(){
                 }
             >
                 <ScreenHeader 
-                    title="Included Services"
-                    subtitle="What do you need today?"
+                    title="INCLUDED SERVICES"
+                    subtitle="TODAY, WHAT YOU WANT SEE?"
                 />
                 
                 <View style={styles.cardsContainer}>

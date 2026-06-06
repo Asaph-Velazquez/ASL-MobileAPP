@@ -9,32 +9,32 @@ export default function TextHome() {
     const [refreshing, setRefreshing] = useState(false);
     const services: ServiceOption[] = [
         {
-            id: "Services",
-            description: "Explore the services we offer at our hotel.",
+            id: "HOTEL SERVICES",
+            description: "HOTEL SERVICE AVAILABLE, SEE HERE.",
             icon: "room-service",
             iconType: "material",
             iconColor: "#4A90E2",
             bgColor: "#E3F2FD"
         },
         {
-            id: "Room Service",
-            description: "Check our available room service options.",
+            id: "ROOM SERVICE",
+            description: "ROOM SERVICE OPTIONS, SEE HERE.",
             icon: "silverware-fork-knife",
             iconType: "community",
             iconColor: "#9C27B0",
             bgColor: "#F3E5F5"
         },
         {
-            id: "Problem",
-            description: "Report any issues you may have during your stay.",
+            id: "PROBLEM",
+            description: "YOUR STAY DURING, PROBLEM REPORT.",
             icon: "warning",
             iconType: "material",
             iconColor: "#F44336",
             bgColor: "#FFEBEE"
         },
         {
-            id: "Mobility",
-            description: "Request valet parking, private transport or special services.",
+            id: "MOBILITY",
+            description: "VALET, TRANSPORT, SPECIAL TRAVEL HELP REQUEST.",
             icon: "local-taxi",
             iconType: "material",
             iconColor: "#ffe100ff",
@@ -44,16 +44,16 @@ export default function TextHome() {
 
     const handlePress = (option: ServiceOption) => {
         switch(option.id) {
-            case "Services":
+            case "HOTEL SERVICES":
                 router.push('/Text/TextServices');
                 break;
-            case "Room Service":
+            case "ROOM SERVICE":
                 router.push('/Text/TextRoomS');
                 break;
-            case "Problem":
+            case "PROBLEM":
                 router.push('/Text/TextReportProblem');
                 break;
-            case "Mobility":
+            case "MOBILITY":
                 router.push('/Text/TextMovilidad');
                 break;
         }
@@ -81,8 +81,8 @@ export default function TextHome() {
         >
             <ThemedView style={styles.container}>
                 <ScreenHeader 
-                    title="Canada Central Hotel"
-                    subtitle="What do you need today?"
+                    title="CANADA CENTRAL HOTEL"
+                    subtitle="TODAY, YOU NEED WHAT?"
                 />
                 
                 <View style={styles.cardsContainer}>

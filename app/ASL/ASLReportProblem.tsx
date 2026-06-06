@@ -21,76 +21,76 @@ export default function ASLReportProblem(){
        
     const problemOptions: ASLOption[] = [
         {
-            id: "Air Conditioning",
+            id: "AIR CONDITIONING",
             gifSource: require('../../assets/gifs/ComidaGif.gif'),
             icon: "ac-unit",
             iconType: "material",
             iconColor: "#2196F3",
             bgColor: "#E3F2FD",
-            cameraText: "Show the air conditioning problem in sign language"
+            cameraText: "AIR CONDITIONING PROBLEM SHOW IN SIGN LANGUAGE"
         },
         {
-            id: "Plumbing",
+            id: "PLUMBING",
             gifSource: require('../../assets/gifs/ComidaGif.gif'),
             icon: "plumbing",
             iconType: "material",
             iconColor: "#03A9F4",
             bgColor: "#E1F5FE",
-            cameraText: "Show the plumbing problem in sign language"
+            cameraText: "PLUMBING PROBLEM SHOW IN SIGN LANGUAGE"
         },
         {
-            id: "Electricity",
+            id: "ELECTRICITY",
             gifSource: require('../../assets/gifs/ComidaGif.gif'),
             icon: "bolt",
             iconType: "material",
             iconColor: "#FFC107",
             bgColor: "#FFF8E1",
-            cameraText: "Show the electricity problem in sign language"
+            cameraText: "ELECTRICITY PROBLEM SHOW IN SIGN LANGUAGE"
         },
         {
-            id: "Housekeeping",
+            id: "HOUSEKEEPING",
             gifSource: require('../../assets/gifs/ComidaGif.gif'),
             icon: "cleaning-services",
             iconType: "material",
             iconColor: "#4CAF50",
             bgColor: "#E8F5E9",
-            cameraText: "Show the housekeeping problem in sign language"
+            cameraText: "HOUSEKEEPING PROBLEM SHOW IN SIGN LANGUAGE"
         },
         {
-            id: "Noise",
+            id: "NOISE",
             gifSource: require('../../assets/gifs/ComidaGif.gif'),
             icon: "volume-up",
             iconType: "material",
             iconColor: "#FF5722",
             bgColor: "#FBE9E7",
-            cameraText: "Show the noise problem in sign language"
+            cameraText: "NOISE PROBLEM SHOW IN SIGN LANGUAGE"
         },
         {
-            id: "Furniture",
+            id: "FURNITURE",
             gifSource: require('../../assets/gifs/ComidaGif.gif'),
             icon: "weekend",
             iconType: "material",
             iconColor: "#795548",
             bgColor: "#EFEBE9",
-            cameraText: "Show the furniture problem in sign language"
+            cameraText: "FURNITURE PROBLEM SHOW IN SIGN LANGUAGE"
         },
         {
-            id: "TV / Internet",
+            id: "TV / INTERNET",
             gifSource: require('../../assets/gifs/ComidaGif.gif'),
             icon: "wifi-off",
             iconType: "material",
             iconColor: "#9C27B0",
             bgColor: "#F3E5F5",
-            cameraText: "Show the TV/Internet problem in sign language"
+            cameraText: "TV INTERNET PROBLEM SHOW IN SIGN LANGUAGE"
         },
         {
-            id: "Other Problem",
+            id: "OTHER PROBLEM",
             gifSource: require('../../assets/gifs/ComidaGif.gif'),
             icon: "report-problem",
             iconType: "material",
             iconColor: "#F44336",
             bgColor: "#FFEBEE",
-            cameraText: "Show your problem in sign language"
+            cameraText: "YOUR PROBLEM SHOW IN SIGN LANGUAGE"
         }
     ];
 
@@ -107,7 +107,7 @@ export default function ASLReportProblem(){
         if (!permission.granted) {
             const { granted } = await requestPermission();
             if (!granted) {
-                alert('Camera permissions are needed to use this feature');
+                alert('CAMERA PERMISSION NEED FOR THIS FEATURE');
                 return;
             }
         }
@@ -158,7 +158,7 @@ export default function ASLReportProblem(){
                 cameraActive={cameraActive}
                 onActivateCamera={handleActivateCamera}
                 onCloseCamera={handleCloseCamera}
-                cameraText="Describe the problem in sign language"
+                cameraText="PROBLEM DESCRIBE IN SIGN LANGUAGE"
             />
 
         </ThemedView>

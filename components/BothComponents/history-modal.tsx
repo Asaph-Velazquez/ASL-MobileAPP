@@ -40,7 +40,7 @@ export function HistoryModal({ visible, onClose, peticiones, mode, onCancelarPet
             <View style={styles.headerTitle}>
               <MaterialIcons name="notifications" size={24} color={textColor} />
               <Text style={[styles.title, { color: textColor }]}>
-                Request History
+                REQUEST HISTORY
               </Text>
             </View>
             <TouchableOpacity onPress={onClose} style={styles.closeButton}>
@@ -77,7 +77,7 @@ export function HistoryModal({ visible, onClose, peticiones, mode, onCancelarPet
           {peticiones.length > 0 && (
             <View style={[styles.footer, { borderTopColor: borderColor }]}>
               <Text style={[styles.footerText, { color: textColor }]}>
-                Total requests: {peticiones.length}
+                REQUEST TOTAL: {peticiones.length}
               </Text>
             </View>
           )}
