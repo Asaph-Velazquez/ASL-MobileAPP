@@ -15,7 +15,7 @@ export default function TextMovilidad() {
     const mobilityOptions: ServiceOption[] = [
         {
             id: "VALET PARKING",
-            description: "YOUR VEHICLE, HOTEL STAFF PARK.",
+            description: "YOUR CAR, HOTEL STAFF PARK.",
             icon: "local-parking",
             iconType: "material",
             iconColor: "#3F51B5",
@@ -23,8 +23,8 @@ export default function TextMovilidad() {
             placeholder: "EX: NEED VALET PARKING 3:00 PM."
         },
         {
-            id: "TAXI OR RIDE-HAIL",
-            description: "TAXI OR APP TRANSPORT, REQUEST.",
+            id: "TAXI, APP TRANSPORT",
+            description: "TAXI, APP CAR ORDER.",
             icon: "local-taxi",
             iconType: "material",
             iconColor: "#FFEB3B",
@@ -76,8 +76,8 @@ export default function TextMovilidad() {
         >
             <ThemedView style={styles.container}>
                 <ScreenHeader 
-                    title="MOBILITY SERVICES"
-                    subtitle="WHAT SERVICE YOU NEED?"
+                    title="TRANSPORT SERVICE"
+                    subtitle="SERVICE YOU NEED WHAT?"
                 />
                 
                 <View style={styles.cardsContainer}>

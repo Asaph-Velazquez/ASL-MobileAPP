@@ -11,7 +11,7 @@ export default function TextServices(){
     const [refreshing, setRefreshing] = useState(false);
     
     const ServiceOptions: ServiceOption[] = [{
-            id: "BREAKFAST INCLUDED",
+            id: "BREAKFAST INCLUDE",
             description: "BREAKFAST CAFETERIA AVAILABLE.",
             icon: "food-bank",
             iconType: "material" as const,
@@ -19,9 +19,9 @@ export default function TextServices(){
             bgColor: "#FFF3E0",
             detalles: {
             horario: "6:00 AM - 11:00 AM",
-            ubicacion: "MAIN RESTAURANT, 1ST FLOOR",
-            incluye: ["CONTINENTAL BUFFET", "FRESH FRUIT", "COFFEE AND JUICE", "FRESH BREAD"],
-            nota: "BOOK 1 DAY BEFORE FOR SPECIAL OPTIONS"
+            ubicacion: "1ST FLOOR, MAIN RESTAURANT",
+            incluye: ["BUFFET", "FRUIT FRESH", "COFFEE, JUICE", "BREAD FRESH"],
+            nota: "SPECIAL FOOD OPTION, BOOK 1 DAY BEFORE."
         }
         },{
             id: "POOL",
@@ -33,26 +33,26 @@ export default function TextServices(){
             detalles: {
             horario: "7:00 AM - 10:00 PM",
             ubicacion: "TERRACE, 5TH FLOOR",
-            incluye: ["TOWELS INCLUDED", "LOUNGE CHAIRS AVAILABLE", "POOL BAR", "CHILDREN AREA"],
-            nota: "MAX CAPACITY 50 PEOPLE. RESERVE LOUNGE CHAIRS IN HIGH SEASON"
+            incluye: ["TOWEL", "LOUNGE CHAIR AVAILABLE", "POOL BAR", "KID AREA"],
+            nota: "LIMIT 50 PEOPLE. HIGH SEASON, LOUNGE CHAIR RESERVE MUST."
         }
         },{
             id: "GYM",
-            description: "GYM OPEN. YOUR ROUTINE CONTINUE.",
+            description: "GYM OPEN. YOUR EXERCISE CONTINUE.",
             icon: "fitness-center",
             iconType: "material" as const,
             iconColor: "#F44336",
             bgColor: "#FFEBEE",
             detalles: {
-            horario: "24 hours",
-            ubicacion: "2ND FLOOR, NEXT TO SPA",
-            incluye: ["CARDIO EQUIPMENT", "WEIGHTS AND DUMBBELLS", "TOWELS AND WATER", "TRAINER BY APPOINTMENT"],
-            nota: "USE ROOM KEY. BRING ATHLETIC SHOES"
+            horario: "24 HOUR",
+            ubicacion: "2ND FLOOR, NEXT-TO SPA",
+            incluye: ["CARDIO MACHINE", "WEIGHT, DUMBBELL", "TOWEL, WATER", "TRAINER, APPOINTMENT MUST"],
+            nota: "ENTER? ROOM KEY MUST. SPORT SHOE REQUIRE."
         }
         },
         {
             id: "SPA",
-            description: "SPA OPEN. RELAX DAY ENJOY.",
+            description: "SPA OPEN. RELAX, ENJOY.",
             icon: "spa",
             iconType: "material" as const,
             iconColor: "#9C27B0",
@@ -60,8 +60,8 @@ export default function TextServices(){
             detalles: {
             horario: "9:00 AM - 8:00 PM",
             ubicacion: "2ND FLOOR, WEST WING",
-            incluye: ["THERAPY MASSAGE", "FACIAL", "SAUNA AND STEAM", "AROMATHERAPY"],
-            nota: "BOOK 24 HOURS BEFORE. EXTRA COST SERVICE"
+            incluye: ["MASSAGE THERAPY", "FACIAL", "SAUNA, STEAM", "AROMATHERAPY"],
+            nota: "BOOK 24 HOUR BEFORE. SERVICE COST EXTRA."
         }
     }];
 
@@ -93,8 +93,8 @@ export default function TextServices(){
                 }
             >
                 <ScreenHeader 
-                    title="INCLUDED SERVICES"
-                    subtitle="TODAY, WHAT YOU WANT SEE?"
+                    title="SERVICE INCLUDE"
+                    subtitle="TODAY, YOU WANT SEE WHAT?"
                 />
                 
                 <View style={styles.cardsContainer}>

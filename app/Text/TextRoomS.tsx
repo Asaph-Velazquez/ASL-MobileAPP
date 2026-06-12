@@ -15,7 +15,7 @@ export default function TextRoomS(){
     const opciones: ServiceOption[] = [
         {
             id: "FOOD",
-            description: "FOOD DELIVER ROOM, YOU REQUEST.",
+            description: "FOOD ORDER, BRING ROOM.",
             icon: "flatware",
             iconType: "material" as const,
             iconColor: "#FF6B6B",
@@ -24,7 +24,7 @@ export default function TextRoomS(){
         },
         {
             id: "AMENITIES",
-            description: "TOWELS, SOAP, OTHER ITEM, YOU REQUEST.",
+            description: "TOWEL, SOAP, OTHER ITEM.",
             icon: "sanitizer",
             iconType: "material" as const,
             iconColor: "#4ECDC4",
@@ -33,7 +33,7 @@ export default function TextRoomS(){
         },
         {
             id: "LINENS",
-            description: "NEW SHEETS, TOWELS, PILLOWCASES, YOU REQUEST.",
+            description: "CLEAN SHEET, TOWEL, PILLOWCASE.",
             icon: "bed",
             iconType: "material" as const,
             iconColor: "#95E1D3",
@@ -42,7 +42,7 @@ export default function TextRoomS(){
         },
         {
             id: "COMFORT ITEMS",
-            description: "EXTRA PILLOWS, BLANKETS, COMFORT ITEMS REQUEST.",
+            description: "EXTRA PILLOW, BLANKET.",
             icon: "self-improvement",
             iconType: "material" as const,
             iconColor: "#A29BFE",
@@ -51,7 +51,7 @@ export default function TextRoomS(){
         },
         {
             id: "EXTRA",
-            description: "OTHER SERVICE REQUEST. RECEPTION HELP. EXTRA COST MAY APPLY.",
+            description: "OTHER SERVICE. RECEPTION HELP. POSSIBLE EXTRA COST.",
             icon: "question-mark",
             iconType: "material" as const,
             iconColor: "#FDCB6E",

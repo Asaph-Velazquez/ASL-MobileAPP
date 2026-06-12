@@ -15,7 +15,7 @@ export default function ReportProblem() {
     const problemOptions: ServiceOption[] = [
         {
             id: "AIR CONDITIONING",
-            description: "AC OR HEAT PROBLEM, REPORT.",
+            description: "AC, HEAT PROBLEM, REPORT.",
             icon: "ac-unit",
             iconType: "material",
             iconColor: "#2196F3",
@@ -24,7 +24,7 @@ export default function ReportProblem() {
         },
         {
             id: "PLUMBING",
-            description: "WATER, DRAIN, TOILET PROBLEM, REPORT.",
+            description: "WATER, DRAIN, TOILET PROBLEM.",
             icon: "plumbing",
             iconType: "material",
             iconColor: "#03A9F4",
@@ -33,7 +33,7 @@ export default function ReportProblem() {
         },
         {
             id: "ELECTRICITY",
-            description: "POWER OR OUTLET PROBLEM, REPORT.",
+            description: "POWER, PLUG PROBLEM.",
             icon: "bolt",
             iconType: "material",
             iconColor: "#FFC107",
@@ -42,7 +42,7 @@ export default function ReportProblem() {
         },
         {
             id: "HOUSEKEEPING",
-            description: "CLEANING REQUEST OR HYGIENE PROBLEM REPORT.",
+            description: "ROOM DIRTY, CLEANING NEED.",
             icon: "cleaning-services",
             iconType: "material",
             iconColor: "#4CAF50",
@@ -51,7 +51,7 @@ export default function ReportProblem() {
         },
         {
             id: "NOISE",
-            description: "LOUD NOISE DISTURBANCE, REPORT.",
+            description: "NOISE LOUD, DISTURB.",
             icon: "volume-up",
             iconType: "material",
             iconColor: "#FF5722",
@@ -60,7 +60,7 @@ export default function ReportProblem() {
         },
         {
             id: "FURNITURE",
-            description: "BROKEN FURNITURE OR ITEM, REPORT.",
+            description: "FURNITURE, ITEM BROKEN.",
             icon: "weekend",
             iconType: "material",
             iconColor: "#795548",
@@ -69,7 +69,7 @@ export default function ReportProblem() {
         },
         {
             id: "TV / INTERNET",
-            description: "TV, WIFI, CONNECTION PROBLEM, REPORT.",
+            description: "TV, WIFI CONNECTION PROBLEM.",
             icon: "wifi-off",
             iconType: "material",
             iconColor: "#9C27B0",
@@ -78,7 +78,7 @@ export default function ReportProblem() {
         },
         {
             id: "OTHER PROBLEM",
-            description: "OTHER PROBLEM, DESCRIBE.",
+            description: "OTHER PROBLEM, EXPLAIN.",
             icon: "report-problem",
             iconType: "material",
             iconColor: "#F44336",
@@ -131,7 +131,7 @@ export default function ReportProblem() {
             <ThemedView style={styles.container}>
                 <ScreenHeader 
                     title="REPORT PROBLEM"
-                    subtitle="WHAT PROBLEM YOU NEED REPORT?"
+                    subtitle="PROBLEM YOU NEED REPORT WHAT?"
                 />
                 
                 <View style={styles.cardsContainer}>
