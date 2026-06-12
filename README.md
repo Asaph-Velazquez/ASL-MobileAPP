@@ -43,29 +43,44 @@ En la salida, encontrarás opciones para abrir la app en:
 ## 📁 Estructura del Proyecto
 
 ```
-app/
-├── (tabs)/          # Navegación principal con tabs
-├── Text/            # Módulo de comunicación por texto
-│   ├── TextHome.tsx
-│   ├── TextServices.tsx
-│   ├── TextRoomS.tsx
-│   ├── TextReportProblem.tsx
-│   └── TextMovilidad.tsx
-├── ASL/             # Módulo de lenguaje de señas
-└── _layout.tsx      # Layout raíz
-
-components/
-├── theme-provider.tsx
-├── themed-view.tsx
-├── haptic-tab.tsx
-└── ui/
-    └── icon-symbol.tsx
-
-constants/
-└── theme.ts         # Configuración de temas
-
-styles/
-└── common.ts        # Estilos compartidos
+ASL-MobileAPP/
+├── app/                                  # Rutas de Expo Router
+│   ├── (tabs)/                           # Navegacion principal
+│   │   ├── _layout.tsx
+│   │   └── index.tsx
+│   ├── ASL/                              # Flujo de comunicacion por ASL
+│   │   ├── ASLHome.tsx
+│   │   ├── ASLServices.tsx
+│   │   ├── ASLRoomS.tsx
+│   │   ├── ASLReportProblem.tsx
+│   │   ├── ASLMovilidad.tsx
+│   │   └── _layout.tsx
+│   ├── Text/                             # Flujo de comunicacion por texto
+│   │   ├── TextHome.tsx
+│   │   ├── TextServices.tsx
+│   │   ├── TextRoomS.tsx
+│   │   ├── TextReportProblem.tsx
+│   │   ├── TextMovilidad.tsx
+│   │   └── _layout.tsx
+│   ├── login.tsx                         # Validacion de estancia/sesion
+│   ├── onboarding.tsx                    # Pantalla inicial
+│   └── _layout.tsx                       # Providers globales
+├── components/
+│   ├── ASLComponents/                    # Tarjetas, grillas, GIFs e historial ASL
+│   ├── TextComponents/                   # Modales, tarjetas e historial de texto
+│   └── BothComponents/                   # Componentes compartidos
+│       └── ui/                           # Componentes UI por plataforma
+├── constants/
+│   └── theme.ts                          # Configuracion visual y temas
+├── hooks/                                # Hooks de tema, color, notificaciones y envio
+├── services/
+│   ├── auth.ts                           # Validacion y registro contra la API
+│   └── socket.tsx                        # Conexion WebSocket con el servidor
+├── assets/                               # Imagenes, iconos y GIFs
+├── app.json                              # Configuracion Expo
+├── package.json
+├── tsconfig.json
+└── eslint.config.js
 ```
 
 ## 🎨 Sistema de Temas
