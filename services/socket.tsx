@@ -16,6 +16,7 @@ interface Peticion {
   cancelledAt?: string;
   rating?: number;
   ratedAt?: string;
+  details?: unknown;
 }
 
 interface PersistedRequestPayload {
@@ -32,6 +33,7 @@ interface PersistedRequestPayload {
   cancelledAt?: string;
   rating?: number;
   ratedAt?: string;
+  details?: unknown;
 }
 
 function mapPersistedRequestToPeticion(request: PersistedRequestPayload): Peticion {
@@ -49,6 +51,7 @@ function mapPersistedRequestToPeticion(request: PersistedRequestPayload): Petici
     cancelledAt: request.cancelledAt,
     rating: request.rating,
     ratedAt: request.ratedAt,
+    details: request.details,
   };
 }
 
@@ -90,7 +93,11 @@ export function useWebSocketMobile(token: string | null) {
               setMisPeticiones((prev) =>
                 prev.map((pet) =>
                   pet.id === mensaje.payload.id
-                    ? { ...pet, status: mensaje.payload.status }
+                    ? {
+                        ...pet,
+                        status: mensaje.payload.status || pet.status,
+                        details: mensaje.payload.details ?? pet.details,
+                      }
                     : pet
                 )
               );
@@ -185,6 +192,7 @@ export function useWebSocketMobile(token: string | null) {
     guestName: string;
     message: string;
     priority: 'low' | 'medium' | 'high' | 'urgent';
+    details?: unknown;
   }) => {
     if (refWs.current && refWs.current.readyState === WebSocket.OPEN) {
       const carga: Peticion = {

@@ -53,6 +53,28 @@ export function TextPetitionHistory({ peticiones, onCancelar, onRate }: TextPeti
         }
     };
 
+    const inferTransportKind = (peticion: any): 'taxi' | 'valet' | null => {
+        const serviceType = peticion?.details?.serviceType;
+        if (serviceType === 'taxi' || serviceType === 'valet') {
+            return serviceType;
+        }
+
+        const message = String(peticion?.message || '').toLowerCase();
+        if (/(taxi|ride-hailing|uber|didi|cab)/.test(message)) {
+            return 'taxi';
+        }
+        if (/(valet|parking|parkink|estacionamiento)/.test(message)) {
+            return 'valet';
+        }
+
+        return null;
+    };
+
+    const getTransportResponse = (peticion: any) => {
+        const response = peticion?.details?.transportResponse;
+        return response && typeof response === 'object' ? response : null;
+    };
+
     if (peticiones.length === 0) {
         return (
             <View style={styles.emptyContainer}>
@@ -159,6 +181,8 @@ export function TextPetitionHistory({ peticiones, onCancelar, onRate }: TextPeti
                 {peticionesOrdenadas.map((peticion: any, index: number) => {
                 const estadoInfo = estadoConfig[peticion.status as keyof typeof estadoConfig] || estadoConfig.pending;
                 const tipoInfo = tipoConfig[peticion.type as keyof typeof tipoConfig] || tipoConfig.extra;
+                const transportKind = inferTransportKind(peticion);
+                const transportResponse = getTransportResponse(peticion);
                 
                 return (
                     <View key={peticion.id || index} style={styles.cardWrapper}>
@@ -219,6 +243,23 @@ export function TextPetitionHistory({ peticiones, onCancelar, onRate }: TextPeti
                                 {peticion.message || 'NO MESSAGE'}
                             </Text>
                         </View>
+
+                        {transportKind && transportResponse && (
+                            <View style={styles.transportCard}>
+                                <Text style={styles.transportTitle}>TRANSPORT DETAILS</Text>
+                                <Text style={[styles.transportLine, { color: textColor }]}>
+                                    PLATES: {transportResponse.vehiclePlate}
+                                </Text>
+                                <Text style={[styles.transportLine, { color: textColor }]}>
+                                    MODEL: {transportResponse.vehicleModel}
+                                </Text>
+                                {transportKind === 'taxi' && transportResponse.transportCost && (
+                                    <Text style={[styles.transportLine, { color: textColor }]}>
+                                        COST: {transportResponse.transportCost}
+                                    </Text>
+                                )}
+                            </View>
+                        )}
                         
                         <View style={styles.footer}>
                             <Text style={[styles.timestamp, { color: mutedColor }]}>
@@ -377,6 +418,26 @@ const styles = StyleSheet.create({
         fontSize: 15,
         lineHeight: 22,
         fontWeight: '400',
+    },
+    transportCard: {
+        gap: 6,
+        paddingVertical: 10,
+        paddingHorizontal: 12,
+        backgroundColor: 'rgba(76, 175, 80, 0.08)',
+        borderRadius: 8,
+        borderLeftWidth: 3,
+        borderLeftColor: '#4CAF50',
+    },
+    transportTitle: {
+        fontSize: 11,
+        fontWeight: '700',
+        color: '#2E7D32',
+        textTransform: 'uppercase',
+        letterSpacing: 0.8,
+    },
+    transportLine: {
+        fontSize: 14,
+        fontWeight: '500',
     },
     footer: {
         marginTop: 4,

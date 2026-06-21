@@ -1,16 +1,18 @@
 import { useThemeColor } from '@/hooks/use-theme-color';
+import { ReactNode } from 'react';
 import { StyleSheet, Text, View } from "react-native";
 
 interface ScreenHeaderProps {
   title: string;
   subtitle?: string;
+  rightAccessory?: ReactNode;
 }
 
 /**
  * Header reutilizable para todas las pantallas
  * Muestra título y subtítulo opcional con estilos consistentes
  */
-export function ScreenHeader({ title, subtitle }: ScreenHeaderProps) {
+export function ScreenHeader({ title, subtitle, rightAccessory }: ScreenHeaderProps) {
   const textColor = useThemeColor({}, 'text');
   const mutedColor = useThemeColor({}, 'muted');
 
@@ -34,6 +36,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 24,
     paddingBottom: 30,
     alignItems: 'center',
+    width: '100%',
   },
   title: {
     fontSize: 32,

@@ -1,21 +1,28 @@
 import { ThemedView } from "@/components/BothComponents/themed-view";
 import { commonStyles } from '@/styles/common';
 import { useCameraPermissions } from "expo-camera";
-import { useState } from "react";
-import { ScrollView, RefreshControl } from "react-native";
+import { useEffect, useState } from "react";
+import { ScrollView, RefreshControl, StyleSheet, TouchableOpacity } from "react-native";
 import { ASLPetitionModal } from '@/components/ASLComponents/asl-petition-modal';
 import { GifPreviewContainer } from "@/components/ASLComponents/GifPreviewContainer";
 import { ASLGridView, ASLOption } from "@/components/ASLComponents/ASLGridView";
-import { useWebSocket } from '@/components/BothComponents/websocket-provider';
+import { TaxiRequestModal, TaxiRequestPayload } from "@/components/BothComponents/TaxiRequestModal";
+import { usePetitionSender } from "@/hooks/usePetitionSender";
+import { MobilityNoticeModal } from "@/components/BothComponents/MobilityNoticeModal";
+import { hasSeenMobilityNotice, markMobilityNoticeSeen } from "@/services/mobilityNotice";
+import { MaterialIcons } from "@expo/vector-icons";
+import { ScreenHeader } from "@/components/BothComponents/ScreenHeader";
 
 export default function ASLMovilidad(){
     const [servicioSeleccionado, setServicioSeleccionado] = useState<ASLOption | null>(null);
     const [modalVisible, setModalVisible] = useState(false);
+    const [taxiModalVisible, setTaxiModalVisible] = useState(false);
+    const [noticeVisible, setNoticeVisible] = useState(false);
     const [cameraActive, setCameraActive] = useState(false);
     const [permission, requestPermission] = useCameraPermissions();
-    const { misPeticiones } = useWebSocket();
     const [selectedGif, setSelectedGif] = useState<any>(require('../../assets/gifs/ComidaGif.gif'));
     const [refreshing, setRefreshing] = useState(false);
+    const { sendPetition, isLoading } = usePetitionSender();
     
     const defaultGif = require('../../assets/gifs/ComidaGif.gif');
     
@@ -38,8 +45,29 @@ export default function ASLMovilidad(){
     }];
 
     const handlePress = (opcion: ASLOption) => {
+        if (opcion.id === "TAXI OR RIDE-HAIL") {
+            setServicioSeleccionado(opcion);
+            setTaxiModalVisible(true);
+            return;
+        }
+
         setServicioSeleccionado(opcion);
         setModalVisible(true);
+    };
+
+    const handleTaxiSend = async (payload: TaxiRequestPayload) => {
+        const success = await sendPetition({
+            type: 'services',
+            serviceName: 'TAXI',
+            description: payload.summary,
+            priority: 'medium',
+            details: payload,
+        });
+
+        if (success) {
+            setTaxiModalVisible(false);
+            setServicioSeleccionado(null);
+        }
     };
 
     const handleActivateCamera = async () => {
@@ -73,6 +101,24 @@ export default function ASLMovilidad(){
         }
     };
 
+    useEffect(() => {
+        let isMounted = true;
+
+        const checkMobilityNotice = async () => {
+            const seen = await hasSeenMobilityNotice();
+            if (!seen && isMounted) {
+                setNoticeVisible(true);
+                await markMobilityNoticeSeen();
+            }
+        };
+
+        checkMobilityNotice();
+
+        return () => {
+            isMounted = false;
+        };
+    }, []);
+
     return(
         <ScrollView
             refreshControl={
@@ -84,7 +130,18 @@ export default function ASLMovilidad(){
             }
         >
         <ThemedView style={commonStyles.container}>
+            <ScreenHeader
+                title="TRANSPORT SERVICE"
+                subtitle="SERVICE YOU NEED WHAT?"
+            />
             <GifPreviewContainer gifSource={selectedGif} />
+            <TouchableOpacity
+                style={styles.helpButton}
+                onPress={() => setNoticeVisible(true)}
+                activeOpacity={0.85}
+            >
+                <MaterialIcons name="question-mark" size={20} color="#FFD54F" />
+            </TouchableOpacity>
             
             <ASLGridView 
                 options={MovilidadOptions}
@@ -103,7 +160,41 @@ export default function ASLMovilidad(){
                 cameraText="YOUR MESSAGE SHOW IN SIGN LANGUAGE"
             />
 
+            <TaxiRequestModal
+                visible={taxiModalVisible}
+                onClose={() => setTaxiModalVisible(false)}
+                onSend={handleTaxiSend}
+                isLoading={isLoading}
+                sourceMode="asl_guided"
+            />
+
+            <MobilityNoticeModal
+                visible={noticeVisible}
+                onClose={() => setNoticeVisible(false)}
+            />
+
         </ThemedView>
         </ScrollView>
     );
 }
+
+const styles = StyleSheet.create({
+    helpButton: {
+        alignSelf: 'center',
+        width: 40,
+        height: 40,
+        borderRadius: 20,
+        backgroundColor: 'transparent',
+        borderWidth: 2,
+        borderColor: '#FFD54F',
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginTop: 10,
+        marginBottom: 10,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.18,
+        shadowRadius: 5,
+        elevation: 4,
+    },
+});

@@ -156,6 +156,28 @@ export function ASLPetitionHistory({
     return total - ordenadas.findIndex((p) => p.id === peticion.id);
   };
 
+  const inferTransportKind = (peticion: any): "taxi" | "valet" | null => {
+    const serviceType = peticion?.details?.serviceType;
+    if (serviceType === "taxi" || serviceType === "valet") {
+      return serviceType;
+    }
+
+    const message = String(peticion?.message || "").toLowerCase();
+    if (/(taxi|ride-hailing|uber|didi|cab)/.test(message)) {
+      return "taxi";
+    }
+    if (/(valet|parking|parkink|estacionamiento)/.test(message)) {
+      return "valet";
+    }
+
+    return null;
+  };
+
+  const getTransportResponse = (peticion: any) => {
+    const response = peticion?.details?.transportResponse;
+    return response && typeof response === "object" ? response : null;
+  };
+
   if (peticiones.length === 0) {
     return (
       <View style={styles.emptyContainer}>
@@ -202,6 +224,8 @@ export function ASLPetitionHistory({
           const config = estadoConfig[peticion.status] || estadoConfig.pending;
           const tipoInfo = getTipoIcono(peticion);
           const numeroPeticion = getNumeroPeticion(peticion);
+          const transportKind = inferTransportKind(peticion);
+          const transportResponse = getTransportResponse(peticion);
 
           return (
             <View key={peticion.id} style={styles.cardWrapper}>
@@ -320,6 +344,26 @@ export function ASLPetitionHistory({
                     )}
                   </View>
                 </View>
+
+                {transportKind && transportResponse && (
+                  <View style={styles.transportCard}>
+                    <View style={styles.transportHeader}>
+                      <MaterialIcons name="local-taxi" size={18} color="#2E7D32" />
+                      <Text style={styles.transportTitle}>TRANSPORT DETAILS</Text>
+                    </View>
+                    <Text style={[styles.transportLine, { color: mutedColor }]}>
+                      PLATES: {transportResponse.vehiclePlate}
+                    </Text>
+                    <Text style={[styles.transportLine, { color: mutedColor }]}>
+                      MODEL: {transportResponse.vehicleModel}
+                    </Text>
+                    {transportKind === "taxi" && transportResponse.transportCost && (
+                      <Text style={[styles.transportLine, { color: mutedColor }]}>
+                        COST: {transportResponse.transportCost}
+                      </Text>
+                    )}
+                  </View>
+                )}
               </View>
             </View>
           );
@@ -348,6 +392,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.25,
     shadowRadius: 8,
     elevation: 6,
+    gap: 12,
   },
   mainRow: { flexDirection: "row", alignItems: "center", gap: 10 },
   numberIndicator: {
@@ -384,4 +429,27 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   ratingDisplay: { flexDirection: "row", gap: 2 },
+  transportCard: {
+    marginTop: 2,
+    padding: 12,
+    borderRadius: 12,
+    backgroundColor: "rgba(76, 175, 80, 0.10)",
+    gap: 4,
+  },
+  transportHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+    marginBottom: 2,
+  },
+  transportTitle: {
+    fontSize: 12,
+    fontWeight: "700",
+    color: "#2E7D32",
+    letterSpacing: 0.5,
+  },
+  transportLine: {
+    fontSize: 13,
+    fontWeight: "600",
+  },
 });

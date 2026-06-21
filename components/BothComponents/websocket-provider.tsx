@@ -10,6 +10,7 @@ interface WebSocketContextType {
     type: 'services' | 'room-service' | 'problem' | 'extra';
     message: string;
     priority: 'low' | 'medium' | 'high' | 'urgent';
+    details?: unknown;
   }) => boolean;
   cancelarPeticion: (peticionId: string) => boolean;
   ratePeticion: (peticionId: string, rating: number) => boolean;
@@ -50,6 +51,7 @@ export function WebSocketProvider({ children }: { children: ReactNode }) {
     type: 'services' | 'room-service' | 'problem' | 'extra';
     message: string;
     priority: 'low' | 'medium' | 'high' | 'urgent';
+    details?: unknown;
   }) => {
     if (!puedeEnviar) {
       return false;

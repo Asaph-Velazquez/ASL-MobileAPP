@@ -11,6 +11,7 @@ interface SendPetitionParams {
   serviceName: string;
   description: string;
   priority?: Priority;
+  details?: unknown;
 }
 
 /**
@@ -26,7 +27,8 @@ export function usePetitionSender() {
     type,
     serviceName,
     description,
-    priority = 'medium'
+    priority = 'medium',
+    details,
   }: SendPetitionParams): Promise<boolean> => {
     setIsLoading(true);
 
@@ -60,6 +62,7 @@ export function usePetitionSender() {
         type,
         message: `${serviceName}: ${description}`,
         priority,
+        details,
       });
 
       if (success) {

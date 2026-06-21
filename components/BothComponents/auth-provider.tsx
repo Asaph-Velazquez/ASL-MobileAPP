@@ -2,6 +2,7 @@ import React, { createContext, useContext, useEffect, useState, ReactNode } from
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useRouter } from 'expo-router';
 import { validateToken, validateTokenWithNetworkStatus } from '@/services/auth';
+import { resetMobilityNotice } from '@/services/mobilityNotice';
 
 interface AuthContextType {
   isAuthenticated: boolean;
@@ -105,6 +106,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         AsyncStorage.setItem(AUTH_TOKEN_KEY, newToken),
         AsyncStorage.setItem(GUEST_NAME_KEY, newGuestName),
         AsyncStorage.setItem(ROOM_NUMBER_KEY, newRoomNumber),
+        resetMobilityNotice(),
         newExpiresAt
           ? AsyncStorage.setItem(SESSION_EXPIRES_KEY, newExpiresAt)
           : Promise.resolve(),
@@ -133,6 +135,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         AsyncStorage.removeItem(GUEST_NAME_KEY),
         AsyncStorage.removeItem(ROOM_NUMBER_KEY),
         AsyncStorage.removeItem(SESSION_EXPIRES_KEY),
+        resetMobilityNotice(),
       ]);
 
       setToken(null);
