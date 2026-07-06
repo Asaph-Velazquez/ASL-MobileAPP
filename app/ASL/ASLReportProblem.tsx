@@ -57,15 +57,6 @@ export default function ASLReportProblem(){
             cameraText: "HOUSEKEEPING PROBLEM SHOW IN SIGN LANGUAGE"
         },
         {
-            id: "NOISE",
-            gifSource: require('../../assets/gifs/ComidaGif.gif'),
-            icon: "volume-up",
-            iconType: "material",
-            iconColor: "#FF5722",
-            bgColor: "#FBE9E7",
-            cameraText: "NOISE PROBLEM SHOW IN SIGN LANGUAGE"
-        },
-        {
             id: "FURNITURE",
             gifSource: require('../../assets/gifs/ComidaGif.gif'),
             icon: "weekend",

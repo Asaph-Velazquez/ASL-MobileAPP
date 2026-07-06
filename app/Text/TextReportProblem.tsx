@@ -50,15 +50,6 @@ export default function ReportProblem() {
             placeholder: "EX: NEED EXTRA BATHROOM CLEANING. TOWELS MISSING."
         },
         {
-            id: "NOISE",
-            description: "NOISE LOUD, DISTURB.",
-            icon: "volume-up",
-            iconType: "material",
-            iconColor: "#FF5722",
-            bgColor: "#FBE9E7",
-            placeholder: "EX: NEXT ROOM TOO LOUD."
-        },
-        {
             id: "FURNITURE",
             description: "FURNITURE, ITEM BROKEN.",
             icon: "weekend",
