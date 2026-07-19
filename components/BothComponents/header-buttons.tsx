@@ -1,6 +1,6 @@
 import { router } from 'expo-router';
 import React, { useState } from 'react';
-import { StyleSheet, TouchableOpacity, View, Text, Alert } from 'react-native';
+import { StyleSheet, TouchableOpacity, View, Text } from 'react-native';
 import { MaterialCommunityIcons, MaterialIcons } from '@expo/vector-icons';
 import { useCommunicationMode } from './communication-mode-provider';
 import { useAuth } from './auth-provider';
@@ -22,22 +22,18 @@ export function HeaderButtons({ currentScreen, colorScheme }: HeaderButtonsProps
   const [logoutModalVisible, setLogoutModalVisible] = useState(false);
   const [historyModalVisible, setHistoryModalVisible] = useState(false);
 
-  // Función de toggle entre modos
   const handleToggle = () => {
     const screenMapping: { [key: string]: string } = {
-      // De Texto a ASL
-      'TextHome': '/ASL/ASLHome',
-      'TextRoomS': '/ASL/ASLRoomS',
-      'TextServices': '/ASL/ASLServices',
-      'TextReportProblem': '/ASL/ASLReportProblem',
-      'TextMovilidad': '/ASL/ASLMovilidad',
-      
-      // De ASL a Texto
-      'ASLHome': '/Text/TextHome',
-      'ASLRoomS': '/Text/TextRoomS',
-      'ASLServices': '/Text/TextServices',
-      'ASLReportProblem': '/Text/TextReportProblem',
-      'ASLMovilidad': '/Text/TextMovilidad',
+      TextHome: '/ASL/ASLHome',
+      TextRoomS: '/ASL/ASLRoomS',
+      TextServices: '/ASL/ASLServices',
+      TextReportProblem: '/ASL/ASLReportProblem',
+      TextMovilidad: '/ASL/ASLMovilidad',
+      ASLHome: '/Text/TextHome',
+      ASLRoomS: '/Text/TextRoomS',
+      ASLServices: '/Text/TextServices',
+      ASLReportProblem: '/Text/TextReportProblem',
+      ASLMovilidad: '/Text/TextMovilidad',
     };
 
     const targetScreen = screenMapping[currentScreen];
@@ -48,19 +44,15 @@ export function HeaderButtons({ currentScreen, colorScheme }: HeaderButtonsProps
     }
   };
 
-  // Función para abrir modal de llamada
   const handleCallPress = () => {
     setCallModalVisible(true);
   };
 
-  // Función para realizar llamada (lógica por implementar)
   const handleMakeCall = () => {
     setCallModalVisible(false);
-    // TODO: Implementar lógica de llamada
-    Alert.alert('CALL', 'CALL FEATURE LATER');
+    router.push('/ASL/CallScreen' as any);
   };
 
-  // Función de logout
   const handleLogout = () => {
     setLogoutModalVisible(true);
   };
@@ -71,21 +63,12 @@ export function HeaderButtons({ currentScreen, colorScheme }: HeaderButtonsProps
     router.replace('/login');
   };
 
-  // Determinar el modo basándose en el nombre de la pantalla actual
-  // Esto es más confiable que depender del contexto que puede no actualizarse a tiempo
   const isASLMode = currentScreen.startsWith('ASL');
-  const iconColor = colorScheme === 'dark' ? '#FFFFFF' : '#000000';
   const toggleBgColor = isASLMode ? '#4A90E2' : '#9C27B0';
-  
-  // Debug: Verificar modo actual
-  
+
   return (
     <View style={styles.container}>
-      {/* Botón de toggle entre modos */}
-      <TouchableOpacity 
-        onPress={handleToggle}
-        style={[styles.button, { backgroundColor: toggleBgColor }]}
-      >
+      <TouchableOpacity onPress={handleToggle} style={[styles.button, { backgroundColor: toggleBgColor }]}>
         <View style={styles.buttonContent}>
           {isASLMode ? (
             <MaterialCommunityIcons name="sign-language" size={20} color="#FFFFFF" />
@@ -97,62 +80,34 @@ export function HeaderButtons({ currentScreen, colorScheme }: HeaderButtonsProps
         </View>
       </TouchableOpacity>
 
-      {/* Botón de llamada - Solo disponible en modo ASL */}
       {isASLMode && (
-        <TouchableOpacity 
-          onPress={handleCallPress}
-          style={[styles.iconButton, { backgroundColor: '#4CAF50' }]}
-        >
+        <TouchableOpacity onPress={handleCallPress} style={[styles.iconButton, { backgroundColor: '#4CAF50' }]}>
           <MaterialIcons name="phone" size={22} color="#FFFFFF" />
         </TouchableOpacity>
       )}
 
-      {/* Botón de historial de peticiones */}
-      <TouchableOpacity 
-        onPress={() => setHistoryModalVisible(true)}
-        style={[styles.iconButton, { backgroundColor: '#FF9800' }]}
-      >
+      <TouchableOpacity onPress={() => setHistoryModalVisible(true)} style={[styles.iconButton, { backgroundColor: '#FF9800' }]}>
         <View>
           <MaterialIcons name="notifications" size={22} color="#FFFFFF" />
           {(() => {
-            // Contar solo peticiones activas (pending e in-progress)
             const peticionesActivas = misPeticiones.filter(
-              pet => pet.status === 'pending' || pet.status === 'in-progress'
+              (pet) => pet.status === 'pending' || pet.status === 'in-progress'
             ).length;
             return peticionesActivas > 0 && (
               <View style={styles.badge}>
-                <Text style={styles.badgeText}>
-                  {peticionesActivas > 9 ? '9+' : peticionesActivas}
-                </Text>
+                <Text style={styles.badgeText}>{peticionesActivas > 9 ? '9+' : peticionesActivas}</Text>
               </View>
             );
           })()}
         </View>
       </TouchableOpacity>
 
-      {/* Botón de logout */}
-      <TouchableOpacity 
-        onPress={handleLogout}
-        style={[styles.iconButton, { backgroundColor: '#F44336' }]}
-      >
+      <TouchableOpacity onPress={handleLogout} style={[styles.iconButton, { backgroundColor: '#F44336' }]}>
         <MaterialIcons name="logout" size={22} color="#FFFFFF" />
       </TouchableOpacity>
 
-      {/* Modal de llamada */}
-      <CallModal
-        visible={callModalVisible}
-        onClose={() => setCallModalVisible(false)}
-        onMakeCall={handleMakeCall}
-      />
-
-      {/* Modal de logout */}
-      <LogoutModal
-        visible={logoutModalVisible}
-        onConfirm={handleConfirmLogout}
-        onCancel={() => setLogoutModalVisible(false)}
-      />
-
-      {/* Modal de historial de peticiones */}
+      <CallModal visible={callModalVisible} onClose={() => setCallModalVisible(false)} onMakeCall={handleMakeCall} />
+      <LogoutModal visible={logoutModalVisible} onConfirm={handleConfirmLogout} onCancel={() => setLogoutModalVisible(false)} />
       <HistoryModal
         visible={historyModalVisible}
         onClose={() => setHistoryModalVisible(false)}
@@ -214,3 +169,4 @@ const styles = StyleSheet.create({
     fontWeight: '700',
   },
 });
+

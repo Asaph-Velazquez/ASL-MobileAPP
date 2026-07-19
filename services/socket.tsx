@@ -4,7 +4,7 @@ const URL_WS = process.env.EXPO_PUBLIC_WS_URL || 'ws://localhost:3001';
 
 interface Peticion {
   id: string;
-  type: 'services' | 'room-service' | 'problem' | 'extra';
+  type: 'services' | 'room-service' | 'problem' | 'extra' | 'interpreter-follow-up';
   roomNumber: string;
   guestName: string;
   message: string;
@@ -187,7 +187,7 @@ export function useWebSocketMobile(token: string | null) {
 
   // Enviar petición al panel web
   const enviarPeticion = (peticion: {
-    type: 'services' | 'room-service' | 'problem' | 'extra';
+    type: 'services' | 'room-service' | 'problem' | 'extra' | 'interpreter-follow-up';
     roomNumber: string;
     guestName: string;
     message: string;
@@ -317,3 +317,4 @@ export function useWebSocketMobile(token: string | null) {
     reconectar,
   };
 }
+

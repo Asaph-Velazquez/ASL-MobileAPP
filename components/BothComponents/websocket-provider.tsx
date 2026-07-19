@@ -7,7 +7,7 @@ interface WebSocketContextType {
   estaConectado: boolean;
   puedeEnviar: boolean;
   enviarPeticion: (peticion: {
-    type: 'services' | 'room-service' | 'problem' | 'extra';
+    type: 'services' | 'room-service' | 'problem' | 'extra' | 'interpreter-follow-up';
     message: string;
     priority: 'low' | 'medium' | 'high' | 'urgent';
     details?: unknown;
@@ -48,7 +48,7 @@ export function WebSocketProvider({ children }: { children: ReactNode }) {
 
   // Función envolvente que inyecta automáticamente roomNumber y guestName del contexto de autenticación
   const enviarPeticionWrapper = (peticion: {
-    type: 'services' | 'room-service' | 'problem' | 'extra';
+    type: 'services' | 'room-service' | 'problem' | 'extra' | 'interpreter-follow-up';
     message: string;
     priority: 'low' | 'medium' | 'high' | 'urgent';
     details?: unknown;
@@ -87,3 +87,4 @@ export function useWebSocket() {
   }
   return context;
 }
+
