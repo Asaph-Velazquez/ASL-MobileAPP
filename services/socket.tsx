@@ -1,6 +1,5 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
-
-const URL_WS = process.env.EXPO_PUBLIC_WS_URL || 'ws://localhost:3001';
+import { HOTEL_WS_URL } from '@/constants/network';
 
 interface Peticion {
   id: string;
@@ -67,14 +66,13 @@ export function useWebSocketMobile(token: string | null) {
 
   // Conexión WebSocket con reconexión automática
   const conectar = useCallback(() => {
+    if (!token) {
+      setEstaConectado(false);
+      return;
+    }
+
     try {
-      // Build WebSocket URL with token as query parameter
-      // Use wss:// for secure connections (ngrok, https sites)
-      let baseUrl = URL_WS;
-      if (baseUrl.includes('ngrok') || baseUrl.includes('https://')) {
-        baseUrl = baseUrl.replace('ws://', 'wss://').replace('http://', 'wss://');
-      }
-      const wsUrl = token ? `${baseUrl}?token=${encodeURIComponent(token)}` : baseUrl;
+      const wsUrl = `${HOTEL_WS_URL}?token=${encodeURIComponent(token)}`;
       const ws = new WebSocket(wsUrl);
 
       ws.onopen = () => {
@@ -152,11 +150,9 @@ export function useWebSocketMobile(token: string | null) {
 
             default:
           }
-        } catch (error) {
+        } catch {
+          return;
         }
-      };
-
-      ws.onerror = (error) => {
       };
 
       ws.onclose = () => {
@@ -169,19 +165,19 @@ export function useWebSocketMobile(token: string | null) {
         }
 
         // Reconexión automática con backoff exponencial
-        if (refIntentosReconexion.current < maxIntentosReconexion) {
+        if (token && refIntentosReconexion.current < maxIntentosReconexion) {
           const timeout = Math.min(1000 * Math.pow(2, refIntentosReconexion.current), 30000);
 
           refTimeoutReconexion.current = setTimeout(() => {
             refIntentosReconexion.current++;
             conectar();
           }, timeout) as any;
-        } else {
         }
       };
 
       refWs.current = ws;
-    } catch (error) {
+    } catch {
+      setEstaConectado(false);
     }
   }, [token]);
 
@@ -295,6 +291,19 @@ export function useWebSocketMobile(token: string | null) {
 
   // Iniciar conexión al montar el componente
   useEffect(() => {
+    if (!token) {
+      if (refTimeoutReconexion.current) {
+        clearTimeout(refTimeoutReconexion.current);
+        refTimeoutReconexion.current = undefined;
+      }
+      if (refWs.current) {
+        refWs.current.close();
+        refWs.current = null;
+      }
+      setEstaConectado(false);
+      return;
+    }
+
     conectar();
 
     return () => {
@@ -305,7 +314,7 @@ export function useWebSocketMobile(token: string | null) {
         refWs.current.close();
       }
     };
-  }, [conectar]);
+  }, [conectar, token]);
 
   return {
     estaConectado,

@@ -1,4 +1,4 @@
-const API_URL = process.env.EXPO_PUBLIC_API_URL || 'http://localhost:3001';
+import { API_BASE_URL } from '@/constants/network';
 
 interface ValidateTokenResponse {
   valid: boolean;
@@ -21,7 +21,7 @@ interface RegisterGuestResponse {
  */
 export async function validateToken(token: string): Promise<ValidateTokenResponse> {
   try {
-    const response = await fetch(`${API_URL}/api/auth/validate`, {
+    const response = await fetch(`${API_BASE_URL}/api/auth/validate`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -61,7 +61,7 @@ export async function validateTokenWithNetworkStatus(token: string): Promise<{
   reason?: string;
 }> {
   try {
-    const response = await fetch(`${API_URL}/api/auth/validate`, {
+    const response = await fetch(`${API_BASE_URL}/api/auth/validate`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -104,7 +104,7 @@ export async function validateTokenWithNetworkStatus(token: string): Promise<{
  */
 export async function registerGuest(token: string, guestName: string): Promise<RegisterGuestResponse> {
   try {
-    const response = await fetch(`${API_URL}/api/auth/register`, {
+    const response = await fetch(`${API_BASE_URL}/api/auth/register`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
