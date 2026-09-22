@@ -5,6 +5,7 @@ import { StyleSheet, View, TouchableOpacity, Text } from "react-native";
 import { ConfirmationModal } from "../BothComponents/confirmation-modal";
 import { RatingModal } from "../BothComponents/rating-modal";
 import { useState, useMemo } from "react";
+import { TransportHistoryEntry } from '../BothComponents/TransportHistoryEntry';
 
 interface ASLPetitionHistoryProps {
   peticiones: any[];
@@ -345,7 +346,8 @@ export function ASLPetitionHistory({
                   </View>
                 </View>
 
-                {transportKind && transportResponse && (
+                {transportKind === 'taxi' && <TransportHistoryEntry request={peticion} mode="ASL" />}
+                {transportKind && transportKind !== 'taxi' && transportResponse && (
                   <View style={styles.transportCard}>
                     <View style={styles.transportHeader}>
                       <MaterialIcons name="local-taxi" size={18} color="#2E7D32" />
@@ -357,11 +359,6 @@ export function ASLPetitionHistory({
                     <Text style={[styles.transportLine, { color: mutedColor }]}>
                       MODEL: {transportResponse.vehicleModel}
                     </Text>
-                    {transportKind === "taxi" && transportResponse.transportCost && (
-                      <Text style={[styles.transportLine, { color: mutedColor }]}>
-                        COST: {transportResponse.transportCost}
-                      </Text>
-                    )}
                   </View>
                 )}
               </View>

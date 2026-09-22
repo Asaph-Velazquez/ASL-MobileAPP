@@ -4,6 +4,7 @@ import { StyleSheet, View, Text, TouchableOpacity } from "react-native";
 import { ConfirmationModal } from '../BothComponents/confirmation-modal';
 import { RatingModal } from '../BothComponents/rating-modal';
 import { useState } from 'react';
+import { TransportHistoryEntry } from '../BothComponents/TransportHistoryEntry';
 
 interface TextPetitionHistoryProps {
     peticiones: any[];
@@ -244,7 +245,8 @@ export function TextPetitionHistory({ peticiones, onCancelar, onRate }: TextPeti
                             </Text>
                         </View>
 
-                        {transportKind && transportResponse && (
+                        {transportKind === 'taxi' && <TransportHistoryEntry request={peticion} mode="Text" />}
+                        {transportKind && transportKind !== 'taxi' && transportResponse && (
                             <View style={styles.transportCard}>
                                 <Text style={styles.transportTitle}>TRANSPORT DETAILS</Text>
                                 <Text style={[styles.transportLine, { color: textColor }]}>
@@ -253,11 +255,6 @@ export function TextPetitionHistory({ peticiones, onCancelar, onRate }: TextPeti
                                 <Text style={[styles.transportLine, { color: textColor }]}>
                                     MODEL: {transportResponse.vehicleModel}
                                 </Text>
-                                {transportKind === 'taxi' && transportResponse.transportCost && (
-                                    <Text style={[styles.transportLine, { color: textColor }]}>
-                                        COST: {transportResponse.transportCost}
-                                    </Text>
-                                )}
                             </View>
                         )}
                         

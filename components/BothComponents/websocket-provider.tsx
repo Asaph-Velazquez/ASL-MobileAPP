@@ -13,6 +13,8 @@ interface WebSocketContextType {
     details?: unknown;
   }) => boolean;
   cancelarPeticion: (peticionId: string) => boolean;
+  acceptTransportOption: (id: string, revision: number, optionId: string) => Promise<void>;
+  enviarTaxiConfirmado: (peticion: Parameters<WebSocketContextType['enviarPeticion']>[0]) => Promise<boolean>;
   ratePeticion: (peticionId: string, rating: number) => boolean;
   misPeticiones: any[];
   ultimaActualizacion: any;
@@ -70,6 +72,11 @@ export function WebSocketProvider({ children }: { children: ReactNode }) {
       puedeEnviar,
       enviarPeticion: enviarPeticionWrapper,
       cancelarPeticion: socketData.cancelarPeticion,
+      acceptTransportOption: socketData.acceptTransportOption,
+      enviarTaxiConfirmado: async (peticion) => {
+        if (!puedeEnviar) return false;
+        return socketData.enviarTaxiConfirmado({ ...peticion, guestName: guestName!, roomNumber: roomNumber! });
+      },
       ratePeticion: socketData.ratePeticion,
       misPeticiones: socketData.misPeticiones,
       ultimaActualizacion: socketData.ultimaActualizacion,

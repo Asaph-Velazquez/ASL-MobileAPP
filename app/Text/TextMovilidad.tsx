@@ -83,6 +83,7 @@ export default function TextMovilidad() {
             setTaxiModalVisible(false);
             setSelectedOption(null);
         }
+        return success;
     };
 
     const onRefresh = async () => {

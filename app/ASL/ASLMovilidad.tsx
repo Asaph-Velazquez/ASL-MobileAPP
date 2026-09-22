@@ -6,7 +6,8 @@ import { ScrollView, RefreshControl, StyleSheet, TouchableOpacity } from "react-
 import { ASLPetitionModal } from '@/components/ASLComponents/asl-petition-modal';
 import { GifPreviewContainer } from "@/components/ASLComponents/GifPreviewContainer";
 import { ASLGridView, ASLOption } from "@/components/ASLComponents/ASLGridView";
-import { TaxiRequestModal, TaxiRequestPayload } from "@/components/BothComponents/TaxiRequestModal";
+import { ASLTaxiRequestModal } from "@/components/ASLComponents/ASLTaxiRequestModal";
+import type { TaxiRequestPayload } from "@/data/taxiRequest";
 import { usePetitionSender } from "@/hooks/usePetitionSender";
 import { MobilityNoticeModal } from "@/components/BothComponents/MobilityNoticeModal";
 import { hasSeenMobilityNotice, markMobilityNoticeSeen } from "@/services/mobilityNotice";
@@ -68,6 +69,7 @@ export default function ASLMovilidad(){
             setTaxiModalVisible(false);
             setServicioSeleccionado(null);
         }
+        return success;
     };
 
     const handleActivateCamera = async () => {
@@ -160,12 +162,11 @@ export default function ASLMovilidad(){
                 cameraText="YOUR MESSAGE SHOW IN SIGN LANGUAGE"
             />
 
-            <TaxiRequestModal
+            <ASLTaxiRequestModal
                 visible={taxiModalVisible}
                 onClose={() => setTaxiModalVisible(false)}
                 onSend={handleTaxiSend}
                 isLoading={isLoading}
-                sourceMode="asl_guided"
             />
 
             <MobilityNoticeModal

@@ -2,78 +2,26 @@ import React from 'react';
 import { ActivityIndicator, Image, Modal, Pressable, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useThemeColor } from '@/hooks/use-theme-color';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { TaxiDateSelector } from './TaxiDateSelector';
+import { buildTaxiRequestPayload, buildTaxiStaticMapUri, recommendedTaxiDate, taxiScheduleError, TAXI_TIME_OPTIONS as TIME_OPTIONS, TAXI_PASSENGER_OPTIONS as PASSENGER_OPTIONS, type TaxiRequestPayload } from '@/data/taxiRequest';
 import {
   TAXI_DESTINATION_CATEGORIES,
   TaxiDestination,
   TaxiDestinationCategory,
   getDestinationsByCategory,
 } from '@/data/taxiDestinations';
-
-export interface TaxiRequestPayload {
-  serviceType: 'taxi';
-  destinationCategory: TaxiDestinationCategory;
-  destinationId: string;
-  destinationLabel: string;
-  destinationCoords: {
-    latitude: number;
-    longitude: number;
-  };
-  destinationPlaceId?: string;
-  timeMode: 'now' | 'scheduled';
-  scheduledAt?: string;
-  passengerCount: number;
-  hasLuggage: boolean;
-  sourceMode: 'text_guided' | 'asl_guided';
-  summary: string;
-}
+export type { TaxiRequestPayload } from '@/data/taxiRequest';
 
 interface TaxiRequestModalProps {
   visible: boolean;
   onClose: () => void;
-  onSend: (payload: TaxiRequestPayload) => void | Promise<void>;
+  onSend: (payload: TaxiRequestPayload) => void | boolean | Promise<void | boolean>;
   isLoading?: boolean;
   sourceMode: TaxiRequestPayload['sourceMode'];
 }
 
 type TaxiStep = 'category' | 'destination' | 'time' | 'people' | 'luggage' | 'confirm';
-
-const TIME_OPTIONS = [
-  { id: '07:00', label: '7:00 AM', mode: 'scheduled' as const },
-  { id: '09:00', label: '9:00 AM', mode: 'scheduled' as const },
-  { id: '12:00', label: '12:00 PM', mode: 'scheduled' as const },
-  { id: '15:00', label: '3:00 PM', mode: 'scheduled' as const },
-  { id: '18:00', label: '6:00 PM', mode: 'scheduled' as const },
-  { id: '21:00', label: '9:00 PM', mode: 'scheduled' as const },
-];
-
-const PASSENGER_OPTIONS = [1, 2, 3, 4, 5, 6];
-
-function buildScheduledAt(timeValue: string) {
-  const [hours, minutes] = timeValue.split(':').map(Number);
-  const scheduledAt = new Date();
-  scheduledAt.setHours(hours, minutes, 0, 0);
-  return scheduledAt.toISOString();
-}
-
-function buildSummary(
-  destination: TaxiDestination,
-  timeLabel: string,
-  passengerCount: number,
-  hasLuggage: boolean,
-) {
-  const passengerLabel = passengerCount === 1 ? 'person' : 'people';
-  return `Taxi - ${destination.label} - ${timeLabel} - ${passengerCount} ${passengerLabel}${hasLuggage ? ' - luggage' : ''}`;
-}
-
-function buildStaticMapUri(destination: TaxiDestination) {
-  const apiKey = process.env.EXPO_PUBLIC_GOOGLE_MAPS_API_KEY;
-  if (!apiKey) {
-    return null;
-  }
-
-  const marker = `${destination.coordinates.latitude},${destination.coordinates.longitude}`;
-  return `https://maps.googleapis.com/maps/api/staticmap?center=${marker}&zoom=14&size=600x240&scale=2&markers=color:red%7C${marker}&key=${apiKey}`;
-}
 
 export function TaxiRequestModal({
   visible,
@@ -86,6 +34,12 @@ export function TaxiRequestModal({
   const mutedColor = useThemeColor({}, 'muted');
   const backgroundColor = useThemeColor({}, 'background');
   const cardColor = useThemeColor({}, 'card');
+  const insets = useSafeAreaInsets();
+  const [selectedDate, setSelectedDate] = React.useState(recommendedTaxiDate);
+  const [error, setError] = React.useState<string | null>(null);
+  const [sending, setSending] = React.useState(false);
+  const sendLock = React.useRef(false);
+  const busy = isLoading || sending;
 
   const [step, setStep] = React.useState<TaxiStep>('category');
   const [selectedCategory, setSelectedCategory] = React.useState<TaxiDestinationCategory | null>(null);
@@ -101,12 +55,15 @@ export function TaxiRequestModal({
     setSelectedTime(null);
     setSelectedPassengers(null);
     setHasLuggage(null);
+    setSelectedDate(recommendedTaxiDate());
+    setError(null);
   }, []);
 
   const handleClose = React.useCallback(() => {
+    if (busy) return;
     resetState();
     onClose();
-  }, [onClose, resetState]);
+  }, [busy, onClose, resetState]);
 
   React.useEffect(() => {
     if (!visible) {
@@ -115,6 +72,8 @@ export function TaxiRequestModal({
   }, [resetState, visible]);
 
   const handleBack = () => {
+    if (busy) return;
+    setError(null);
     if (step === 'destination') setStep('category');
     if (step === 'time') setStep('destination');
     if (step === 'people') setStep('time');
@@ -123,24 +82,21 @@ export function TaxiRequestModal({
   };
 
   const handleSubmit = async () => {
-    if (!selectedCategory || !selectedDestination || !selectedTime || !selectedPassengers || hasLuggage === null) {
-      return;
+    if (sendLock.current || isLoading) return;
+    sendLock.current = true;
+    setSending(true);
+    setError(null);
+    try {
+      const payload = buildTaxiRequestPayload({ category: selectedCategory, destination: selectedDestination,
+        date: selectedDate, time: selectedTime?.id ?? null, passengers: selectedPassengers, luggage: hasLuggage }, sourceMode);
+      const result = await onSend(payload);
+      if (result === false) throw new Error('Request failed. Please try again.');
+    } catch (error) {
+      setError(error instanceof Error ? error.message : 'Request failed. Please try again.');
+    } finally {
+      sendLock.current = false;
+      setSending(false);
     }
-
-    await onSend({
-      serviceType: 'taxi',
-      destinationCategory: selectedCategory,
-      destinationId: selectedDestination.id,
-      destinationLabel: selectedDestination.label,
-      destinationCoords: selectedDestination.coordinates,
-      destinationPlaceId: selectedDestination.placeId,
-      timeMode: selectedTime.mode,
-      scheduledAt: selectedTime.mode === 'scheduled' ? buildScheduledAt(selectedTime.id) : undefined,
-      passengerCount: selectedPassengers,
-      hasLuggage,
-      sourceMode,
-      summary: buildSummary(selectedDestination, selectedTime.label, selectedPassengers, hasLuggage),
-    });
   };
 
   const renderStepTitle = () => {
@@ -160,18 +116,18 @@ export function TaxiRequestModal({
     }
   };
 
-  const mapPreviewUri = selectedDestination ? buildStaticMapUri(selectedDestination) : null;
+  const mapPreviewUri = selectedDestination ? buildTaxiStaticMapUri(selectedDestination) : null;
 
   return (
     <Modal animationType="slide" transparent visible={visible} onRequestClose={handleClose}>
-      <Pressable style={styles.modalOverlay} onPress={handleClose}>
+      <Pressable style={[styles.modalOverlay, { paddingTop: Math.max(20, insets.top), paddingBottom: Math.max(20, insets.bottom) }]} onPress={handleClose}>
         <Pressable
           style={[styles.modalContent, { backgroundColor }]}
           onPress={(event) => event.stopPropagation()}
         >
           <View style={styles.header}>
             <Text style={[styles.title, { color: textColor }]}>{renderStepTitle()}</Text>
-            <TouchableOpacity onPress={handleClose} style={styles.iconButton}>
+            <TouchableOpacity disabled={busy} onPress={handleClose} style={styles.iconButton}>
               <MaterialIcons name="close" size={24} color={textColor} />
             </TouchableOpacity>
           </View>
@@ -184,6 +140,14 @@ export function TaxiRequestModal({
                     key={category.id}
                     style={[styles.categoryCard, { backgroundColor: cardColor }]}
                     onPress={() => {
+                      if (selectedCategory !== category.id) {
+                        setSelectedDestination(null);
+                        setSelectedDate(recommendedTaxiDate());
+                        setSelectedTime(null);
+                        setSelectedPassengers(null);
+                        setHasLuggage(null);
+                        setError(null);
+                      }
                       setSelectedCategory(category.id);
                       setStep('destination');
                     }}
@@ -243,12 +207,17 @@ export function TaxiRequestModal({
             )}
 
             {step === 'time' && (
+              <View>
+              <TaxiDateSelector value={selectedDate} onChange={(date) => { setSelectedDate(date); setSelectedTime(null); setError(null); }} />
               <View style={styles.chipGrid}>
                 {TIME_OPTIONS.map((timeOption) => (
                   <TouchableOpacity
                     key={timeOption.id}
                     style={[styles.chip, { backgroundColor: cardColor }]}
                     onPress={() => {
+                      const scheduleError = taxiScheduleError(selectedDate, timeOption.id);
+                      if (scheduleError) { setError(scheduleError); return; }
+                      setError(null);
                       setSelectedTime(timeOption);
                       setStep('people');
                     }}
@@ -256,6 +225,7 @@ export function TaxiRequestModal({
                     <Text style={[styles.chipText, { color: textColor }]}>{timeOption.label}</Text>
                   </TouchableOpacity>
                 ))}
+              </View>
               </View>
             )}
 
@@ -304,7 +274,7 @@ export function TaxiRequestModal({
                     DESTINATION: {selectedDestination.label}
                   </Text>
                   <Text style={[styles.summaryLine, { color: textColor }]}>
-                    TIME: {selectedTime.label}
+                    TIME: {selectedDate} {selectedTime.label} (America/Mexico_City)
                   </Text>
                   <Text style={[styles.summaryLine, { color: textColor }]}>
                     PEOPLE: {selectedPassengers}
@@ -348,10 +318,11 @@ export function TaxiRequestModal({
               </View>
             )}
           </ScrollView>
+          {error && <Text accessibilityRole="alert" style={{ color: textColor }}>{error}</Text>}
 
           <View style={styles.footer}>
             {step !== 'category' ? (
-              <TouchableOpacity style={[styles.secondaryButton, { borderColor: mutedColor }]} onPress={handleBack}>
+              <TouchableOpacity disabled={busy} style={[styles.secondaryButton, { borderColor: mutedColor }]} onPress={handleBack}>
                 <Text style={[styles.secondaryButtonText, { color: textColor }]}>BACK</Text>
               </TouchableOpacity>
             ) : (
@@ -360,11 +331,11 @@ export function TaxiRequestModal({
 
             {step === 'confirm' ? (
               <TouchableOpacity
-                style={[styles.primaryButton, isLoading && styles.disabledButton]}
-                disabled={isLoading}
+                style={[styles.primaryButton, busy && styles.disabledButton]}
+                disabled={busy}
                 onPress={handleSubmit}
               >
-                {isLoading ? (
+                {busy ? (
                   <ActivityIndicator color="#FFFFFF" />
                 ) : (
                   <>

@@ -16,6 +16,7 @@ interface Peticion {
   rating?: number;
   ratedAt?: string;
   details?: unknown;
+  mutationVersion?: number;
 }
 
 interface PersistedRequestPayload {
@@ -33,6 +34,7 @@ interface PersistedRequestPayload {
   rating?: number;
   ratedAt?: string;
   details?: unknown;
+  mutationVersion?: number;
 }
 
 function mapPersistedRequestToPeticion(request: PersistedRequestPayload): Peticion {
@@ -51,6 +53,7 @@ function mapPersistedRequestToPeticion(request: PersistedRequestPayload): Petici
     rating: request.rating,
     ratedAt: request.ratedAt,
     details: request.details,
+    mutationVersion: request.mutationVersion,
   };
 }
 
@@ -63,6 +66,53 @@ export function useWebSocketMobile(token: string | null) {
   const refIntentosReconexion = useRef(0);
   const refReconectandoManual = useRef(false);
   const maxIntentosReconexion = 5;
+  const taxiRetry = useRef<{ key: string; request: Peticion } | null>(null);
+  const sentTaxiIds = useRef(new Set<string>());
+  const pendingTransport = useRef(new Map<string, { resolve: () => void; reject: (error: Error) => void; timer: ReturnType<typeof setTimeout> }>());
+
+  const rejectPendingTransport = useCallback(() => {
+    pendingTransport.current.forEach(({ reject, timer }) => {
+      clearTimeout(timer);
+      reject(new Error('CONNECTION LOST. CHECK REQUEST BEFORE RETRY.'));
+    });
+    pendingTransport.current.clear();
+  }, []);
+
+  const sendTransportOperation = (type: string, payload: unknown): Promise<void> => {
+    const ws = refWs.current;
+    if (!ws || ws.readyState !== WebSocket.OPEN) return Promise.reject(new Error('NO CONNECTION. TRY AGAIN.'));
+    const operationId = `transport-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+    return new Promise((resolve, reject) => {
+      const timer = setTimeout(() => {
+        pendingTransport.current.delete(operationId);
+        reject(new Error('CONFIRMATION NOT RECEIVED. CHECK REQUEST BEFORE RETRY.'));
+      }, 15000);
+      pendingTransport.current.set(operationId, { resolve, reject, timer });
+      try {
+        ws.send(JSON.stringify({ type, operationId, payload }));
+      } catch {
+        clearTimeout(timer);
+        pendingTransport.current.delete(operationId);
+        reject(new Error('SEND FAILED. TRY AGAIN.'));
+      }
+    });
+  };
+
+  const acceptTransportOption = (id: string, revision: number, optionId: string) =>
+    sendTransportOperation('ACCEPT_TRANSPORT_OPTION', { id, revision, optionId });
+
+  const enviarTaxiConfirmado = async (peticion: Omit<Peticion, 'id' | 'timestamp' | 'status'>): Promise<boolean> => {
+    const key = JSON.stringify(peticion);
+    const request = taxiRetry.current?.key === key ? taxiRetry.current.request : {
+      ...peticion, id: `${Date.now()}-${Math.random().toString(36).slice(2)}`, timestamp: new Date(), status: 'pending' as const,
+    };
+    taxiRetry.current = { key, request };
+    sentTaxiIds.current.add(request.id);
+    await sendTransportOperation('NEW_REQUEST', request);
+    setMisPeticiones(previous => previous.some(item => item.id === request.id) ? previous : [...previous, request]);
+    taxiRetry.current = null;
+    return true;
+  };
 
   // Conexión WebSocket con reconexión automática
   const conectar = useCallback(() => {
@@ -76,7 +126,6 @@ export function useWebSocketMobile(token: string | null) {
       const ws = new WebSocket(wsUrl);
 
       ws.onopen = () => {
-        setEstaConectado(true);
         refIntentosReconexion.current = 0;
       };
 
@@ -86,15 +135,36 @@ export function useWebSocketMobile(token: string | null) {
           const mensaje = JSON.parse(evento.data);
 
           switch (mensaje.type) {
+            case 'NEW_REQUEST': {
+              const id = mensaje.payload?.requestId || mensaje.payload?.id;
+              if (sentTaxiIds.current.has(id)) {
+                const saved = mapPersistedRequestToPeticion({ ...mensaje.payload, requestId: id });
+                setMisPeticiones(previous => previous.some(item => item.id === id)
+                  ? previous.map(item => item.id === id && (saved.mutationVersion ?? 0) >= (item.mutationVersion ?? 0) ? saved : item) : [...previous, saved]);
+              }
+              break;
+            }
+            case 'TRANSPORT_RESULT': {
+              const result = mensaje.payload;
+              const pending = pendingTransport.current.get(result?.operationId);
+              if (pending) {
+                clearTimeout(pending.timer);
+                pendingTransport.current.delete(result.operationId);
+                if (result.ok) pending.resolve();
+                else pending.reject(new Error(result.error || 'OPTION NOT ACCEPTED. CHECK LATEST OPTIONS.'));
+              }
+              break;
+            }
             case 'UPDATE_REQUEST':
               // Actualizar el estado de una petición específica
               setMisPeticiones((prev) =>
                 prev.map((pet) =>
-                  pet.id === mensaje.payload.id
+                  pet.id === mensaje.payload.id && (mensaje.payload.mutationVersion ?? pet.mutationVersion ?? 0) >= (pet.mutationVersion ?? 0)
                     ? {
                         ...pet,
                         status: mensaje.payload.status || pet.status,
                         details: mensaje.payload.details ?? pet.details,
+                        mutationVersion: mensaje.payload.mutationVersion ?? pet.mutationVersion,
                       }
                     : pet
                 )
@@ -106,13 +176,14 @@ export function useWebSocketMobile(token: string | null) {
               // Marcar petición como cancelada (no eliminar)
               setMisPeticiones((prev) =>
                 prev.map((pet) =>
-                  pet.id === mensaje.payload.id
+                  pet.id === mensaje.payload.id && (mensaje.payload.mutationVersion ?? pet.mutationVersion ?? 0) >= (pet.mutationVersion ?? 0)
                     ? { 
                         ...pet, 
                         status: 'cancelled' as const,
                         cancelledBy: mensaje.payload.cancelledBy,
                         cancelledByName: mensaje.payload.cancelledByName,
-                        cancelledAt: mensaje.payload.cancelledAt
+                        cancelledAt: mensaje.payload.cancelledAt,
+                        mutationVersion: mensaje.payload.mutationVersion ?? pet.mutationVersion,
                       }
                     : pet
                 )
@@ -123,11 +194,12 @@ export function useWebSocketMobile(token: string | null) {
               // Actualizar la calificación de una petición
               setMisPeticiones((prev) =>
                 prev.map((pet) =>
-                  pet.id === mensaje.payload.id
+                  pet.id === mensaje.payload.id && (mensaje.payload.mutationVersion ?? pet.mutationVersion ?? 0) >= (pet.mutationVersion ?? 0)
                     ? { 
                         ...pet, 
                         rating: mensaje.payload.rating,
-                        ratedAt: mensaje.payload.ratedAt
+                        ratedAt: mensaje.payload.ratedAt,
+                        mutationVersion: mensaje.payload.mutationVersion ?? pet.mutationVersion,
                       }
                     : pet
                 )
@@ -138,11 +210,15 @@ export function useWebSocketMobile(token: string | null) {
               break;
 
             case 'INIT_REQUESTS':
-              setMisPeticiones(
-                Array.isArray(mensaje.payload?.requests)
-                  ? mensaje.payload.requests.map(mapPersistedRequestToPeticion)
-                  : []
-              );
+              setMisPeticiones(previous => {
+                const incoming: Peticion[] = Array.isArray(mensaje.payload?.requests)
+                  ? mensaje.payload.requests.map(mapPersistedRequestToPeticion) : [];
+                return incoming.map(item => {
+                  const current = previous.find(saved => saved.id === item.id);
+                  return current && (current.mutationVersion ?? 0) > (item.mutationVersion ?? 0) ? current : item;
+                }).concat(previous.filter(item => sentTaxiIds.current.has(item.id) && !incoming.some(saved => saved.id === item.id)));
+              });
+              setEstaConectado(true);
               break;
 
             case 'CONFIG_UPDATED':
@@ -156,6 +232,7 @@ export function useWebSocketMobile(token: string | null) {
       };
 
       ws.onclose = () => {
+        rejectPendingTransport();
         setEstaConectado(false);
         refWs.current = null;
 
@@ -179,7 +256,7 @@ export function useWebSocketMobile(token: string | null) {
     } catch {
       setEstaConectado(false);
     }
-  }, [token]);
+  }, [token, rejectPendingTransport]);
 
   // Enviar petición al panel web
   const enviarPeticion = (peticion: {
@@ -291,6 +368,8 @@ export function useWebSocketMobile(token: string | null) {
 
   // Iniciar conexión al montar el componente
   useEffect(() => {
+    taxiRetry.current = null;
+    sentTaxiIds.current.clear();
     if (!token) {
       if (refTimeoutReconexion.current) {
         clearTimeout(refTimeoutReconexion.current);
@@ -307,6 +386,7 @@ export function useWebSocketMobile(token: string | null) {
     conectar();
 
     return () => {
+      rejectPendingTransport();
       if (refTimeoutReconexion.current) {
         clearTimeout(refTimeoutReconexion.current);
       }
@@ -314,10 +394,12 @@ export function useWebSocketMobile(token: string | null) {
         refWs.current.close();
       }
     };
-  }, [conectar, token]);
+  }, [conectar, token, rejectPendingTransport]);
 
   return {
     estaConectado,
+    acceptTransportOption,
+    enviarTaxiConfirmado,
     enviarPeticion,
     cancelarPeticion,
     ratePeticion,

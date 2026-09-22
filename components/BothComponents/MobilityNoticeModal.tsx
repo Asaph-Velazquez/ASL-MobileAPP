@@ -29,7 +29,7 @@ export function MobilityNoticeModal({ visible, onClose }: MobilityNoticeModalPro
             TRANSPORT NOTICE
           </Text>
           <Text style={[styles.message, { color: mutedColor }]}>
-            TRANSPORT SERVICE NEED SCHEDULE 24 TO 48 HOURS BEFORE.
+            TAXI SCHEDULE MINIMUM 24 HOURS BEFORE. 48 HOURS BEFORE RECOMMENDED.
           </Text>
 
           <View style={styles.gifContainer}>

@@ -20,7 +20,7 @@ interface SendPetitionParams {
  */
 export function usePetitionSender() {
   const [isLoading, setIsLoading] = useState(false);
-  const { estaConectado, enviarPeticion } = useWebSocket();
+  const { estaConectado, enviarPeticion, enviarTaxiConfirmado } = useWebSocket();
   const { guestName, roomNumber } = useAuth();
 
   const sendPetition = async ({
@@ -58,12 +58,14 @@ export function usePetitionSender() {
       }
 
       // Enviar petición
-      const success = enviarPeticion({
+      const payload = {
         type,
         message: `${serviceName}: ${description}`,
         priority,
         details,
-      });
+      };
+      const isTaxi = details && typeof details === 'object' && 'serviceType' in details && details.serviceType === 'taxi';
+      const success = isTaxi ? await enviarTaxiConfirmado(payload) : enviarPeticion(payload);
 
       if (success) {
         // Mensajes personalizados según tipo
@@ -86,7 +88,7 @@ export function usePetitionSender() {
       }
     } catch (error) {
       toast.error('UNEXPECTED ERROR', {
-        description: 'REQUEST SEND, ERROR HAPPEN.',
+        description: error instanceof Error ? error.message : 'REQUEST SEND, ERROR HAPPEN.',
       });
       return false;
     } finally {

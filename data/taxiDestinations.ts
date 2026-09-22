@@ -11,6 +11,8 @@ export interface TaxiDestination {
   category: TaxiDestinationCategory;
   proximityOrder: number;
   shortDescription: string;
+  /** Optional text for the ASL fingerspelling panel; defaults to label. */
+  fingerspellingText?: string;
   coordinates: {
     latitude: number;
     longitude: number;
