@@ -1,3 +1,4 @@
+import { useThemeColor } from '@/hooks/use-theme-color';
 import { Platform, StyleSheet, Text, View } from 'react-native';
 
 type Tone = 'neutral' | 'info' | 'success' | 'danger';
@@ -32,7 +33,12 @@ export function GuestCallVideoStage({
   localPlaceholder,
   showLocalVideo,
 }: GuestCallVideoStageProps) {
-  const phaseColors = toneStyles[phaseTone];
+  const backgroundColor = useThemeColor({}, 'background');
+  const cardColor = useThemeColor({}, 'card');
+  const textColor = useThemeColor({}, 'text');
+  const mutedColor = useThemeColor({}, 'muted');
+  const phaseBackground = useThemeColor({ light: toneStyles[phaseTone].backgroundColor }, 'background');
+  const phaseText = useThemeColor({ light: toneStyles[phaseTone].color }, 'text');
   const VideoView = Platform.OS === 'web'
     ? null
     // El módulo nativo solo se carga en compilaciones nativas de Expo.
@@ -42,37 +48,38 @@ export function GuestCallVideoStage({
   return (
     <View style={styles.wrapper}>
       <View style={styles.statusRow}>
-        <View style={[styles.phaseBadge, { backgroundColor: phaseColors.backgroundColor }]}>
-          <Text style={[styles.phaseBadgeText, { color: phaseColors.color }]}>{phaseLabel}</Text>
+        <View style={[styles.phaseBadge, { backgroundColor: phaseBackground }]}>
+          <Text style={[styles.phaseBadgeText, { color: phaseText }]}>{phaseLabel}</Text>
         </View>
-        <Text style={styles.mediaStatusText}>{mediaStatusLabel}</Text>
+        <Text style={[styles.mediaStatusText, { color: mutedColor }]}>{mediaStatusLabel}</Text>
       </View>
 
-      <View style={styles.remoteStage}>
+      <View style={[styles.remoteStage, { backgroundColor }]}>
         {remoteStreamUrl && VideoView ? (
           <VideoView objectFit="cover" streamURL={remoteStreamUrl} style={styles.remoteVideo} />
         ) : (
-          <View style={styles.remotePlaceholder}>
-            <Text style={styles.placeholderEyebrow}>Interpreter video</Text>
-            <Text style={styles.placeholderText}>{remotePlaceholder}</Text>
+          <View style={[styles.remotePlaceholder, { backgroundColor }]}>
+            <Text style={[styles.placeholderEyebrow, { color: mutedColor }]}>Interpreter video</Text>
+            <Text style={[styles.placeholderText, { color: textColor }]}>{remotePlaceholder}</Text>
           </View>
         )}
 
-        <View style={styles.localPreviewCard}>
-          <Text style={styles.localPreviewLabel}>Guest preview</Text>
-          {showLocalVideo && localStreamUrl && VideoView ? (
-            <VideoView mirror objectFit="cover" streamURL={localStreamUrl} style={styles.localVideo} />
-          ) : (
-            <View style={styles.localPlaceholder}>
-              <Text style={styles.localPlaceholderText}>{localPlaceholder}</Text>
-            </View>
-          )}
-        </View>
       </View>
 
-      <View style={styles.mediaCard}>
-        <Text style={styles.mediaCardTitle}>Media session</Text>
-        <Text style={styles.mediaCardBody}>{mediaMessage}</Text>
+      <View style={[styles.localPreviewCard, { backgroundColor: cardColor }]}>
+        <Text style={[styles.localPreviewLabel, { color: textColor }]}>Guest preview</Text>
+        {showLocalVideo && localStreamUrl && VideoView ? (
+          <VideoView mirror objectFit="cover" streamURL={localStreamUrl} style={styles.localVideo} />
+        ) : (
+          <View style={[styles.localPlaceholder, { backgroundColor }]}>
+            <Text style={[styles.localPlaceholderText, { color: mutedColor }]}>{localPlaceholder}</Text>
+          </View>
+        )}
+      </View>
+
+      <View style={[styles.mediaCard, { backgroundColor }]}>
+        <Text style={[styles.mediaCardTitle, { color: textColor }]}>Media session</Text>
+        <Text style={[styles.mediaCardBody, { color: mutedColor }]}>{mediaMessage}</Text>
       </View>
     </View>
   );
@@ -103,30 +110,25 @@ const styles = StyleSheet.create({
     flex: 1,
     textAlign: 'right',
     fontSize: 13,
-    color: '#475569',
     textTransform: 'capitalize',
   },
   remoteStage: {
     minHeight: 330,
     borderRadius: 28,
     overflow: 'hidden',
-    backgroundColor: '#0f172a',
     position: 'relative',
   },
   remoteVideo: {
     width: '100%',
     height: 330,
-    backgroundColor: '#0f172a',
   },
   remotePlaceholder: {
-    height: 330,
-    paddingHorizontal: 28,
+    minHeight: 330,
+    paddingHorizontal: 20,
     paddingVertical: 32,
-    justifyContent: 'flex-end',
-    backgroundColor: '#10243d',
+    justifyContent: 'center',
   },
   placeholderEyebrow: {
-    color: '#cbd5e1',
     fontSize: 12,
     fontWeight: '700',
     letterSpacing: 1.2,
@@ -134,27 +136,21 @@ const styles = StyleSheet.create({
     textTransform: 'uppercase',
   },
   placeholderText: {
-    color: '#f8fafc',
     fontSize: 22,
     lineHeight: 30,
     fontWeight: '700',
   },
   localPreviewCard: {
-    position: 'absolute',
-    right: 16,
-    bottom: 16,
-    width: 130,
+    width: '100%',
     borderRadius: 20,
     overflow: 'hidden',
-    backgroundColor: '#0f172a',
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.18)',
+    borderColor: 'transparent',
   },
   localPreviewLabel: {
     paddingHorizontal: 10,
     paddingTop: 10,
     paddingBottom: 6,
-    color: '#e2e8f0',
     fontSize: 11,
     fontWeight: '700',
     letterSpacing: 0.4,
@@ -163,7 +159,6 @@ const styles = StyleSheet.create({
   localVideo: {
     width: '100%',
     height: 156,
-    backgroundColor: '#020617',
   },
   localPlaceholder: {
     height: 156,
@@ -171,28 +166,23 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     paddingHorizontal: 12,
     paddingBottom: 12,
-    backgroundColor: '#1e293b',
   },
   localPlaceholderText: {
-    color: '#cbd5e1',
     fontSize: 12,
     lineHeight: 17,
     textAlign: 'center',
   },
   mediaCard: {
     borderRadius: 18,
-    backgroundColor: '#f1e7d4',
     padding: 16,
     gap: 8,
   },
   mediaCardTitle: {
     fontSize: 14,
     fontWeight: '800',
-    color: '#0f172a',
   },
   mediaCardBody: {
     fontSize: 14,
     lineHeight: 20,
-    color: '#475569',
   },
 });

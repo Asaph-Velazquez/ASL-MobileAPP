@@ -1,3 +1,4 @@
+import { useThemeColor } from '@/hooks/use-theme-color';
 import { Ionicons } from '@expo/vector-icons';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
@@ -30,27 +31,26 @@ function ControlButton({
   variant = 'default',
   onPress,
 }: ControlButtonProps) {
+  const surface = useThemeColor({}, 'background');
+  const text = useThemeColor({}, 'text');
+  const muted = useThemeColor({}, 'muted');
+  const tint = useThemeColor({}, 'tint');
   const danger = variant === 'danger';
-  const backgroundColor = disabled
-    ? '#e2e8f0'
-    : danger
-      ? '#dc2626'
-      : active
-        ? '#0f766e'
-        : '#ffffff';
-  const iconColor = disabled ? '#94a3b8' : danger || active ? '#ffffff' : '#0f172a';
-  const textColor = disabled ? '#94a3b8' : danger || active ? '#ffffff' : '#0f172a';
+  const backgroundColor = disabled ? surface : danger ? '#dc2626' : active ? tint : surface;
+  const textColor = disabled ? muted : danger || active ? '#ffffff' : text;
 
   return (
     <Pressable
       accessibilityRole="button"
+      accessibilityLabel={label}
+      accessibilityState={{ disabled, selected: active }}
       disabled={disabled}
       onPress={onPress}
       style={({ pressed }) => [
         styles.controlButton,
-        { backgroundColor, opacity: pressed && !disabled ? 0.86 : 1 },
+        { backgroundColor, opacity: disabled ? 0.55 : pressed ? 0.8 : 1 },
       ]}>
-      <Ionicons color={iconColor} name={icon} size={20} />
+      <Ionicons color={textColor} name={icon} size={20} />
       <Text style={[styles.controlLabel, { color: textColor }]}>{label}</Text>
     </Pressable>
   );
@@ -69,50 +69,59 @@ export function GuestCallControls({
 }: GuestCallControlsProps) {
   return (
     <View style={styles.wrapper}>
-      <ControlButton
-        active={isMicrophoneEnabled}
-        disabled={!canToggleMedia}
-        icon={isMicrophoneEnabled ? 'mic' : 'mic-off'}
-        label={isMicrophoneEnabled ? 'Mic on' : 'Mic off'}
-        onPress={onToggleMicrophone}
-      />
-      <ControlButton
-        active={isCameraEnabled}
-        disabled={!canToggleMedia}
-        icon={isCameraEnabled ? 'videocam' : 'videocam-off'}
-        label={isCameraEnabled ? 'Camera on' : 'Camera off'}
-        onPress={onToggleCamera}
-      />
-      <ControlButton
-        disabled={!canRetryMedia || isRetryingMedia}
-        icon="refresh"
-        label={isRetryingMedia ? 'Retrying' : 'Retry media'}
-        onPress={onRetryMedia}
-      />
-      <ControlButton icon="call" label="End call" onPress={onEndCall} variant="danger" />
+      <View style={styles.row}>
+        <ControlButton
+          active={isMicrophoneEnabled}
+          disabled={!canToggleMedia}
+          icon={isMicrophoneEnabled ? 'mic' : 'mic-off'}
+          label={isMicrophoneEnabled ? 'Mic on' : 'Mic off'}
+          onPress={onToggleMicrophone}
+        />
+        <ControlButton
+          active={isCameraEnabled}
+          disabled={!canToggleMedia}
+          icon={isCameraEnabled ? 'videocam' : 'videocam-off'}
+          label={isCameraEnabled ? 'Camera on' : 'Camera off'}
+          onPress={onToggleCamera}
+        />
+      </View>
+      <View style={styles.row}>
+        <ControlButton
+          disabled={!canRetryMedia || isRetryingMedia}
+          icon="refresh"
+          label={isRetryingMedia ? 'Retrying' : 'Retry media'}
+          onPress={onRetryMedia}
+        />
+        <ControlButton icon="call" label="End call" onPress={onEndCall} variant="danger" />
+      </View>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   wrapper: {
+    gap: 12,
+  },
+  row: {
     flexDirection: 'row',
-    flexWrap: 'wrap',
     gap: 12,
   },
   controlButton: {
-    minWidth: 126,
+    flex: 1,
+    minWidth: 0,
+    minHeight: 64,
     borderRadius: 18,
     paddingHorizontal: 14,
     paddingVertical: 12,
-    flexDirection: 'row',
+    flexDirection: 'column',
     alignItems: 'center',
     justifyContent: 'center',
     gap: 8,
     borderWidth: 1,
-    borderColor: 'rgba(15, 23, 42, 0.08)',
+    borderColor: 'transparent',
   },
   controlLabel: {
+    textAlign: 'center',
     fontSize: 14,
     fontWeight: '700',
   },

@@ -1,5 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { ActivityIndicator, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { useThemeColor } from '@/hooks/use-theme-color';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import { type MediaStream, type RTCPeerConnection } from 'react-native-webrtc';
 
@@ -30,6 +32,11 @@ type MediaStatus = 'idle' | 'requesting' | 'preparing' | 'ready' | 'connecting' 
 
 export default function CallScreen() {
   const { token, guestName, roomNumber } = useAuth();
+  const backgroundColor = useThemeColor({}, 'background');
+  const cardColor = useThemeColor({}, 'card');
+  const textColor = useThemeColor({}, 'text');
+  const mutedColor = useThemeColor({}, 'muted');
+  const insets = useSafeAreaInsets();
   const [status, setStatus] = useState<CallStatus>('booting');
   const [message, setMessage] = useState('Preparing interpreter session...');
   const [mediaStatus, setMediaStatus] = useState<MediaStatus>('idle');
@@ -340,23 +347,6 @@ export default function CallScreen() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [token]);
 
-  const accentColor = useMemo(() => {
-    switch (status) {
-      case 'pending':
-      case 'connecting':
-        return '#2563eb';
-      case 'accepted':
-        return '#0f766e';
-      case 'connected':
-        return '#0b766e';
-      case 'unavailable':
-      case 'error':
-        return '#dc2626';
-      default:
-        return '#334155';
-    }
-  }, [status]);
-
   const phaseDetails = useMemo(() => {
     if (status === 'error') {
       return { label: 'Error', tone: 'danger' as const };
@@ -487,16 +477,16 @@ export default function CallScreen() {
   }
 
   return (
-    <View style={styles.container}>
-      <ScrollView contentContainerStyle={styles.scrollContent}>
-        <View style={[styles.card, { borderColor: accentColor }]}>
-        <Text style={styles.eyebrow}>ASL Interpreter Call</Text>
-        <Text style={styles.title}>{guestName || 'Guest'} • Room {roomNumber || '--'}</Text>
-        <Text style={styles.message}>{message}</Text>
+    <View style={[styles.container, { backgroundColor }]}>
+      <ScrollView contentContainerStyle={[styles.scrollContent, { paddingBottom: Math.max(insets.bottom, 20) }]}>
+        <View style={[styles.card, { backgroundColor: cardColor }]}>
+          <Text style={[styles.eyebrow, { color: mutedColor }]}>ASL Interpreter Call</Text>
+          <Text style={[styles.title, { color: textColor }]}>{guestName || 'Guest'} • Room {roomNumber || '--'}</Text>
+          <Text style={[styles.message, { color: mutedColor }]}>{message}</Text>
 
-        {(status === 'booting' || status === 'connecting') && (
-          <ActivityIndicator size="large" color={accentColor} style={styles.loader} />
-        )}
+          {(status === 'booting' || status === 'connecting') && (
+            <ActivityIndicator size="large" color={textColor} style={styles.loader} />
+          )}
 
           <GuestCallVideoStage
             localPlaceholder={localPlaceholder}
@@ -510,6 +500,10 @@ export default function CallScreen() {
             showLocalVideo={Boolean(localStreamUrl) && isCameraEnabled}
           />
 
+
+        </View>
+      </ScrollView>
+      <View style={[styles.controlsPanel, { backgroundColor: cardColor, paddingBottom: Math.max(insets.bottom, 16) }]}>
           <GuestCallControls
             canRetryMedia={canRetryMedia}
             canToggleMedia={canToggleMedia}
@@ -523,8 +517,7 @@ export default function CallScreen() {
             onToggleCamera={handleToggleCamera}
             onToggleMicrophone={handleToggleMicrophone}
           />
-        </View>
-      </ScrollView>
+      </View>
     </View>
   );
 }
@@ -532,18 +525,25 @@ export default function CallScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f4efe6',
   },
   scrollContent: {
     flexGrow: 1,
-    justifyContent: 'center',
-    padding: 20,
+    padding: 16,
+  },
+  controlsPanel: {
+    padding: 16,
+    width: '100%',
+    maxWidth: 760,
+    alignSelf: 'center',
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
   },
   card: {
-    backgroundColor: '#fffdf8',
     borderRadius: 24,
-    borderWidth: 2,
-    padding: 24,
+    padding: 16,
+    width: '100%',
+    maxWidth: 760,
+    alignSelf: 'center',
     gap: 18,
     shadowColor: '#0f172a',
     shadowOffset: { width: 0, height: 12 },
@@ -555,17 +555,14 @@ const styles = StyleSheet.create({
     fontSize: 12,
     letterSpacing: 2,
     textTransform: 'uppercase',
-    color: '#64748b',
   },
   title: {
     fontSize: 26,
     fontWeight: '700',
-    color: '#0f172a',
   },
   message: {
     fontSize: 16,
     lineHeight: 24,
-    color: '#334155',
   },
   loader: {
     marginTop: 8,

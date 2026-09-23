@@ -1,6 +1,6 @@
 import { useThemeColor } from '@/hooks/use-theme-color';
 import { MaterialIcons } from "@expo/vector-icons";
-import { Image, Modal, Pressable, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { Image, Modal, Pressable, StyleSheet, TouchableOpacity, View } from "react-native";
 
 interface CallModalProps {
     visible: boolean;
@@ -17,6 +17,8 @@ export function CallModal({
 }: CallModalProps) {
     const backgroundColor = useThemeColor({}, 'background');
     const textColor = useThemeColor({}, 'text');
+    const cardColor = useThemeColor({}, 'card');
+    const tintColor = useThemeColor({}, 'tint');
 
     return (
         <Modal
@@ -25,28 +27,28 @@ export function CallModal({
             visible={visible}
             onRequestClose={onClose}
         >
-            <Pressable 
+            <Pressable
                 style={styles.modalOverlay}
                 onPress={onClose}
             >
-                <Pressable 
+                <Pressable
                     style={[styles.modalContent, { backgroundColor: backgroundColor }]}
                     onPress={(e) => e.stopPropagation()}
                 >
                     <View style={styles.modalInner}>
                         {/* Header del modal */}
                         <View style={styles.modalHeader}>
-                            <View style={[styles.modalIcon, { backgroundColor: '#4CAF50' }]}>
-                                <MaterialIcons 
-                                    name="phone" 
-                                    size={48} 
-                                    color="#FFFFFF" 
+                            <View style={[styles.modalIcon, { backgroundColor: tintColor }]}>
+                                <MaterialIcons
+                                    name="phone"
+                                    size={48}
+                                    color="#FFFFFF"
                                 />
                             </View>
                         </View>
 
                         {/* GIF de instrucción para llamada en ASL */}
-                        <Image 
+                        <Image
                             source={gifSource}
                             style={styles.instructionGif}
                             resizeMode="contain"
@@ -54,8 +56,10 @@ export function CallModal({
 
                         {/* Botones */}
                         <View style={styles.buttonContainer}>
-                            <TouchableOpacity 
-                                style={[styles.actionButton, { backgroundColor: '#4CAF50' }]} 
+                            <TouchableOpacity
+                                style={[styles.actionButton, { backgroundColor: tintColor }]}
+                                accessibilityRole="button"
+                                accessibilityLabel="Start video call"
                                 onPress={onMakeCall}
                                 activeOpacity={0.8}
                             >
@@ -63,7 +67,9 @@ export function CallModal({
                             </TouchableOpacity>
 
                             <TouchableOpacity
-                                style={styles.cancelButton}
+                                style={[styles.cancelButton, { backgroundColor: cardColor, borderColor: textColor }]}
+                                accessibilityRole="button"
+                                accessibilityLabel="Cancel"
                                 onPress={onClose}
                                 activeOpacity={0.8}
                             >
@@ -130,10 +136,13 @@ const styles = StyleSheet.create({
         height: 200,
     },
     buttonContainer: {
+        flexDirection: 'row',
         gap: 12,
         marginTop: 8,
     },
     actionButton: {
+        flex: 1,
+        minHeight: 56,
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'center',
@@ -147,6 +156,8 @@ const styles = StyleSheet.create({
         fontWeight: '600',
     },
     cancelButton: {
+        flex: 1,
+        minHeight: 56,
         borderRadius: 12,
         padding: 16,
         alignItems: 'center',
