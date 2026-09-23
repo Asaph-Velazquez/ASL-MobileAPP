@@ -19,6 +19,7 @@ yarn.lock
 *.key
 *.mobileprovision
 *.orig.*
+eas.json
 dist/
 build/
 
@@ -34,6 +35,8 @@ build/
 .sublime-project
 .sublime-workspace
 .DS_Store
+.agents/
+skills-lock.json
 
 # ============================================
 # Environment & Secrets
