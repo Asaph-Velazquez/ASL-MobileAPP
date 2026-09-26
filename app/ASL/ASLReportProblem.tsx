@@ -6,14 +6,14 @@ import { ScrollView, RefreshControl } from "react-native";
 import { ASLPetitionModal } from '@/components/ASLComponents/asl-petition-modal';
 import { GifPreviewContainer } from "@/components/ASLComponents/GifPreviewContainer";
 import { ASLGridView, ASLOption } from "@/components/ASLComponents/ASLGridView";
-import { useWebSocket } from '@/components/BothComponents/websocket-provider';
+import { usePetitionSender } from '@/hooks/usePetitionSender';
 
 export default function ASLReportProblem(){
     const [problemaSeleccionado, setProblemaSeleccionado] = useState<ASLOption | null>(null);
     const [modalVisible, setModalVisible] = useState(false);
     const [cameraActive, setCameraActive] = useState(false);
     const [permission, requestPermission] = useCameraPermissions();
-    const { misPeticiones } = useWebSocket();
+    const { sendPetition, isLoading } = usePetitionSender();
     const [selectedGif, setSelectedGif] = useState<any>(require('../../assets/gifs/ComidaGif.gif'));
     const [refreshing, setRefreshing] = useState(false);
     
@@ -144,12 +144,19 @@ export default function ASLReportProblem(){
 
             <ASLPetitionModal
                 visible={modalVisible}
-                onClose={() => setModalVisible(false)}
+                onClose={handleCloseCamera}
                 selectedOption={problemaSeleccionado}
                 cameraActive={cameraActive}
                 onActivateCamera={handleActivateCamera}
                 onCloseCamera={handleCloseCamera}
                 cameraText="PROBLEM DESCRIBE IN SIGN LANGUAGE"
+                isSending={isLoading}
+                onSend={description => sendPetition({
+                    type: 'problem',
+                    serviceName: problemaSeleccionado?.id ?? 'PROBLEM',
+                    description,
+                    requireConfirmation: true,
+                })}
             />
 
         </ThemedView>

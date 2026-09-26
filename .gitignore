@@ -22,6 +22,8 @@ yarn.lock
 eas.json
 dist/
 build/
+/android/
+**/.gradle/
 
 # ============================================
 # IDE & Editor

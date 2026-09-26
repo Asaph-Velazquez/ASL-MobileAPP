@@ -5,15 +5,15 @@ import { ASLPetitionModal } from '@/components/ASLComponents/asl-petition-modal'
 import { useCameraPermissions } from 'expo-camera';
 import { useState } from 'react';
 import { ScrollView, RefreshControl } from "react-native";
-import { useWebSocket } from '@/components/BothComponents/websocket-provider';
 import { commonStyles } from '@/styles/common';
+import { usePetitionSender } from '@/hooks/usePetitionSender';
 
 export default function ASLRoomS(){
     const [servicioSeleccionado, setServicioSeleccionado] = useState<ASLOption | null>(null);
     const [modalVisible, setModalVisible] = useState(false);
     const [cameraActive, setCameraActive] = useState(false);
     const [permission, requestPermission] = useCameraPermissions();
-    const { misPeticiones } = useWebSocket();
+    const { sendPetition, isLoading } = usePetitionSender();
     const [selectedGif, setSelectedGif] = useState<any>(require('../../assets/gifs/ComidaGif.gif'));
     const [refreshing, setRefreshing] = useState(false);
     
@@ -125,12 +125,19 @@ export default function ASLRoomS(){
 
             <ASLPetitionModal
                 visible={modalVisible}
-                onClose={() => setModalVisible(false)}
+                onClose={handleCloseCamera}
                 selectedOption={servicioSeleccionado}
                 cameraActive={cameraActive}
                 onActivateCamera={handleActivateCamera}
                 onCloseCamera={handleCloseCamera}
                 cameraText="YOUR MESSAGE SHOW IN SIGN LANGUAGE"
+                isSending={isLoading}
+                onSend={description => sendPetition({
+                    type: 'room-service',
+                    serviceName: servicioSeleccionado?.id ?? 'ROOM SERVICE',
+                    description,
+                    requireConfirmation: true,
+                })}
             />
 
         </ThemedView>

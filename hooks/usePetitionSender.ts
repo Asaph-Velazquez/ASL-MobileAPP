@@ -12,6 +12,7 @@ interface SendPetitionParams {
   description: string;
   priority?: Priority;
   details?: unknown;
+  requireConfirmation?: boolean;
 }
 
 /**
@@ -20,7 +21,7 @@ interface SendPetitionParams {
  */
 export function usePetitionSender() {
   const [isLoading, setIsLoading] = useState(false);
-  const { estaConectado, enviarPeticion, enviarTaxiConfirmado } = useWebSocket();
+  const { estaConectado, enviarPeticion, enviarTaxiConfirmado, enviarPeticionConfirmada } = useWebSocket();
   const { guestName, roomNumber } = useAuth();
 
   const sendPetition = async ({
@@ -29,6 +30,7 @@ export function usePetitionSender() {
     description,
     priority = 'medium',
     details,
+    requireConfirmation = false,
   }: SendPetitionParams): Promise<boolean> => {
     setIsLoading(true);
 
@@ -65,7 +67,8 @@ export function usePetitionSender() {
         details,
       };
       const isTaxi = details && typeof details === 'object' && 'serviceType' in details && details.serviceType === 'taxi';
-      const success = isTaxi ? await enviarTaxiConfirmado(payload) : enviarPeticion(payload);
+      const success = isTaxi ? await enviarTaxiConfirmado(payload)
+        : requireConfirmation ? await enviarPeticionConfirmada(payload) : enviarPeticion(payload);
 
       if (success) {
         // Mensajes personalizados según tipo

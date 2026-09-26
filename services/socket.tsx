@@ -66,8 +66,8 @@ export function useWebSocketMobile(token: string | null) {
   const refIntentosReconexion = useRef(0);
   const refReconectandoManual = useRef(false);
   const maxIntentosReconexion = 5;
-  const taxiRetry = useRef<{ key: string; request: Peticion } | null>(null);
-  const sentTaxiIds = useRef(new Set<string>());
+  const requestRetry = useRef<{ key: string; request: Peticion } | null>(null);
+  const sentConfirmedIds = useRef(new Set<string>());
   const pendingTransport = useRef(new Map<string, { resolve: () => void; reject: (error: Error) => void; timer: ReturnType<typeof setTimeout> }>());
 
   const rejectPendingTransport = useCallback(() => {
@@ -103,16 +103,18 @@ export function useWebSocketMobile(token: string | null) {
 
   const enviarTaxiConfirmado = async (peticion: Omit<Peticion, 'id' | 'timestamp' | 'status'>): Promise<boolean> => {
     const key = JSON.stringify(peticion);
-    const request = taxiRetry.current?.key === key ? taxiRetry.current.request : {
+    const request = requestRetry.current?.key === key ? requestRetry.current.request : {
       ...peticion, id: `${Date.now()}-${Math.random().toString(36).slice(2)}`, timestamp: new Date(), status: 'pending' as const,
     };
-    taxiRetry.current = { key, request };
-    sentTaxiIds.current.add(request.id);
+    requestRetry.current = { key, request };
+    sentConfirmedIds.current.add(request.id);
     await sendTransportOperation('NEW_REQUEST', request);
     setMisPeticiones(previous => previous.some(item => item.id === request.id) ? previous : [...previous, request]);
-    taxiRetry.current = null;
+    requestRetry.current = null;
     return true;
   };
+
+  const enviarPeticionConfirmada = enviarTaxiConfirmado;
 
   // Conexión WebSocket con reconexión automática
   const conectar = useCallback(() => {
@@ -137,7 +139,7 @@ export function useWebSocketMobile(token: string | null) {
           switch (mensaje.type) {
             case 'NEW_REQUEST': {
               const id = mensaje.payload?.requestId || mensaje.payload?.id;
-              if (sentTaxiIds.current.has(id)) {
+              if (sentConfirmedIds.current.has(id)) {
                 const saved = mapPersistedRequestToPeticion({ ...mensaje.payload, requestId: id });
                 setMisPeticiones(previous => previous.some(item => item.id === id)
                   ? previous.map(item => item.id === id && (saved.mutationVersion ?? 0) >= (item.mutationVersion ?? 0) ? saved : item) : [...previous, saved]);
@@ -216,7 +218,7 @@ export function useWebSocketMobile(token: string | null) {
                 return incoming.map(item => {
                   const current = previous.find(saved => saved.id === item.id);
                   return current && (current.mutationVersion ?? 0) > (item.mutationVersion ?? 0) ? current : item;
-                }).concat(previous.filter(item => sentTaxiIds.current.has(item.id) && !incoming.some(saved => saved.id === item.id)));
+                }).concat(previous.filter(item => sentConfirmedIds.current.has(item.id) && !incoming.some(saved => saved.id === item.id)));
               });
               setEstaConectado(true);
               break;
@@ -368,8 +370,8 @@ export function useWebSocketMobile(token: string | null) {
 
   // Iniciar conexión al montar el componente
   useEffect(() => {
-    taxiRetry.current = null;
-    sentTaxiIds.current.clear();
+    requestRetry.current = null;
+    sentConfirmedIds.current.clear();
     if (!token) {
       if (refTimeoutReconexion.current) {
         clearTimeout(refTimeoutReconexion.current);
@@ -400,6 +402,7 @@ export function useWebSocketMobile(token: string | null) {
     estaConectado,
     acceptTransportOption,
     enviarTaxiConfirmado,
+    enviarPeticionConfirmada,
     enviarPeticion,
     cancelarPeticion,
     ratePeticion,

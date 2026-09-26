@@ -154,12 +154,20 @@ export default function ASLMovilidad(){
 
             <ASLPetitionModal
                 visible={modalVisible}
-                onClose={() => setModalVisible(false)}
+                onClose={handleCloseCamera}
                 selectedOption={servicioSeleccionado}
                 cameraActive={cameraActive}
                 onActivateCamera={handleActivateCamera}
                 onCloseCamera={handleCloseCamera}
                 cameraText="YOUR MESSAGE SHOW IN SIGN LANGUAGE"
+                isSending={isLoading}
+                onSend={description => sendPetition({
+                    type: 'services',
+                    serviceName: 'VALET PARKING',
+                    description,
+                    requireConfirmation: true,
+                    details: { serviceType: 'valet', sourceMode: 'asl' },
+                })}
             />
 
             <ASLTaxiRequestModal

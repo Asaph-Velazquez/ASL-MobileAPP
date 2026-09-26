@@ -55,6 +55,21 @@ test('taxi is not added before server acknowledgement and retries reuse the requ
   connection.receive({ type: 'NEW_REQUEST', payload: { ...original.payload, id: 'other-guest', requestId: 'other-guest' } });
   assert.equal(state[1].length, 1);
 });
+test('ASL camera request waits for persistence and keeps the same ID on retry', async () => {
+  const { api, connection, state, timers } = socketHarness();
+  const petition = { ...request, type: 'room-service', message: 'FOOD: WATER', details: undefined };
+  const first = api.enviarPeticionConfirmada(petition);
+  const original = connection.sent[0];
+  assert.equal(state[1].length, 0);
+  const rejected = assert.rejects(first, /CONFIRMATION NOT RECEIVED/);
+  [...timers.values()][0]();
+  await rejected;
+  const retry = api.enviarPeticionConfirmada(petition);
+  assert.equal(connection.sent[1].payload.id, original.payload.id);
+  connection.receive({ type: 'TRANSPORT_RESULT', payload: { operationId: connection.sent[1].operationId, ok: true } });
+  await retry;
+  assert.equal(state[1][0].message, 'FOOD: WATER');
+});
 test('acceptance sends IDs only, ignores unrelated results and propagates stale rejection', async () => {
   const { api, connection, timers } = socketHarness();
   const pending = api.acceptTransportOption('taxi-1', 2, 'option-1');

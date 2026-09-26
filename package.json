@@ -10,7 +10,8 @@
     "web": "expo start --web",
     "lint": "expo lint",
     "typecheck": "tsc --noEmit",
-    "test:transport": "node --test tests/transport.test.cjs tests/transportSocket.test.cjs"
+    "test:transport": "node --test tests/transport.test.cjs tests/transportSocket.test.cjs",
+    "test:asl": "node --test tests/signSequence.test.cjs tests/aslRecognition.test.cjs"
   },
   "dependencies": {
     "@config-plugins/react-native-webrtc": "^13.0.0",
