@@ -57,15 +57,16 @@ export function ASLTaxiRequestModal({ visible, onClose, onSend, isLoading = fals
     : step >= 4 ? transportAslColors.luggageYes.color : transportAslColors.destination.color;
   const dismiss = () => help ? setHelp(null) : close();
   return <Modal visible={visible} transparent animationType="slide" onRequestClose={dismiss}>
-    <Pressable style={[styles.overlay, { paddingTop: Math.max(20, insets.top), paddingBottom: Math.max(20, insets.bottom) }]} onPress={dismiss}>
-      <Pressable style={[styles.content, { backgroundColor }]} onPress={event => event.stopPropagation()}>
+    <View style={[styles.overlay, { paddingTop: Math.max(20, insets.top), paddingBottom: Math.max(20, insets.bottom) }]}>
+      <Pressable style={StyleSheet.absoluteFill} onPress={dismiss} accessibilityLabel="Close taxi request" />
+      <View style={[styles.content, { backgroundColor }]}>
       <View style={styles.flow} accessibilityElementsHidden={!!help} importantForAccessibility={help ? 'no-hide-descendants' : 'auto'}>
         <View style={styles.header}>
           <MaterialIcons name={headerIcons[step]} size={26} color={headerColor} />
           <View style={{ flex: 1 }}><Text style={[styles.title, { color }]}>{STEPS[step]}</Text><Text style={{ color }}>{step + 1} / 6</Text></View>
           <TouchableOpacity disabled={busy} style={styles.icon} accessibilityRole="button" accessibilityLabel="Close taxi request" onPress={close}><MaterialIcons name="close" size={28} color={color} /></TouchableOpacity>
         </View>
-        <ScrollView key={step} style={styles.scroll} contentContainerStyle={styles.body} showsVerticalScrollIndicator={false}>
+        <ScrollView key={step} style={styles.scroll} contentContainerStyle={styles.body} nestedScrollEnabled keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator>
           {step === 0 && TAXI_DESTINATION_CATEGORIES.map(category => <VisualChoice key={category.id} label={category.label}
             icon={category.icon as React.ComponentProps<typeof MaterialIcons>['name']} selected={draft.category === category.id}
             iconColor={category.iconColor} iconBackground={category.iconBackground}
@@ -108,16 +109,16 @@ export function ASLTaxiRequestModal({ visible, onClose, onSend, isLoading = fals
           </TouchableOpacity>}
         </View>
       </View>
-      </Pressable>
+      </View>
       {help && <TaxiHelpSheet key={help.key} title={help.title} destination={help.destination} resource={helpResources[help.key]} onClose={() => setHelp(null)} bottomInset={insets.bottom} />}
-    </Pressable>
+    </View>
   </Modal>;
 }
 
 const styles = StyleSheet.create({
   overlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'center', alignItems: 'center', padding: 20 },
-  content: { width: '100%', maxWidth: 520, maxHeight: '92%', borderRadius: 20, padding: 20, overflow: 'hidden' },
-  flow: { flexShrink: 1, gap: 16 }, scroll: { flexShrink: 1 },
+  content: { width: '100%', maxWidth: 520, height: '92%', borderRadius: 20, padding: 20, overflow: 'hidden' },
+  flow: { flex: 1, minHeight: 0, gap: 16 }, scroll: { flex: 1, minHeight: 0 },
   header: { flexDirection: 'row', alignItems: 'center', gap: 6 },
   title: { fontSize: 20, fontWeight: '700' }, icon: { minWidth: 40, minHeight: 44, alignItems: 'center', justifyContent: 'center' }, body: { gap: 12 },
   grid: { flexDirection: 'row', flexWrap: 'wrap', gap: 12 }, cell: { width: '47%', flexGrow: 1 },

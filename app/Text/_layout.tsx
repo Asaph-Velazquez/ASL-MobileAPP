@@ -14,7 +14,7 @@ export default function TabLayout() {
 
   return (
     <Tabs
-      screenOptions={{
+      screenOptions={({ route }) => ({
         tabBarActiveTintColor: Colors[colorScheme ?? 'light'].tint,
         headerShown: true,
         headerLeft: () => (
@@ -39,10 +39,11 @@ export default function TabLayout() {
           alignItems: 'center',
         },
         tabBarItemStyle: {
+          display: route.name === 'TextHome' ? 'flex' : 'none',
           justifyContent: 'center',
           alignItems: 'center',
         },
-      }}>
+      })}>
       <Tabs.Screen
         name="TextHome"
         options={{

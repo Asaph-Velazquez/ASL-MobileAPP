@@ -1,4 +1,5 @@
 import { ThemedView } from "@/components/BothComponents/themed-view";
+import { ASLCardIcon } from '@/components/ASLComponents/ASLCardIcon';
 import { useThemeColor } from '@/hooks/use-theme-color';
 import { commonStyles } from '@/styles/common';
 import { MaterialCommunityIcons, MaterialIcons } from "@expo/vector-icons";
@@ -135,21 +136,7 @@ export default function ASLServices(){
                         onPress={() => handlePress(opcion)}
                         activeOpacity={0.7}
                     >
-                        <View style={[styles.gridIconContainer, { backgroundColor: backgroundColor, borderColor: opcion.iconColor, borderWidth: 2 }]}>
-                            {opcion.iconType === "material" ? (
-                                <MaterialIcons 
-                                    name={opcion.icon as any} 
-                                    size={40} 
-                                    color={opcion.iconColor} 
-                                />
-                            ) : (
-                                <MaterialCommunityIcons 
-                                    name={opcion.icon as any} 
-                                    size={40} 
-                                    color={opcion.iconColor} 
-                                />
-                            )}
-                        </View>
+                        <ASLCardIcon name={opcion.icon} type={opcion.iconType} color={opcion.iconColor} />
                     </TouchableOpacity>
                 ))}
             </View>
@@ -307,16 +294,20 @@ const styles = StyleSheet.create({
         height: 280,
     },
     gridContainer: {
+        width: '100%',
+        maxWidth: 560,
+        alignSelf: 'center',
         flexDirection: 'row',
         flexWrap: 'wrap',
         paddingHorizontal: 20,
         paddingTop: 20,
         paddingBottom: 20,
         gap: 16,
-        justifyContent: 'space-between',
+        justifyContent: 'center',
     },
     gridItem: {
         width: '47%',
+        maxWidth: 240,
         aspectRatio: 1,
         borderRadius: 16,
         padding: 16,

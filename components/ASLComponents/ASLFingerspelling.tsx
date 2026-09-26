@@ -52,6 +52,7 @@ export function ASLFingerspelling({ text }: { text: string }) {
   };
 
   return <ScrollView ref={scroll} horizontal nestedScrollEnabled
+    directionalLockEnabled
     showsHorizontalScrollIndicator persistentScrollbar
     style={styles.container} contentContainerStyle={styles.letters}
     onLayout={event => setViewportWidth(event.nativeEvent.layout.width)}
@@ -72,7 +73,7 @@ export function ASLFingerspelling({ text }: { text: string }) {
 }
 
 const styles = StyleSheet.create({
-  container: { flexGrow: 0, backgroundColor: '#FFFFFF', borderRadius: 16 },
+  container: { width: '100%', flexGrow: 0, flexShrink: 0, backgroundColor: '#FFFFFF', borderRadius: 16 },
   letters: { padding: 12, gap: 8, alignItems: 'center' },
   space: { width: 22 },
   letter: { width: 76, alignItems: 'center', gap: 8 },

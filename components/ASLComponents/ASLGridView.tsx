@@ -1,5 +1,5 @@
 import { useThemeColor } from '@/hooks/use-theme-color';
-import { MaterialCommunityIcons, MaterialIcons } from "@expo/vector-icons";
+import { ASLCardIcon } from './ASLCardIcon';
 import { StyleSheet, TouchableOpacity, View } from "react-native";
 
 export interface ASLOption {
@@ -30,7 +30,6 @@ export function ASLGridView({
     defaultGif 
 }: ASLGridViewProps) {
     const cardBg = useThemeColor({}, 'card');
-    const backgroundColor = useThemeColor({}, 'background');
 
     return (
         <View style={styles.gridContainer}>
@@ -43,28 +42,7 @@ export function ASLGridView({
                     onPress={() => onOptionPress(option)}
                     activeOpacity={0.7}
                 >
-                    <View style={[
-                        styles.iconContainer, 
-                        { 
-                            backgroundColor,
-                            borderColor: option.iconColor,
-                            borderWidth: 2
-                        }
-                    ]}>
-                        {option.iconType === "material" ? (
-                            <MaterialIcons 
-                                name={option.icon as any} 
-                                size={40} 
-                                color={option.iconColor} 
-                            />
-                        ) : (
-                            <MaterialCommunityIcons 
-                                name={option.icon as any} 
-                                size={40} 
-                                color={option.iconColor} 
-                            />
-                        )}
-                    </View>
+                    <ASLCardIcon name={option.icon} type={option.iconType} color={option.iconColor} />
                 </TouchableOpacity>
             ))}
         </View>
@@ -73,16 +51,20 @@ export function ASLGridView({
 
 const styles = StyleSheet.create({
     gridContainer: {
+        width: '100%',
+        maxWidth: 560,
+        alignSelf: 'center',
         flexDirection: 'row',
         flexWrap: 'wrap',
         paddingHorizontal: 20,
         paddingTop: 20,
         paddingBottom: 20,
         gap: 16,
-        justifyContent: 'space-between',
+        justifyContent: 'center',
     },
     gridItem: {
         width: '47%',
+        maxWidth: 240,
         aspectRatio: 1,
         borderRadius: 16,
         padding: 16,

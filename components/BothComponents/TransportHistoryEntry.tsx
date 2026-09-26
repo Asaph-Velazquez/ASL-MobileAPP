@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { ActivityIndicator, Linking, Modal, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, Linking, Modal, Pressable, ScrollView, StyleSheet, Text, View, useWindowDimensions } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTransportTheme } from '@/hooks/useTransportTheme';
@@ -30,6 +30,8 @@ export function TransportHistoryEntry({ request, mode }: Props) {
   const s = createStyles(theme);
   const themeText = theme.text;
   const insets = useSafeAreaInsets();
+  const { height: windowHeight } = useWindowDimensions();
+  const panelHeight = Math.max(0, windowHeight - Math.max(insets.top, 20) - Math.max(insets.bottom, 20));
   const asl = mode === 'ASL';
   const backgroundColor = theme.background;
   const color = theme.text;
@@ -80,9 +82,9 @@ export function TransportHistoryEntry({ request, mode }: Props) {
     </Pressable>
     <Modal visible={open} transparent animationType="slide" onRequestClose={close}>
       <View style={[s.overlay, asl && s.aslOverlay, { paddingTop: Math.max(insets.top, 20), paddingBottom: asl ? Math.max(insets.bottom, 20) : 0 }]}>
-        <View style={[s.sheet, asl && s.aslSheet, { backgroundColor, paddingBottom: asl ? 20 : Math.max(insets.bottom, 16) }]}>
+        <View style={[asl ? s.aslSheet : s.sheet, asl && { height: panelHeight }, { backgroundColor, paddingBottom: asl ? 20 : Math.max(insets.bottom, 16) }]}>
           <View style={[s.header, asl && s.aslHeader]}><Text style={[s.title, asl && s.aslTitle, s.grow, { color }]}>{canChoose ? 'Transport options' : 'Your request'}</Text><Pressable accessibilityRole="button" accessibilityLabel="Close transport details" disabled={busy} onPress={close} style={s.close}><MaterialIcons name="close" size={24} color={color} /></Pressable></View>
-          <ScrollView style={{ flexShrink: 1 }} contentContainerStyle={[s.content, asl && s.aslContent]}>
+          <ScrollView style={{ flex: 1, minHeight: 0 }} nestedScrollEnabled keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator contentContainerStyle={[s.content, asl && s.aslContent]}>
             {asl ? <ASLTransportDetail details={details} status={request.status} onOpenMap={openMap} /> : <TextTransportDetail details={details} status={request.status} onOpenMap={openMap} />}
             {canChoose && <>
               <Text style={[s.entryTitle, { color }]}>SELECT ONE OPTION</Text>
@@ -117,7 +119,7 @@ export function TransportHistoryEntry({ request, mode }: Props) {
 
 function createStyles(theme: ReturnType<typeof useTransportTheme>) { return StyleSheet.create({
   aslOverlay: { justifyContent: 'center', alignItems: 'center', paddingHorizontal: 20 },
-  aslSheet: { flexGrow: 0, flexShrink: 1, flexBasis: 'auto', maxWidth: 520, maxHeight: '92%', borderRadius: 20, borderTopLeftRadius: 20, borderTopRightRadius: 20, padding: 20, gap: 16 },
+  aslSheet: { width: '100%', maxWidth: 520, maxHeight: '100%', alignSelf: 'center', borderRadius: 20, padding: 20, gap: 16, overflow: 'hidden' },
   aslHeader: { paddingHorizontal: 0, paddingVertical: 0, borderBottomWidth: 0 }, aslTitle: { fontSize: 20, fontWeight: '700' },
   aslContent: { padding: 0, gap: 12 }, aslFooter: { padding: 0, borderTopWidth: 0 },
   grow: { flex: 1 }, entry: { borderWidth: 1.5, borderRadius: 14, padding: 14, gap: 10, flexDirection: 'row', alignItems: 'center' },

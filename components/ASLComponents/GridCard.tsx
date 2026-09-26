@@ -1,6 +1,6 @@
 import { useThemeColor } from '@/hooks/use-theme-color';
-import { MaterialCommunityIcons, MaterialIcons } from "@expo/vector-icons";
-import { StyleSheet, TouchableOpacity, View } from "react-native";
+import { ASLCardIcon } from './ASLCardIcon';
+import { StyleSheet, TouchableOpacity } from "react-native";
 import { ServiceOption } from '../TextComponents/ServiceCard';
 
 interface GridCardProps {
@@ -16,7 +16,6 @@ interface GridCardProps {
  */
 export function GridCard({ option, onPress, onPressIn, onPressOut }: GridCardProps) {
   const cardBg = useThemeColor({}, 'card');
-  const backgroundColor = useThemeColor({}, 'background');
 
   return (
     <TouchableOpacity
@@ -26,28 +25,7 @@ export function GridCard({ option, onPress, onPressIn, onPressOut }: GridCardPro
       onPress={() => onPress(option)}
       activeOpacity={0.7}
     >
-      <View style={[
-        styles.iconContainer, 
-        { 
-          backgroundColor,
-          borderColor: option.iconColor,
-          borderWidth: 2
-        }
-      ]}>
-        {option.iconType === "material" ? (
-          <MaterialIcons
-            name={option.icon as any}
-            size={40}
-            color={option.iconColor}
-          />
-        ) : (
-          <MaterialCommunityIcons
-            name={option.icon as any}
-            size={40}
-            color={option.iconColor}
-          />
-        )}
-      </View>
+      <ASLCardIcon name={option.icon} type={option.iconType} color={option.iconColor} />
     </TouchableOpacity>
   );
 }
@@ -55,6 +33,7 @@ export function GridCard({ option, onPress, onPressIn, onPressOut }: GridCardPro
 const styles = StyleSheet.create({
   gridItem: {
     width: '47%',
+    maxWidth: 240,
     aspectRatio: 1,
     borderRadius: 16,
     padding: 16,

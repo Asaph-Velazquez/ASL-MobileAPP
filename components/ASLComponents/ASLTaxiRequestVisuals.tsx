@@ -139,7 +139,7 @@ export function TaxiHelpSheet({ title, destination, resource, onClose, bottomIns
   const category = TAXI_DESTINATION_CATEGORIES.find(item => item.id === destination?.category);
   return <View style={styles.helpOverlay} accessibilityViewIsModal>
     <Pressable style={StyleSheet.absoluteFill} onPress={onClose} accessibilityLabel="Close ASL help" />
-    <Pressable onPress={event => event.stopPropagation()} style={[styles.sheet, { backgroundColor, paddingBottom: Math.max(24, bottomInset) }]}>
+    <View style={[styles.sheet, { backgroundColor, paddingBottom: Math.max(24, bottomInset) }]}>
       <View style={styles.sheetHandle} />
       <View style={styles.sheetHeader}>
         {category && <MaterialIcons name={category.icon as Icon} size={30} color={category.iconColor} />}
@@ -152,7 +152,7 @@ export function TaxiHelpSheet({ title, destination, resource, onClose, bottomIns
             <Text style={{ color }}>No verified sign-language resource is available for this selection yet.</Text></View>}
         {destination && <ASLFingerspelling text={destination.fingerspellingText?.trim() || destination.label} />}
       </ScrollView>
-    </Pressable>
+    </View>
   </View>;
 }
 
