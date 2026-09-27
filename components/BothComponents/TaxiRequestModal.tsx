@@ -1,9 +1,11 @@
 import React from 'react';
-import { ActivityIndicator, Image, Modal, Pressable, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, Image, Linking, Modal, Pressable, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { buildTaxiMapUrl } from '@/data/taxiRequest';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useThemeColor } from '@/hooks/use-theme-color';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { TaxiDateSelector } from './TaxiDateSelector';
+import { transportAslColors, transportTimeAppearance } from '@/constants/transportAslTheme';
 import { buildTaxiRequestPayload, buildTaxiStaticMapUri, recommendedTaxiDate, taxiScheduleError, TAXI_TIME_OPTIONS as TIME_OPTIONS, TAXI_PASSENGER_OPTIONS as PASSENGER_OPTIONS, type TaxiRequestPayload } from '@/data/taxiRequest';
 import {
   TAXI_DESTINATION_CATEGORIES,
@@ -39,6 +41,8 @@ export function TaxiRequestModal({
   const [error, setError] = React.useState<string | null>(null);
   const [sending, setSending] = React.useState(false);
   const sendLock = React.useRef(false);
+  const [carouselWidth, setCarouselWidth] = React.useState(0);
+  const [mapError, setMapError] = React.useState(false);
   const busy = isLoading || sending;
 
   const [step, setStep] = React.useState<TaxiStep>('category');
@@ -57,6 +61,7 @@ export function TaxiRequestModal({
     setHasLuggage(null);
     setSelectedDate(recommendedTaxiDate());
     setError(null);
+    setMapError(false);
   }, []);
 
   const handleClose = React.useCallback(() => {
@@ -117,22 +122,34 @@ export function TaxiRequestModal({
   };
 
   const mapPreviewUri = selectedDestination ? buildTaxiStaticMapUri(selectedDestination) : null;
+  const timeAppearance = transportTimeAppearance(selectedTime?.id ?? '07:00');
+  const luggageAppearance = hasLuggage === false ? transportAslColors.luggageNo : transportAslColors.luggageYes;
+  const stepIcons = { category: 'category', destination: 'place', time: 'schedule', people: 'people', luggage: 'luggage', confirm: 'check-circle' } as const;
+  const stepColor = step === 'time' ? timeAppearance.color : step === 'people' ? transportAslColors.people.color
+    : step === 'luggage' || step === 'confirm' ? luggageAppearance.color : transportAslColors.destination.color;
+
+  const renderBadge = (icon: React.ComponentProps<typeof MaterialIcons>['name'], appearance: { color: string; background: string }) => (
+    <View style={[styles.categoryIconContainer, { borderColor: appearance.color, backgroundColor: appearance.background }]}>
+      <MaterialIcons name={icon} size={28} color={appearance.color} />
+    </View>
+  );
 
   return (
     <Modal animationType="slide" transparent visible={visible} onRequestClose={handleClose}>
-      <Pressable style={[styles.modalOverlay, { paddingTop: Math.max(20, insets.top), paddingBottom: Math.max(20, insets.bottom) }]} onPress={handleClose}>
-        <Pressable
+      <View style={[styles.modalOverlay, { paddingTop: Math.max(20, insets.top), paddingBottom: Math.max(20, insets.bottom) }]}>
+        <Pressable style={StyleSheet.absoluteFill} onPress={handleClose} accessibilityLabel="Close taxi request" />
+        <View
           style={[styles.modalContent, { backgroundColor }]}
-          onPress={(event) => event.stopPropagation()}
         >
           <View style={styles.header}>
+            <MaterialIcons name={stepIcons[step]} size={26} color={stepColor} />
             <Text style={[styles.title, { color: textColor }]}>{renderStepTitle()}</Text>
             <TouchableOpacity disabled={busy} onPress={handleClose} style={styles.iconButton}>
               <MaterialIcons name="close" size={24} color={textColor} />
             </TouchableOpacity>
           </View>
 
-          <ScrollView showsVerticalScrollIndicator={false}>
+          <ScrollView style={{ flex: 1, minHeight: 0 }} nestedScrollEnabled showsVerticalScrollIndicator>
             {step === 'category' && (
               <View style={styles.section}>
                 {TAXI_DESTINATION_CATEGORIES.map((category) => (
@@ -208,7 +225,7 @@ export function TaxiRequestModal({
 
             {step === 'time' && (
               <View>
-              <TaxiDateSelector value={selectedDate} onChange={(date) => { setSelectedDate(date); setSelectedTime(null); setError(null); }} />
+              <TaxiDateSelector value={selectedDate} iconColor={transportAslColors.destination.color} onChange={(date) => { setSelectedDate(date); setSelectedTime(null); setError(null); }} />
               <View style={styles.chipGrid}>
                 {TIME_OPTIONS.map((timeOption) => (
                   <TouchableOpacity
@@ -222,6 +239,7 @@ export function TaxiRequestModal({
                       setStep('people');
                     }}
                   >
+                    {renderBadge(transportTimeAppearance(timeOption.id).icon, transportTimeAppearance(timeOption.id))}
                     <Text style={[styles.chipText, { color: textColor }]}>{timeOption.label}</Text>
                   </TouchableOpacity>
                 ))}
@@ -240,6 +258,7 @@ export function TaxiRequestModal({
                       setStep('luggage');
                     }}
                   >
+                    {renderBadge('person', transportAslColors.people)}
                     <Text style={[styles.chipText, { color: textColor }]}>
                       {passengerCount} {passengerCount === 1 ? 'PERSON' : 'PEOPLE'}
                     </Text>
@@ -253,12 +272,13 @@ export function TaxiRequestModal({
                 {[true, false].map((value) => (
                   <TouchableOpacity
                     key={String(value)}
-                    style={[styles.optionCard, { backgroundColor: cardColor }]}
+                    style={[styles.optionCard, styles.summaryRow, { backgroundColor: cardColor }]}
                     onPress={() => {
                       setHasLuggage(value);
                       setStep('confirm');
                     }}
                   >
+                    {renderBadge(value ? 'luggage' : 'no-luggage', value ? transportAslColors.luggageYes : transportAslColors.luggageNo)}
                     <Text style={[styles.optionTitle, { color: textColor }]}>
                       {value ? 'YES, LUGGAGE' : 'NO LUGGAGE'}
                     </Text>
@@ -270,18 +290,30 @@ export function TaxiRequestModal({
             {step === 'confirm' && selectedDestination && selectedTime && selectedPassengers && hasLuggage !== null && (
               <View style={styles.section}>
                 <View style={[styles.summaryCard, { backgroundColor: cardColor }]}>
+                  <View style={styles.summaryRow}>
+                  <MaterialIcons name="place" size={26} color={transportAslColors.destination.color} />
                   <Text style={[styles.summaryLine, { color: textColor }]}>
                     DESTINATION: {selectedDestination.label}
                   </Text>
+                  </View>
+                  <View style={styles.summaryRow}>
+                  <MaterialIcons name={timeAppearance.icon} size={26} color={timeAppearance.color} />
                   <Text style={[styles.summaryLine, { color: textColor }]}>
                     TIME: {selectedDate} {selectedTime.label} (America/Mexico_City)
                   </Text>
+                  </View>
+                  <View style={styles.summaryRow}>
+                  <MaterialIcons name="person" size={26} color={transportAslColors.people.color} />
                   <Text style={[styles.summaryLine, { color: textColor }]}>
                     PEOPLE: {selectedPassengers}
                   </Text>
+                  </View>
+                  <View style={styles.summaryRow}>
+                  <MaterialIcons name={hasLuggage ? 'luggage' : 'no-luggage'} size={26} color={luggageAppearance.color} />
                   <Text style={[styles.summaryLine, { color: textColor }]}>
                     LUGGAGE: {hasLuggage ? 'YES' : 'NO'}
                   </Text>
+                  </View>
                 </View>
 
                 <View style={styles.carouselWrapper}>
@@ -291,11 +323,14 @@ export function TaxiRequestModal({
                   <ScrollView
                     horizontal
                     pagingEnabled
-                    showsHorizontalScrollIndicator={false}
-                    contentContainerStyle={styles.carouselContainer}
+                    nestedScrollEnabled
+                    directionalLockEnabled
+                    showsHorizontalScrollIndicator
+                    style={{ width: '100%', flexGrow: 0 }}
+                    onLayout={event => setCarouselWidth(event.nativeEvent.layout.width)}
                   >
                     {selectedDestination.images.map((imageSource, index) => (
-                      <View key={`${selectedDestination.id}-${index}`} style={styles.carouselSlide}>
+                      <View key={`${selectedDestination.id}-${index}`} style={{ width: carouselWidth || 280 }}>
                         <Image source={imageSource} resizeMode="cover" style={styles.carouselImage} />
                       </View>
                     ))}
@@ -315,6 +350,16 @@ export function TaxiRequestModal({
                     </Text>
                   </View>
                 )}
+                <TouchableOpacity accessibilityRole="link" style={[styles.mapButton, { borderColor: transportAslColors.destination.color }]} onPress={async () => {
+                  try {
+                    setMapError(false);
+                    await Linking.openURL(buildTaxiMapUrl(selectedDestination));
+                  } catch { setMapError(true); }
+                }}>
+                  <MaterialIcons name="map" size={24} color={transportAslColors.destination.color} />
+                  <Text style={[styles.chipText, { color: textColor }]}>Open map</Text>
+                </TouchableOpacity>
+                {mapError && <Text accessibilityRole="alert" style={{ color: textColor }}>Unable to open map. Try again.</Text>}
               </View>
             )}
           </ScrollView>
@@ -350,8 +395,8 @@ export function TaxiRequestModal({
               </TouchableOpacity>
             )}
           </View>
-        </Pressable>
-      </Pressable>
+        </View>
+      </View>
     </Modal>
   );
 }
@@ -367,12 +412,13 @@ const styles = StyleSheet.create({
   modalContent: {
     width: '100%',
     maxWidth: 520,
-    maxHeight: '92%',
+    height: '92%',
     borderRadius: 20,
     padding: 20,
     gap: 16,
   },
   header: {
+    gap: 8,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
@@ -481,6 +527,7 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   chip: {
+    gap: 10,
     minWidth: '47%',
     borderRadius: 14,
     paddingVertical: 16,
@@ -500,23 +547,19 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   summaryLine: {
+    flexShrink: 1,
     fontSize: 14,
     fontWeight: '600',
   },
   carouselWrapper: {
     gap: 8,
   },
+  summaryRow: { flexDirection: 'row', alignItems: 'center', gap: 12 },
   carouselTitle: {
     fontSize: 14,
     fontWeight: '700',
   },
-  carouselContainer: {
-    gap: 12,
-    paddingRight: 8,
-  },
-  carouselSlide: {
-    width: 280,
-  },
+  mapButton: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 12, borderWidth: 2, borderRadius: 28, padding: 14 },
   carouselImage: {
     width: '100%',
     height: 180,

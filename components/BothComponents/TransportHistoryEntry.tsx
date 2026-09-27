@@ -25,7 +25,6 @@ export function TransportHistoryEntry({ request, mode }: Props) {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
   const [confirmCancel, setConfirmCancel] = useState(false);
-  const [help, setHelp] = useState(false);
   const theme = useTransportTheme();
   const s = createStyles(theme);
   const themeText = theme.text;
@@ -45,7 +44,6 @@ export function TransportHistoryEntry({ request, mode }: Props) {
 
   const close = () => {
     if (busy) return;
-    if (help) { setHelp(false); return; }
     if (confirmCancel) { setConfirmCancel(false); return; }
     setOpen(false);
     setError('');
@@ -89,7 +87,7 @@ export function TransportHistoryEntry({ request, mode }: Props) {
             {canChoose && <>
               <Text style={[s.entryTitle, { color }]}>SELECT ONE OPTION</Text>
               {!asl && <Text style={{ color: theme.muted }}>Compare the hotel proposals, select one and confirm. Prices cover all vehicles in each option.</Text>}
-              {proposals!.options.map(option => asl ? <ASLTransportOptionCard key={`${proposals!.revision}-${option.id}`} option={option} selected={selected?.id === option.id} disabled={busy} onSelect={() => setSelection({ revision: proposals!.revision, id: option.id })} onHelp={() => setHelp(true)} /> :
+              {proposals!.options.map(option => asl ? <ASLTransportOptionCard key={`${proposals!.revision}-${option.id}`} option={option} selected={selected?.id === option.id} disabled={busy} onSelect={() => setSelection({ revision: proposals!.revision, id: option.id })} /> :
                 <TextTransportOptionCard key={`${proposals!.revision}-${option.id}`} option={option} selected={selected?.id === option.id} disabled={busy} onSelect={() => setSelection({ revision: proposals!.revision, id: option.id })} />)}
             </>}
             {!!error && <Text accessibilityRole="alert" style={s.error}>{error}</Text>}
@@ -102,13 +100,11 @@ export function TransportHistoryEntry({ request, mode }: Props) {
               <Pressable style={[s.button, s.confirm, (!selected || busy || !estaConectado) && s.disabled]} disabled={!selected || busy || !estaConectado} onPress={accept} accessibilityRole="button">{busy ? <ActivityIndicator color="#FFFFFF" /> : <><MaterialIcons name="check-circle" color="#FFFFFF" size={22} /><Text style={s.confirmText}>Confirm</Text></>}</Pressable>
             </View>
           </View>}
-          {(confirmCancel || help) && <View style={s.innerOverlay}>
+          {confirmCancel && <View style={s.innerOverlay}>
             <View style={[s.prompt, { backgroundColor }]}>
-              {help ? <><MaterialIcons name="pan-tool" size={44} color={accent} /><Text style={[s.title, { color }]}>ASL HELP</Text><View style={s.pending}><MaterialIcons name="hourglass-empty" size={38} color={theme.warning} /><Text style={s.pendingText}>ASL RESOURCE PENDING</Text></View><Text style={{ color }}>Validated sign-language material will appear here.</Text><Pressable onPress={() => setHelp(false)} accessibilityRole="button" style={[s.button, s.confirm]}><Text style={s.confirmText}>Close</Text></Pressable></> : <>
                 <MaterialIcons name="warning" size={40} color={theme.danger} /><Text style={[s.title, { color }]}>CANCEL TAXI REQUEST?</Text><Text style={{ color }}>ALL TRANSPORT CANCEL. HOTEL STAFF RECEIVE NOTICE.</Text>
                 <Pressable style={[s.button, s.cancel]} onPress={cancel} accessibilityRole="button"><Text style={s.cancelText}>YES, CANCEL REQUEST</Text></Pressable>
                 <Pressable style={[s.button, s.confirm]} onPress={() => setConfirmCancel(false)} accessibilityRole="button"><Text style={s.confirmText}>NO, KEEP REQUEST</Text></Pressable>
-              </>}
             </View>
           </View>}
         </View>
@@ -134,6 +130,5 @@ function createStyles(theme: ReturnType<typeof useTransportTheme>) { return Styl
   cancelText: { fontWeight: '800', fontSize: 17, color: theme.danger, flexShrink: 1 }, confirmText: { fontWeight: '800', fontSize: 17, color: '#FFFFFF', flexShrink: 1 },
   disabled: { opacity: 0.45 }, error: { color: theme.danger, fontWeight: '600', fontSize: 14 },
   innerOverlay: { ...StyleSheet.absoluteFillObject, backgroundColor: 'rgba(0,0,0,0.45)', justifyContent: 'flex-end', padding: 16 },
-  prompt: { borderRadius: 24, padding: 24, gap: 16 }, pending: { minHeight: 160, borderWidth: 2, borderStyle: 'dashed', borderColor: theme.warning, alignItems: 'center', justifyContent: 'center', borderRadius: 18, gap: 12, backgroundColor: theme.warningBackground },
-  pendingText: { color: theme.warning, fontWeight: '700' },
+  prompt: { borderRadius: 24, padding: 24, gap: 16 },
 }); }

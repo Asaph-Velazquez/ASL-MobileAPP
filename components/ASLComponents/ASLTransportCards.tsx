@@ -6,8 +6,8 @@ import { useTransportTheme } from '@/hooks/useTransportTheme';
 
 const icons = { car: 'directions-car', van: 'airport-shuttle', bus: 'directions-bus' } as const;
 
-export function ASLTransportOptionCard({ option, selected, disabled, onSelect, onHelp }: {
-  option: TransportOption; selected: boolean; disabled: boolean; onSelect: () => void; onHelp: () => void;
+export function ASLTransportOptionCard({ option, selected, disabled, onSelect }: {
+  option: TransportOption; selected: boolean; disabled: boolean; onSelect: () => void;
 }) {
   const theme = useTransportTheme();
   const s = createStyles(theme);
@@ -26,9 +26,6 @@ export function ASLTransportOptionCard({ option, selected, disabled, onSelect, o
         <View style={s.capacity}><Text style={s.body}>{option.totalCapacity}</Text><MaterialIcons name="airline-seat-recline-normal" size={23} color={theme.teal} /></View>
         {!!option.description && <View style={s.row}><MaterialIcons name="info-outline" size={23} color={theme.blue} /><Text style={[s.body, s.grow]}>{option.description}</Text></View>}
         <Text style={s.price}>{formatTransportPrice(option.priceCents)}</Text>
-      </Pressable>
-      <Pressable style={s.help} onPress={onHelp} accessibilityLabel="ASL help for vehicle option" accessibilityRole="button">
-        <MaterialIcons name="pan-tool" size={22} color={theme.accent} /><Text style={s.helpText}>ASL</Text>
       </Pressable>
     </View>
   );
@@ -92,8 +89,6 @@ function createStyles(theme: ReturnType<typeof useTransportTheme>) { return Styl
   heading: { fontSize: 22, fontWeight: '800', color: theme.text, flexShrink: 1 }, quantity: { fontSize: 30, fontWeight: '800', color: theme.text },
   body: { fontSize: 17, fontWeight: '600', color: theme.muted, flexShrink: 1 }, capacity: { flexDirection: 'row', alignSelf: 'flex-start', borderWidth: 2, borderColor: theme.border, borderRadius: 10, padding: 7, gap: 6 },
   price: { fontSize: 27, fontWeight: '800', color: theme.success },
-  help: { alignSelf: 'flex-end', marginRight: 18, marginBottom: 18, paddingHorizontal: 18, paddingVertical: 12, minHeight: 48, borderWidth: 2, borderRadius: 30, borderColor: theme.accent, flexDirection: 'row', gap: 8, alignItems: 'center' },
-  helpText: { fontSize: 19, fontWeight: '800', color: theme.accent },
   panel: { borderRadius: 24, borderWidth: 2, borderColor: theme.border, backgroundColor: theme.panel, padding: 18, gap: 16 },
   banner: { borderWidth: 2, borderColor: theme.success, backgroundColor: theme.successBackground, padding: 18, borderRadius: 18, flexDirection: 'row', gap: 12, alignItems: 'center' },
   waitBanner: { backgroundColor: theme.warningBackground, borderColor: theme.warning },
