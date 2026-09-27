@@ -4,10 +4,11 @@ import { useThemeColor } from '@/hooks/use-theme-color';
 import { commonStyles } from '@/styles/common';
 import { MaterialCommunityIcons, MaterialIcons } from "@expo/vector-icons";
 import { useState } from "react";
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Image, Modal, Pressable, ScrollView, RefreshControl, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
 export default function ASLServices(){
-    const textColor = useThemeColor({}, 'text');
+    const insets = useSafeAreaInsets();
     const cardBg = useThemeColor({}, 'card');
     const backgroundColor = useThemeColor({}, 'background');
     const [modalVisible, setModalVisible] = useState(false);
@@ -148,16 +149,15 @@ export default function ASLServices(){
                 visible={modalVisible}
                 onRequestClose={() => setModalVisible(false)}
             >
-                <Pressable 
-                    style={styles.modalOverlay}
-                    onPress={() => setModalVisible(false)}
+                <View
+                    style={[styles.modalOverlay, { paddingTop: Math.max(20, insets.top), paddingBottom: Math.max(20, insets.bottom) }]}
                 >
-                    <Pressable 
+                    <Pressable style={StyleSheet.absoluteFill} onPress={() => setModalVisible(false)} accessibilityLabel="Close service details" />
+                    <View
                         style={[styles.modalContent, { backgroundColor: cardBg }]}
-                        onPress={(e) => e.stopPropagation()}
                     >
                         {selectedService && (
-                            <View style={styles.modalInner}>
+                            <ScrollView style={styles.modalScroll} contentContainerStyle={styles.modalInner} nestedScrollEnabled>
                                 {/* Header del modal */}
                                 <View style={styles.modalHeader}>
                                     <View style={[styles.modalIcon, { backgroundColor: backgroundColor, borderColor: selectedService.iconColor, borderWidth: 2 }]}>
@@ -195,13 +195,7 @@ export default function ASLServices(){
                                         onPressOut={() => setModalGif(selectedService.gifUrl)}
                                         activeOpacity={0.7}
                                     >
-                                        <View style={[styles.modalIconContainer, { backgroundColor: backgroundColor }]}>
-                                            <MaterialIcons 
-                                                name="schedule" 
-                                                size={36} 
-                                                color={selectedService.iconColor} 
-                                            />
-                                        </View>
+                                        <ASLCardIcon name="schedule" type="material" color={selectedService.iconColor} />
                                     </TouchableOpacity>
 
                                     {/* Ubicación */}
@@ -211,13 +205,7 @@ export default function ASLServices(){
                                         onPressOut={() => setModalGif(selectedService.gifUrl)}
                                         activeOpacity={0.7}
                                     >
-                                        <View style={[styles.modalIconContainer, { backgroundColor: backgroundColor }]}>
-                                            <MaterialIcons 
-                                                name="location-on" 
-                                                size={36} 
-                                                color={selectedService.iconColor} 
-                                            />
-                                        </View>
+                                        <ASLCardIcon name="location-on" type="material" color={selectedService.iconColor} />
                                     </TouchableOpacity>
 
                                     {/* Incluye */}
@@ -227,13 +215,7 @@ export default function ASLServices(){
                                         onPressOut={() => setModalGif(selectedService.gifUrl)}
                                         activeOpacity={0.7}
                                     >
-                                        <View style={[styles.modalIconContainer, { backgroundColor: backgroundColor }]}>
-                                            <MaterialIcons 
-                                                name="check-circle" 
-                                                size={36} 
-                                                color={selectedService.iconColor} 
-                                            />
-                                        </View>
+                                        <ASLCardIcon name="check-circle" type="material" color={selectedService.iconColor} />
                                     </TouchableOpacity>
 
                                     {/* Nota */}
@@ -243,13 +225,7 @@ export default function ASLServices(){
                                         onPressOut={() => setModalGif(selectedService.gifUrl)}
                                         activeOpacity={0.7}
                                     >
-                                        <View style={[styles.modalIconContainer, { backgroundColor: backgroundColor }]}>
-                                            <MaterialIcons 
-                                                name="info" 
-                                                size={36} 
-                                                color={selectedService.iconColor} 
-                                            />
-                                        </View>
+                                        <ASLCardIcon name="info" type="material" color={selectedService.iconColor} />
                                     </TouchableOpacity>
                                 </View>
 
@@ -261,10 +237,10 @@ export default function ASLServices(){
                                 >
                                     <Text style={styles.closeButtonText}>✕</Text>
                                 </TouchableOpacity>
-                            </View>
+                            </ScrollView>
                         )}
-                    </Pressable>
-                </Pressable>
+                    </View>
+                </View>
             </Modal>
         </ThemedView>
         </ScrollView>
@@ -341,6 +317,7 @@ const styles = StyleSheet.create({
         padding: 20,
         width: '100%',
         maxWidth: 500,
+        maxHeight: '100%',
         shadowColor: "#000",
         shadowOffset: {
             width: 0,
@@ -350,6 +327,7 @@ const styles = StyleSheet.create({
         shadowRadius: 4,
         elevation: 5,
     },
+    modalScroll: { flexShrink: 1, minHeight: 0 },
     modalInner: {
         gap: 16,
     },
@@ -379,10 +357,11 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         flexWrap: 'wrap',
         gap: 8,
-        justifyContent: 'space-between',
+        justifyContent: 'center',
     },
     modalGridItem: {
         width: '48%',
+        maxWidth: 200,
         aspectRatio: 1,
         borderRadius: 12,
         padding: 8,
