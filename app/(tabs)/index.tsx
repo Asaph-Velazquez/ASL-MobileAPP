@@ -57,7 +57,12 @@ export default function HomeScreen() {
         {/* Header con icono del hotel */}
         <View style={styles.header}>
           <View style={styles.logoContainer}>
-            <MaterialIcons name="hotel" size={48} color="#4A90E2" />
+            <Image
+              source={require('../../assets/images/Logo/Hotel logo.png')}
+              style={styles.hotelLogo}
+              resizeMode="contain"
+              accessibilityLabel="Hotel logo"
+            />
           </View>
           <Text style={[styles.title, { color: textColor }]}>Canada Central Hotel</Text>
           <Text style={[styles.subtitle, { color: mutedColor }]}>
@@ -164,6 +169,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 8,
+  },
+  hotelLogo: {
+    width: 58,
+    height: 58,
+    borderRadius: 16,
   },
   title: {
     fontSize: 24,
