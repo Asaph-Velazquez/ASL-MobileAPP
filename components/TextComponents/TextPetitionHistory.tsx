@@ -21,6 +21,7 @@ export function TextPetitionHistory({ peticiones, onCancelar, onRate }: TextPeti
     const cardBg = useThemeColor({}, 'card');
     const mutedColor = useThemeColor({}, 'muted');
     const shadowColor = useThemeColor({}, 'text');
+    const callIconColor = useThemeColor({}, 'interpreterCallIcon');
     
     const [modalVisible, setModalVisible] = useState(false);
     const [ratingModalVisible, setRatingModalVisible] = useState(false);
@@ -111,7 +112,12 @@ export function TextPetitionHistory({ peticiones, onCancelar, onRate }: TextPeti
     };
 
     const tipoConfig = {
-        'room-service': { 
+        'interpreter-follow-up': {
+            icon: 'perm-phone-msg' as const,
+            color: callIconColor,
+            text: 'INTERPRETER CALL'
+        },
+        'room-service': {
             icon: 'restaurant-menu' as const,
             color: '#9C27B0',
             text: 'ROOM SERVICE'

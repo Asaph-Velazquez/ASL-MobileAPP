@@ -28,6 +28,7 @@ export type CallServerMessageType =
   | 'CALL_REJECTED'
   | 'CALL_UNAVAILABLE'
   | 'CALL_ENDED'
+  | 'CALL_ERROR'
   | 'WEBRTC_OFFER'
   | 'WEBRTC_ANSWER'
   | 'WEBRTC_ICE_CANDIDATE';

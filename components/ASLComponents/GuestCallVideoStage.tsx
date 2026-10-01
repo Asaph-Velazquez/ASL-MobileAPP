@@ -4,6 +4,7 @@ import { Platform, StyleSheet, Text, View } from 'react-native';
 type Tone = 'neutral' | 'info' | 'success' | 'danger';
 
 type GuestCallVideoStageProps = {
+  sideBySide?: boolean;
   phaseLabel: string;
   phaseTone: Tone;
   mediaStatusLabel: string;
@@ -23,6 +24,7 @@ const toneStyles: Record<Tone, { backgroundColor: string; color: string }> = {
 };
 
 export function GuestCallVideoStage({
+  sideBySide = false,
   phaseLabel,
   phaseTone,
   mediaStatusLabel,
@@ -54,27 +56,32 @@ export function GuestCallVideoStage({
         <Text style={[styles.mediaStatusText, { color: mutedColor }]}>{mediaStatusLabel}</Text>
       </View>
 
-      <View style={[styles.remoteStage, { backgroundColor }]}>
-        {remoteStreamUrl && VideoView ? (
-          <VideoView objectFit="cover" streamURL={remoteStreamUrl} style={styles.remoteVideo} />
-        ) : (
-          <View style={[styles.remotePlaceholder, { backgroundColor }]}>
-            <Text style={[styles.placeholderEyebrow, { color: mutedColor }]}>Interpreter video</Text>
-            <Text style={[styles.placeholderText, { color: textColor }]}>{remotePlaceholder}</Text>
+      <View testID="call-video-panels" style={[styles.videoPanels, sideBySide && styles.videoPanelsWide]}>
+        <View testID="interpreter-video-panel" style={[styles.videoPanel, sideBySide && styles.videoPanelWide]}>
+          <Text style={[styles.localPreviewLabel, { color: textColor }]}>Interpreter video</Text>
+          <View style={[styles.remoteStage, sideBySide && styles.wideStage, { backgroundColor }]}>
+            {remoteStreamUrl && VideoView ? (
+              <VideoView objectFit={sideBySide ? 'contain' : 'cover'} streamURL={remoteStreamUrl} style={sideBySide ? styles.wideVideo : styles.remoteVideo} />
+            ) : (
+              <View style={[styles.remotePlaceholder, sideBySide && styles.widePlaceholder, { backgroundColor }]}>
+                <Text style={[styles.placeholderText, sideBySide && styles.widePlaceholderText, { color: textColor }]}>{remotePlaceholder}</Text>
+              </View>
+            )}
           </View>
-        )}
+        </View>
 
-      </View>
-
-      <View style={[styles.localPreviewCard, { backgroundColor: cardColor }]}>
-        <Text style={[styles.localPreviewLabel, { color: textColor }]}>Guest preview</Text>
-        {showLocalVideo && localStreamUrl && VideoView ? (
-          <VideoView mirror objectFit="cover" streamURL={localStreamUrl} style={styles.localVideo} />
-        ) : (
-          <View style={[styles.localPlaceholder, { backgroundColor }]}>
-            <Text style={[styles.localPlaceholderText, { color: mutedColor }]}>{localPlaceholder}</Text>
+        <View testID="guest-video-panel" style={[styles.localPreviewCard, sideBySide && styles.videoPanelWide, { backgroundColor: cardColor }]}>
+          <Text style={[styles.localPreviewLabel, { color: textColor }]}>Guest preview</Text>
+          <View style={[styles.localStage, sideBySide && styles.wideStage, { backgroundColor }]}>
+            {showLocalVideo && localStreamUrl && VideoView ? (
+              <VideoView mirror objectFit={sideBySide ? 'contain' : 'cover'} streamURL={localStreamUrl} style={sideBySide ? styles.wideVideo : styles.localVideo} />
+            ) : (
+              <View style={[styles.localPlaceholder, sideBySide && styles.widePlaceholder, { backgroundColor }]}>
+                <Text style={[styles.localPlaceholderText, { color: mutedColor }]}>{localPlaceholder}</Text>
+              </View>
+            )}
           </View>
-        )}
+        </View>
       </View>
 
       <View style={[styles.mediaCard, { backgroundColor }]}>
@@ -88,6 +95,21 @@ export function GuestCallVideoStage({
 const styles = StyleSheet.create({
   wrapper: {
     gap: 14,
+  },
+  videoPanels: {
+    gap: 16,
+  },
+  videoPanelsWide: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+  },
+  videoPanel: {
+    width: '100%',
+  },
+  videoPanelWide: {
+    flex: 1,
+    width: undefined,
+    minWidth: 0,
   },
   statusRow: {
     flexDirection: 'row',
@@ -128,13 +150,6 @@ const styles = StyleSheet.create({
     paddingVertical: 32,
     justifyContent: 'center',
   },
-  placeholderEyebrow: {
-    fontSize: 12,
-    fontWeight: '700',
-    letterSpacing: 1.2,
-    marginBottom: 10,
-    textTransform: 'uppercase',
-  },
   placeholderText: {
     fontSize: 22,
     lineHeight: 30,
@@ -144,8 +159,30 @@ const styles = StyleSheet.create({
     width: '100%',
     borderRadius: 20,
     overflow: 'hidden',
-    borderWidth: 1,
-    borderColor: 'transparent',
+  },
+  localStage: {
+    borderRadius: 28,
+    overflow: 'hidden',
+  },
+  wideStage: {
+    width: '100%',
+    minHeight: 0,
+    aspectRatio: 4 / 3,
+  },
+  wideVideo: {
+    width: '100%',
+    height: '100%',
+    backgroundColor: '#000000',
+  },
+  widePlaceholder: {
+    minHeight: 0,
+    height: '100%',
+    paddingHorizontal: 16,
+    paddingVertical: 16,
+  },
+  widePlaceholderText: {
+    fontSize: 18,
+    lineHeight: 25,
   },
   localPreviewLabel: {
     paddingHorizontal: 10,

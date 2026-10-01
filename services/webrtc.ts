@@ -38,10 +38,9 @@ function getWebRtcModule() {
 }
 
 export async function requestCallMediaPermissions(): Promise<MediaPermissionResult> {
-  const [camera, microphone] = await Promise.all([
-    Camera.requestCameraPermissionsAsync(),
-    Camera.requestMicrophonePermissionsAsync(),
-  ]);
+  // Native permission dialogs must not compete for the same activity.
+  const camera = await Camera.requestCameraPermissionsAsync();
+  const microphone = await Camera.requestMicrophonePermissionsAsync();
 
   const granted = camera.granted && microphone.granted;
   if (granted) {
@@ -101,16 +100,16 @@ export function createGuestPeerConnection({
   const connection = new RTCPeerConnection({
     iceServers: DEFAULT_ICE_SERVERS,
   });
-  const remoteStream = new MediaStream();
+  let remoteStream: MediaStream | null = null;
 
   connection.ontrack = (event: { streams: MediaStream[]; track: MediaStreamTrack }) => {
-    const [stream] = event.streams;
-    if (stream) {
-      onRemoteStream(stream);
-      return;
+    // Keep one owned stream for the entire call, even when audio/video arrive
+    // in different event streams. Releasing a replaced stream stops its tracks.
+    remoteStream ??= new MediaStream();
+    const tracks = [event.track, ...event.streams.flatMap(stream => stream.getTracks())];
+    for (const track of tracks) {
+      if (track && !remoteStream.getTrackById(track.id)) remoteStream.addTrack(track);
     }
-
-    event.track && remoteStream.addTrack(event.track);
     onRemoteStream(remoteStream);
   };
 
@@ -131,15 +130,15 @@ export function createGuestPeerConnection({
 export async function attachLocalStream(connection: RTCPeerConnection, stream: MediaStream) {
   const senders = connection.getSenders();
 
-  stream.getTracks().forEach((track) => {
+  await Promise.all(stream.getTracks().map(async (track) => {
     const sender = senders.find((entry) => entry.track?.kind === track.kind);
     if (sender) {
-      void sender.replaceTrack(track);
+      await sender.replaceTrack(track);
       return;
     }
 
     connection.addTrack(track, stream);
-  });
+  }));
 }
 
 export async function applyRemoteDescription(

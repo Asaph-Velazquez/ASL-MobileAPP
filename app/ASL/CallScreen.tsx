@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { ActivityIndicator, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { useIsFocused } from '@react-navigation/native';
+import { ActivityIndicator, ScrollView, StyleSheet, Text, View, useWindowDimensions } from 'react-native';
 import { useThemeColor } from '@/hooks/use-theme-color';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
@@ -14,6 +15,7 @@ import {
   requestCallSession,
   sendCallServerMessage,
   type CallServerMessage,
+  type WebRtcIceCandidatePayload,
 } from '@/services/call';
 import {
   applyIceCandidate,
@@ -31,12 +33,15 @@ type CallStatus = 'booting' | 'connecting' | 'pending' | 'accepted' | 'connected
 type MediaStatus = 'idle' | 'requesting' | 'preparing' | 'ready' | 'connecting' | 'connected' | 'error';
 
 export default function CallScreen() {
+  const isFocused = useIsFocused();
   const { token, guestName, roomNumber } = useAuth();
   const backgroundColor = useThemeColor({}, 'background');
   const cardColor = useThemeColor({}, 'card');
   const textColor = useThemeColor({}, 'text');
   const mutedColor = useThemeColor({}, 'muted');
   const insets = useSafeAreaInsets();
+  const { width } = useWindowDimensions();
+  const sideBySide = width - insets.left - insets.right >= 768;
   const [status, setStatus] = useState<CallStatus>('booting');
   const [message, setMessage] = useState('Preparing interpreter session...');
   const [mediaStatus, setMediaStatus] = useState<MediaStatus>('idle');
@@ -53,6 +58,9 @@ export default function CallScreen() {
   const remoteStreamRef = useRef<MediaStream | null>(null);
   const statusRef = useRef<CallStatus>('booting');
   const callIdRef = useRef<string | null>(null);
+  const mediaPendingRef = useRef<Promise<MediaStream> | null>(null);
+  const mediaGenerationRef = useRef(0);
+  const pendingIceRef = useRef<WebRtcIceCandidatePayload[]>([]);
 
   function updateStatus(nextStatus: CallStatus, nextMessage: string) {
     statusRef.current = nextStatus;
@@ -61,6 +69,9 @@ export default function CallScreen() {
   }
 
   function cleanupMediaSession() {
+    mediaGenerationRef.current += 1;
+    mediaPendingRef.current = null;
+    pendingIceRef.current = [];
     closePeerConnection(peerRef.current);
     peerRef.current = null;
 
@@ -106,10 +117,13 @@ export default function CallScreen() {
         }
 
         remoteStreamRef.current = stream;
-        setRemoteStreamUrl(stream.toURL());
-        setMediaStatus('connected');
-        setMediaMessage('Interpreter video is connected.');
-        if (statusRef.current === 'accepted' || statusRef.current === 'connecting') {
+        // RTCView binds the video track when streamURL changes. Do not mount it
+        // for an audio-only stream: the later video event has the same URL.
+        const hasVideo = stream.getVideoTracks().length > 0;
+        setRemoteStreamUrl(hasVideo ? stream.toURL() : null);
+        setMediaStatus(hasVideo ? 'connected' : 'connecting');
+        setMediaMessage(hasVideo ? 'Interpreter video track received.' : 'Interpreter audio track received. Waiting for video...');
+        if (hasVideo && (statusRef.current === 'accepted' || statusRef.current === 'connecting')) {
           updateStatus('connected', 'Interpreter video and audio are now connected.');
         }
       },
@@ -151,14 +165,29 @@ export default function CallScreen() {
     return peer;
   }
 
-  async function ensureLocalMedia(currentCallId: string, socket: WebSocket) {
+  function ensureLocalMedia(currentCallId: string, socket: WebSocket): Promise<MediaStream> {
     if (localStreamRef.current) {
-      return localStreamRef.current;
+      return Promise.resolve(localStreamRef.current);
     }
+    if (mediaPendingRef.current) return mediaPendingRef.current;
+    const pending = captureLocalMedia(currentCallId, socket);
+    mediaPendingRef.current = pending;
+    const clearPending = () => {
+      if (mediaPendingRef.current === pending) mediaPendingRef.current = null;
+    };
+    void pending.then(clearPending, clearPending);
+    return pending;
+  }
+
+  async function captureLocalMedia(currentCallId: string, socket: WebSocket) {
+    const generation = mediaGenerationRef.current;
+    const isCurrent = () => generation === mediaGenerationRef.current &&
+      callIdRef.current === currentCallId && socket.readyState === WebSocket.OPEN;
 
     setMediaStatus('requesting');
     setMediaMessage('Requesting camera and microphone permissions...');
     const permissionResult = await requestCallMediaPermissions();
+    if (!isCurrent()) throw new Error('Call ended while requesting media.');
     if (!permissionResult.granted) {
       setMediaStatus('error');
       setMediaMessage(permissionResult.errorMessage || 'Permissions are required to continue.');
@@ -168,13 +197,22 @@ export default function CallScreen() {
     setMediaStatus('preparing');
     setMediaMessage('Starting local camera and microphone...');
     const stream = await createLocalMediaStream();
+    if (!isCurrent()) {
+      stopStream(stream);
+      throw new Error('Call ended while starting media.');
+    }
     const peer = await ensurePeerSession(currentCallId, socket);
+    if (!isCurrent()) {
+      stopStream(stream);
+      throw new Error('Call ended while preparing media.');
+    }
 
     localStreamRef.current = stream;
     applyTrackEnabled('audio', isMicrophoneEnabled);
     applyTrackEnabled('video', isCameraEnabled);
     setLocalStreamUrl(stream.toURL());
     await attachLocalStream(peer, stream);
+    if (!isCurrent()) throw new Error('Call ended while attaching media.');
     setMediaStatus('ready');
     setMediaMessage('Local camera preview is ready. Waiting for interpreter media...');
 
@@ -198,6 +236,7 @@ export default function CallScreen() {
 
         await ensureLocalMedia(currentCallId, socket);
         await applyRemoteDescription(peer, description);
+        for (const candidate of pendingIceRef.current.splice(0)) await applyIceCandidate(peer, candidate);
         const answer = await peer.createAnswer();
         await peer.setLocalDescription(answer);
         const payload = serializeSessionDescription(peer.localDescription);
@@ -218,6 +257,7 @@ export default function CallScreen() {
         }
 
         await applyRemoteDescription(peer, description);
+        for (const candidate of pendingIceRef.current.splice(0)) await applyIceCandidate(peer, candidate);
         setMediaStatus('connecting');
         setMediaMessage('Interpreter answered. Finalizing media connection...');
         break;
@@ -228,7 +268,11 @@ export default function CallScreen() {
           return;
         }
 
-        await applyIceCandidate(peer, candidate);
+        if (peer.remoteDescription) {
+          await applyIceCandidate(peer, candidate);
+        } else {
+          pendingIceRef.current.push(candidate);
+        }
         break;
       }
       default:
@@ -237,12 +281,19 @@ export default function CallScreen() {
   }
 
   useEffect(() => {
+    if (!isFocused) return;
     if (!token) {
       updateStatus('error', 'Guest session is not available.');
       return;
     }
 
     let disposed = false;
+    let signalingQueue = Promise.resolve();
+    let connectionTimer: ReturnType<typeof setTimeout> | undefined;
+    const clearConnectionTimer = () => {
+      if (connectionTimer) clearTimeout(connectionTimer);
+      connectionTimer = undefined;
+    };
 
     const boot = async () => {
       try {
@@ -256,7 +307,15 @@ export default function CallScreen() {
         const socket = new WebSocket(buildCallSocketUrl(session.callServerUrl, session.callToken));
         wsRef.current = socket;
 
+        connectionTimer = setTimeout(() => {
+          if (disposed) return;
+          updateStatus('error', 'The call server did not acknowledge the request. End this attempt and try again.');
+          socket.close();
+        }, 15000);
+
         socket.onopen = () => {
+          if (disposed) return;
+          setMessage('Connected to call server. Requesting an available interpreter...');
           sendCallServerMessage(socket, {
             type: 'CALL_REQUEST',
             payload: { callId: session.callId },
@@ -264,13 +323,19 @@ export default function CallScreen() {
         };
 
         socket.onmessage = (event) => {
+          if (disposed) return;
           const incoming = parseCallServerMessage(String(event.data));
           if (!incoming) {
             return;
           }
+          if (['CALL_PENDING', 'CALL_ACCEPTED', 'CALL_UNAVAILABLE', 'CALL_REJECTED', 'CALL_ENDED', 'CALL_ERROR'].includes(incoming.type)) {
+            clearConnectionTimer();
+          }
 
-          void (async () => {
+          const generation = mediaGenerationRef.current;
+          const processMessage = async () => {
             try {
+              if (disposed || generation !== mediaGenerationRef.current) return;
               switch (incoming.type) {
                 case 'CALL_PENDING':
                   updateStatus('pending', 'Interpreter has been notified. Waiting for acceptance...');
@@ -283,16 +348,24 @@ export default function CallScreen() {
                   await ensureLocalMedia(session.callId, socket);
                   break;
                 case 'CALL_REJECTED':
+                  callIdRef.current = null;
                   cleanupMediaSession();
                   updateStatus('unavailable', 'The interpreter rejected the call. Please try again later.');
                   break;
                 case 'CALL_UNAVAILABLE':
+                  callIdRef.current = null;
                   cleanupMediaSession();
                   updateStatus('unavailable', 'No interpreter is available at the moment.');
                   break;
                 case 'CALL_ENDED':
+                  callIdRef.current = null;
                   cleanupMediaSession();
                   updateStatus('ended', 'The call has ended. Hotel follow-up will continue from ASL-Web if needed.');
+                  break;
+                case 'CALL_ERROR':
+                  callIdRef.current = null;
+                  cleanupMediaSession();
+                  updateStatus('error', 'The call server could not process the request. End this attempt and try again.');
                   break;
                 case 'WEBRTC_OFFER':
                 case 'WEBRTC_ANSWER':
@@ -303,19 +376,30 @@ export default function CallScreen() {
                   break;
               }
             } catch (error) {
+              if (disposed || generation !== mediaGenerationRef.current) return;
               setMediaStatus('error');
               setMediaMessage(error instanceof Error ? error.message : 'Unable to initialize guest media.');
               updateStatus('error', 'The call signaling failed while starting media.');
             }
-          })();
+          };
+          // Serialize SDP/ICE, but allow CALL_ENDED to cancel pending permissions.
+          if (incoming.type.startsWith('WEBRTC_')) {
+            signalingQueue = signalingQueue.then(processMessage);
+          } else {
+            void processMessage();
+          }
         };
 
         socket.onerror = () => {
+          if (disposed) return;
+          clearConnectionTimer();
           updateStatus('error', 'Unable to connect to the call server.');
         };
 
         socket.onclose = () => {
+          clearConnectionTimer();
           if (!disposed && statusRef.current !== 'ended') {
+            callIdRef.current = null;
             cleanupMediaSession();
             if (
               statusRef.current === 'connected' ||
@@ -336,6 +420,7 @@ export default function CallScreen() {
 
     return () => {
       disposed = true;
+      clearConnectionTimer();
       wsRef.current?.close();
       wsRef.current = null;
       callIdRef.current = null;
@@ -345,7 +430,7 @@ export default function CallScreen() {
   // Este efecto mantiene una sesión por token; los manejadores consultan el
   // estado actual en referencias y no deben recrear una llamada durante un render.
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [token]);
+  }, [token, isFocused]);
 
   const phaseDetails = useMemo(() => {
     if (status === 'error') {
@@ -385,6 +470,9 @@ export default function CallScreen() {
     if (status === 'ended') {
       return 'The video session ended. You can return to the previous screen.';
     }
+    if (status === 'error' && mediaStatus === 'idle') {
+      return 'The call server could not be reached. End this attempt and start a new call after checking the connection.';
+    }
     if (status === 'error' || mediaStatus === 'error') {
       return 'The call is open, but the video stream could not be established. Retry media or end the call.';
     }
@@ -415,7 +503,9 @@ export default function CallScreen() {
     Boolean(callIdRef.current) &&
     wsRef.current?.readyState === WebSocket.OPEN &&
     status !== 'ended' &&
-    status !== 'unavailable';
+    status !== 'unavailable' &&
+    status !== 'pending' && status !== 'connecting' && status !== 'booting' &&
+    mediaStatus !== 'requesting' && mediaStatus !== 'preparing' && !isRetryingMedia;
 
   function handleToggleMicrophone() {
     if (!localStreamRef.current) {
@@ -440,7 +530,7 @@ export default function CallScreen() {
   async function handleRetryMedia() {
     const currentCallId = callIdRef.current;
     const socket = wsRef.current;
-    if (!currentCallId || !socket || socket.readyState !== WebSocket.OPEN) {
+    if (!canRetryMedia || mediaPendingRef.current || !currentCallId || !socket || socket.readyState !== WebSocket.OPEN) {
       return;
     }
 
@@ -458,6 +548,7 @@ export default function CallScreen() {
         updateStatus('accepted', 'Media is retrying. Waiting for the interpreter stream...');
       }
     } catch (error) {
+      if (callIdRef.current !== currentCallId) return;
       setMediaStatus('error');
       setMediaMessage(error instanceof Error ? error.message : 'Unable to restart local media.');
     } finally {
@@ -473,12 +564,18 @@ export default function CallScreen() {
       });
     }
     cleanupMediaSession();
+    callIdRef.current = null;
+    wsRef.current?.close();
     router.back();
   }
 
   return (
     <View style={[styles.container, { backgroundColor }]}>
-      <ScrollView contentContainerStyle={[styles.scrollContent, { paddingBottom: Math.max(insets.bottom, 20) }]}>
+      <ScrollView contentContainerStyle={[styles.scrollContent, {
+        paddingBottom: Math.max(insets.bottom, 20),
+        paddingLeft: Math.max(insets.left, 16),
+        paddingRight: Math.max(insets.right, 16),
+      }]}>
         <View style={[styles.card, { backgroundColor: cardColor }]}>
           <Text style={[styles.eyebrow, { color: mutedColor }]}>ASL Interpreter Call</Text>
           <Text style={[styles.title, { color: textColor }]}>{guestName || 'Guest'} • Room {roomNumber || '--'}</Text>
@@ -489,6 +586,7 @@ export default function CallScreen() {
           )}
 
           <GuestCallVideoStage
+            sideBySide={sideBySide}
             localPlaceholder={localPlaceholder}
             localStreamUrl={localStreamUrl}
             mediaMessage={mediaMessage}
@@ -505,6 +603,7 @@ export default function CallScreen() {
       </ScrollView>
       <View style={[styles.controlsPanel, { backgroundColor: cardColor, paddingBottom: Math.max(insets.bottom, 16) }]}>
           <GuestCallControls
+            horizontal={sideBySide}
             canRetryMedia={canRetryMedia}
             canToggleMedia={canToggleMedia}
             isCameraEnabled={isCameraEnabled}
@@ -533,7 +632,7 @@ const styles = StyleSheet.create({
   controlsPanel: {
     padding: 16,
     width: '100%',
-    maxWidth: 760,
+    maxWidth: 1280,
     alignSelf: 'center',
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
@@ -542,7 +641,7 @@ const styles = StyleSheet.create({
     borderRadius: 24,
     padding: 16,
     width: '100%',
-    maxWidth: 760,
+    maxWidth: 1280,
     alignSelf: 'center',
     gap: 18,
     shadowColor: '#0f172a',

@@ -12,6 +12,7 @@ type ControlButtonProps = {
 };
 
 type GuestCallControlsProps = {
+  horizontal?: boolean;
   isMicrophoneEnabled: boolean;
   isCameraEnabled: boolean;
   canToggleMedia: boolean;
@@ -57,6 +58,7 @@ function ControlButton({
 }
 
 export function GuestCallControls({
+  horizontal = false,
   isMicrophoneEnabled,
   isCameraEnabled,
   canToggleMedia,
@@ -68,24 +70,24 @@ export function GuestCallControls({
   onEndCall,
 }: GuestCallControlsProps) {
   return (
-    <View style={styles.wrapper}>
-      <View style={styles.row}>
+    <View style={[styles.wrapper, horizontal && styles.horizontal]}>
+      <View style={[styles.row, horizontal && styles.grow]}>
         <ControlButton
           active={isMicrophoneEnabled}
           disabled={!canToggleMedia}
           icon={isMicrophoneEnabled ? 'mic' : 'mic-off'}
-          label={isMicrophoneEnabled ? 'Mic on' : 'Mic off'}
+          label={!canToggleMedia ? 'Mic inactive' : isMicrophoneEnabled ? 'Mic on' : 'Mic off'}
           onPress={onToggleMicrophone}
         />
         <ControlButton
           active={isCameraEnabled}
           disabled={!canToggleMedia}
           icon={isCameraEnabled ? 'videocam' : 'videocam-off'}
-          label={isCameraEnabled ? 'Camera on' : 'Camera off'}
+          label={!canToggleMedia ? 'Camera inactive' : isCameraEnabled ? 'Camera on' : 'Camera off'}
           onPress={onToggleCamera}
         />
       </View>
-      <View style={styles.row}>
+      <View style={[styles.row, horizontal && styles.grow]}>
         <ControlButton
           disabled={!canRetryMedia || isRetryingMedia}
           icon="refresh"
@@ -101,6 +103,13 @@ export function GuestCallControls({
 const styles = StyleSheet.create({
   wrapper: {
     gap: 12,
+  },
+  horizontal: {
+    flexDirection: 'row',
+  },
+  grow: {
+    flex: 1,
+    minWidth: 0,
   },
   row: {
     flexDirection: 'row',

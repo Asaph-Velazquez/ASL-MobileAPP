@@ -21,6 +21,7 @@ export function ASLPetitionHistory({
   const cardBg = useThemeColor({}, "card");
   const shadowColor = useThemeColor({}, "text");
   const mutedColor = useThemeColor({}, "muted");
+  const callIconColor = useThemeColor({}, "interpreterCallIcon");
   const numberColor = "#7A7A7A";
 
   const [modalVisible, setModalVisible] = useState(false);
@@ -49,6 +50,7 @@ export function ASLPetitionHistory({
     services: { icon: "room-service", iconType: "material", color: "#4A90E2" },
     problem: { icon: "warning", iconType: "material", color: "#F44336" },
     extra: { icon: "question-mark", iconType: "material", color: "#FF9800" },
+    "interpreter-follow-up": { icon: "perm-phone-msg", iconType: "material", color: callIconColor },
   };
 
   const iconosEspecificos: {
@@ -125,6 +127,8 @@ export function ASLPetitionHistory({
         iconType: "material" as const,
         color: "#9E9E9E",
       };
+    // A call report may mention a service, but should retain its call icon.
+    if (peticion.type === "interpreter-follow-up") return tipoConfig[peticion.type];
     const serviceName =
       (peticion.message || "").split(":")[0]?.trim().toLowerCase() || "";
     for (const [key, value] of Object.entries(iconosEspecificos)) {
