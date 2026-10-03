@@ -15,7 +15,7 @@ export function ASLTransportOptionCard({ option, selected, disabled, onSelect }:
   return (
     <View style={[s.option, selected && s.selected]}>
       <Pressable accessibilityRole="radio" accessibilityState={{ checked: selected, disabled }}
-        accessibilityLabel={`${option.vehicleCount} ${transportVehicleLabels[option.vehicleType]}, ${option.totalCapacity} seats, ${formatTransportPrice(option.priceCents)}${option.description ? `, ${option.description}` : ''}`}
+        accessibilityLabel={`${option.vehicleCount} ${transportVehicleLabels[option.vehicleType]}, ${option.totalCapacity} SEATS, ${formatTransportPrice(option.priceCents)}${option.description ? `, ${option.description}` : ''}`.toUpperCase()}
         disabled={disabled} onPress={onSelect} style={s.optionTouch}>
         <View style={s.row}>
           <Text style={s.quantity}>{option.vehicleCount} ×</Text>
@@ -51,7 +51,7 @@ export function ASLTransportDetail({ details, status, onOpenMap }: { details: Tr
       <View style={[s.panel, s.row]}>
         <MaterialIcons name="place" size={30} color={theme.danger} />
         <Text style={[s.heading, s.grow]}>{details.destinationLabel || 'TAXI'}</Text>
-        {!!details.destinationCoords && <Pressable style={s.mapButton} onPress={onOpenMap} accessibilityLabel="Open destination map" accessibilityRole="button"><MaterialIcons name="map" size={30} color={theme.blue} /></Pressable>}
+        {!!details.destinationCoords && <Pressable style={s.mapButton} onPress={onOpenMap} accessibilityLabel="OPEN DESTINATION MAP" accessibilityRole="button"><MaterialIcons name="map" size={30} color={theme.blue} /></Pressable>}
       </View>
       <View style={s.panel}>
         <View style={s.row}>
@@ -86,15 +86,15 @@ function createStyles(theme: ReturnType<typeof useTransportTheme>) { return Styl
   stack: { gap: 16 }, grow: { flex: 1 }, row: { flexDirection: 'row', alignItems: 'center', gap: 10, flexWrap: 'wrap' },
   option: { borderWidth: 3, borderColor: theme.border, borderRadius: 24, backgroundColor: theme.surface, overflow: 'hidden' },
   selected: { borderColor: theme.accent, backgroundColor: theme.selected }, optionTouch: { padding: 20, gap: 20, minHeight: 190 },
-  heading: { fontSize: 22, fontWeight: '800', color: theme.text, flexShrink: 1 }, quantity: { fontSize: 30, fontWeight: '800', color: theme.text },
-  body: { fontSize: 17, fontWeight: '600', color: theme.muted, flexShrink: 1 }, capacity: { flexDirection: 'row', alignSelf: 'flex-start', borderWidth: 2, borderColor: theme.border, borderRadius: 10, padding: 7, gap: 6 },
+  heading: { fontSize: 22, fontWeight: '800', color: theme.text, flexShrink: 1, textTransform: 'uppercase' }, quantity: { fontSize: 30, fontWeight: '800', color: theme.text },
+  body: { fontSize: 17, fontWeight: '600', color: theme.muted, flexShrink: 1, textTransform: 'uppercase' }, capacity: { flexDirection: 'row', alignSelf: 'flex-start', borderWidth: 2, borderColor: theme.border, borderRadius: 10, padding: 7, gap: 6 },
   price: { fontSize: 27, fontWeight: '800', color: theme.success },
   panel: { borderRadius: 24, borderWidth: 2, borderColor: theme.border, backgroundColor: theme.panel, padding: 18, gap: 16 },
   banner: { borderWidth: 2, borderColor: theme.success, backgroundColor: theme.successBackground, padding: 18, borderRadius: 18, flexDirection: 'row', gap: 12, alignItems: 'center' },
   waitBanner: { backgroundColor: theme.warningBackground, borderColor: theme.warning },
   cancelBanner: { backgroundColor: theme.dangerBackground, borderColor: theme.danger },
   mapButton: { borderWidth: 2, borderColor: theme.blue, padding: 12, borderRadius: 16, backgroundColor: theme.blueBackground },
-  label: { color: theme.muted, fontSize: 17, fontWeight: '800', letterSpacing: 1 },
+  label: { color: theme.muted, fontSize: 17, fontWeight: '800', letterSpacing: 1, textTransform: 'uppercase' },
   plate: { borderWidth: 3, borderColor: theme.border, borderRadius: 16, backgroundColor: theme.surface, padding: 20, alignItems: 'center' },
   plateText: { color: theme.text, fontSize: 30, fontWeight: '700', letterSpacing: 4, textAlign: 'center' },
 }); }

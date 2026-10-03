@@ -112,9 +112,9 @@ export function ASLPetitionModal({
                 setCandidate(`${result.glosa} - ${confidence}`);
                 setStatus('LOW CONFIDENCE. CHECK CANDIDATE.');
             }
-        } catch (error) {
+        } catch {
             if (requestGeneration === generation.current && !abort.signal.aborted) {
-                setStatus(error instanceof Error ? error.message : 'SIGN PROCESSING FAILED');
+                setStatus('SIGN PROCESSING FAILED. CHECK CONNECTION. TRY AGAIN.');
             }
         } finally {
             if (requestGeneration === generation.current) busy.current = false;
@@ -216,7 +216,7 @@ export function ASLPetitionModal({
                                 </TouchableOpacity>
                             </View>
                             <View style={styles.cameraViewContainer}>
-                                <SignCameraView hand={hand} onLandmarks={handleLandmarks} onError={setStatus} />
+                                <SignCameraView hand={hand} onLandmarks={handleLandmarks} onError={() => setStatus('CAMERA UNAVAILABLE. CHECK PERMISSION. RESTART APP.')} />
                             </View>
                             <TouchableOpacity onPress={() => {
                                 generation.current += 1;

@@ -42,7 +42,7 @@ export function TaxiTimeSummary({ date, time, label }: { date: string; time: str
   const hourHand = endpoint((hour % 12) * 30 + minute / 2, 29);
   const minuteHand = endpoint(minute * 6, 42);
   return <View style={[styles.timeSummary, { backgroundColor }]} accessible
-    accessibilityLabel={`${date}, ${label}, ${period.label}, America/Mexico_City`}>
+    accessibilityLabel={`${date}, ${label}, ${period.label}, MEXICO CITY TIME`}>
     <Text style={[styles.label, { color, textAlign: 'left' }]}>TIME</Text>
     <View style={styles.clockRow}>
       <Svg width={120} height={120} viewBox="0 0 120 120" accessibilityElementsHidden>
@@ -63,7 +63,7 @@ export function TaxiTimeSummary({ date, time, label }: { date: string; time: str
       </View>
     </View>
     <Text style={[styles.label, { color }]}>{date}</Text>
-    <Text style={{ color }}>America/Mexico_City</Text>
+    <Text style={{ color }}>MEXICO CITY TIME</Text>
   </View>;
 }
 
@@ -85,7 +85,7 @@ export function DestinationVisualCard({ destination, onSelect, onHelp }: {
       onMomentumScrollEnd={event => setPage(Math.round(event.nativeEvent.contentOffset.x / width))}>
       {destination.images.map((source, index) => <Pressable key={index} disabled={!onSelect}
         accessibilityRole={onSelect ? 'button' : undefined}
-        accessibilityLabel={`${onSelect ? 'Select ' : ''}${destination.label}, photo ${index + 1}`}
+        accessibilityLabel={`${onSelect ? 'SELECT ' : ''}${destination.label}, PHOTO ${index + 1}`}
         onPressIn={event => { gesture.current = { x: event.nativeEvent.pageX, y: event.nativeEvent.pageY, moved: false }; }}
         onTouchMove={event => {
           if (Math.abs(event.nativeEvent.pageX - gesture.current.x) > 8 || Math.abs(event.nativeEvent.pageY - gesture.current.y) > 8) gesture.current.moved = true;
@@ -102,11 +102,11 @@ export function DestinationVisualCard({ destination, onSelect, onHelp }: {
     </View>
     <View style={styles.caption}>
       <TouchableOpacity style={{ flex: 1 }} disabled={!onSelect} onPress={onSelect}
-        accessibilityRole={onSelect ? 'button' : undefined} accessibilityLabel={`Select ${destination.label}`}>
+        accessibilityRole={onSelect ? 'button' : undefined} accessibilityLabel={`SELECT ${destination.label}`}>
         <Text style={styles.destinationLabel}>{destination.label}</Text>
         <Text style={{ color: '#FFFFFF' }}>{onSelect ? 'SELECT DESTINATION  >' : 'DESTINATION'} | {page + 1}/{destination.images.length}</Text>
       </TouchableOpacity>
-      <TouchableOpacity style={styles.hand} onPress={onHelp} accessibilityRole="button" accessibilityLabel={`ASL help for ${destination.label}`}>
+      <TouchableOpacity style={styles.hand} onPress={onHelp} accessibilityRole="button" accessibilityLabel={`ASL HELP ${destination.label}`}>
         <MaterialIcons name="pan-tool" size={28} color="#FFFFFF" />
       </TouchableOpacity>
     </View>
@@ -121,12 +121,12 @@ export function TaxiMapPreview({ destination }: { destination: TaxiDestination }
   const [error, setError] = React.useState(false);
   React.useEffect(() => { setFailed(false); setError(false); }, [destination.id]);
   return <View style={[styles.map, { backgroundColor }]}>
-    {uri && !failed ? <Image source={{ uri }} onError={() => setFailed(true)} style={{ width: '100%', height: 160 }} accessibilityLabel={`Map of ${destination.label}`} />
-      : <View style={styles.choice}><MaterialIcons name="map" size={48} color={transportAslColors.destination.color} /><Text style={{ color }}>Map preview unavailable</Text></View>}
-    <TouchableOpacity accessibilityRole="link" style={styles.mapButton} onPress={async () => {
+    {uri && !failed ? <Image source={{ uri }} onError={() => setFailed(true)} style={{ width: '100%', height: 160 }} accessibilityLabel={`MAP ${destination.label}`} />
+      : <View style={styles.choice}><MaterialIcons name="map" size={48} color={transportAslColors.destination.color} /><Text style={{ color }}>MAP PREVIEW NOT AVAILABLE</Text></View>}
+    <TouchableOpacity accessibilityRole="link" accessibilityLabel="OPEN MAP" style={styles.mapButton} onPress={async () => {
       try { setError(false); await Linking.openURL(buildTaxiMapUrl(destination)); } catch { setError(true); }
-    }}><MaterialIcons name="map" size={24} color={transportAslColors.destination.color} /><Text style={[styles.label, { color }]}>Open map</Text></TouchableOpacity>
-    {error && <Text accessibilityRole="alert" style={{ color }}>Unable to open map. Try again.</Text>}
+    }}><MaterialIcons name="map" size={24} color={transportAslColors.destination.color} /><Text style={[styles.label, { color }]}>OPEN MAP</Text></TouchableOpacity>
+    {error && <Text accessibilityRole="alert" style={{ color }}>MAP NOT OPEN. TRY AGAIN.</Text>}
   </View>;
 }
 
@@ -138,18 +138,18 @@ export function TaxiHelpSheet({ title, destination, resource, onClose, bottomIns
   const [failed, setFailed] = React.useState(false);
   const category = TAXI_DESTINATION_CATEGORIES.find(item => item.id === destination?.category);
   return <View style={styles.helpOverlay} accessibilityViewIsModal>
-    <Pressable style={StyleSheet.absoluteFill} onPress={onClose} accessibilityLabel="Close ASL help" />
+    <Pressable style={StyleSheet.absoluteFill} onPress={onClose} accessibilityLabel="CLOSE ASL HELP" />
     <View style={[styles.sheet, { backgroundColor, paddingBottom: Math.max(24, bottomInset) }]}>
       <View style={styles.sheetHandle} />
       <View style={styles.sheetHeader}>
         {category && <MaterialIcons name={category.icon as Icon} size={30} color={category.iconColor} />}
         <Text style={[styles.label, { color, flex: 1, textAlign: 'left' }]}>{title}</Text>
-        <TouchableOpacity onPress={onClose} accessibilityRole="button" accessibilityLabel="Close ASL help" style={{ padding: 12 }}><MaterialIcons name="close" size={28} color={color} /></TouchableOpacity></View>
+        <TouchableOpacity onPress={onClose} accessibilityRole="button" accessibilityLabel="CLOSE ASL HELP" style={{ padding: 12 }}><MaterialIcons name="close" size={28} color={color} /></TouchableOpacity></View>
       <ScrollView style={styles.helpScroll} contentContainerStyle={styles.helpBody} showsVerticalScrollIndicator nestedScrollEnabled>
         {resource && !failed ? <Image source={resource.source} accessibilityLabel={resource.accessibilityLabel} onError={() => setFailed(true)} resizeMode="contain" style={{ width: '100%', height: 200 }} />
           : !destination && <View style={styles.choice}><MaterialIcons name="pan-tool" size={42} color={transportAslColors.help.color} />
-            <Text style={[styles.label, { color }]}>ASL help pending</Text>
-            <Text style={{ color }}>No verified sign-language resource is available for this selection yet.</Text></View>}
+            <Text style={[styles.label, { color }]}>ASL HELP NOT READY</Text>
+            <Text style={{ color }}>VERIFIED SIGN RESOURCE NOT AVAILABLE YET.</Text></View>}
         {destination && <ASLFingerspelling text={destination.fingerspellingText?.trim() || destination.label} />}
       </ScrollView>
     </View>
@@ -168,7 +168,7 @@ const styles = StyleSheet.create({
   badges: { position: 'absolute', top: 12, left: 12, right: 12, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   number: { backgroundColor: '#151515', color: '#FFFFFF', padding: 10, borderRadius: 22, fontWeight: '800', fontSize: 20 },
   category: { borderRadius: 30, padding: 12 }, caption: { padding: 16, flexDirection: 'row', gap: 12, alignItems: 'center' },
-  destinationLabel: { color: '#FFFFFF', fontWeight: '900', fontSize: 22, marginBottom: 8 }, hand: { padding: 16, backgroundColor: '#926800', borderRadius: 40 },
+  destinationLabel: { color: '#FFFFFF', fontWeight: '900', fontSize: 22, marginBottom: 8, textTransform: 'uppercase' }, hand: { padding: 16, backgroundColor: '#926800', borderRadius: 40 },
   map: { borderRadius: 14, overflow: 'hidden', borderWidth: 1, borderColor: '#D7E3F1' },
   mapButton: { margin: 12, padding: 14, borderWidth: 2, borderColor: '#1E88E5', borderRadius: 28, flexDirection: 'row', justifyContent: 'center', alignItems: 'center', gap: 12 },
   helpOverlay: { ...StyleSheet.absoluteFillObject, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'flex-end', alignItems: 'center' },

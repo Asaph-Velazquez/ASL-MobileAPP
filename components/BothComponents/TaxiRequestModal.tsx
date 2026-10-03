@@ -95,9 +95,9 @@ export function TaxiRequestModal({
       const payload = buildTaxiRequestPayload({ category: selectedCategory, destination: selectedDestination,
         date: selectedDate, time: selectedTime?.id ?? null, passengers: selectedPassengers, luggage: hasLuggage }, sourceMode);
       const result = await onSend(payload);
-      if (result === false) throw new Error('Request failed. Please try again.');
-    } catch (error) {
-      setError(error instanceof Error ? error.message : 'Request failed. Please try again.');
+      if (result === false) throw new Error('REQUEST FAILED. TRY AGAIN.');
+    } catch {
+      setError('REQUEST FAILED. CHECK CONNECTION. TRY AGAIN.');
     } finally {
       sendLock.current = false;
       setSending(false);
@@ -137,7 +137,7 @@ export function TaxiRequestModal({
   return (
     <Modal animationType="slide" transparent visible={visible} onRequestClose={handleClose}>
       <View style={[styles.modalOverlay, { paddingTop: Math.max(20, insets.top), paddingBottom: Math.max(20, insets.bottom) }]}>
-        <Pressable style={StyleSheet.absoluteFill} onPress={handleClose} accessibilityLabel="Close taxi request" />
+        <Pressable style={StyleSheet.absoluteFill} onPress={handleClose} accessibilityLabel="CLOSE TAXI REQUEST" />
         <View
           style={[styles.modalContent, { backgroundColor }]}
         >
@@ -357,13 +357,13 @@ export function TaxiRequestModal({
                   } catch { setMapError(true); }
                 }}>
                   <MaterialIcons name="map" size={24} color={transportAslColors.destination.color} />
-                  <Text style={[styles.chipText, { color: textColor }]}>Open map</Text>
+                  <Text style={[styles.chipText, { color: textColor }]}>OPEN MAP</Text>
                 </TouchableOpacity>
-                {mapError && <Text accessibilityRole="alert" style={{ color: textColor }}>Unable to open map. Try again.</Text>}
+                {mapError && <Text accessibilityRole="alert" style={{ color: textColor }}>MAP NOT OPEN. TRY AGAIN.</Text>}
               </View>
             )}
           </ScrollView>
-          {error && <Text accessibilityRole="alert" style={{ color: textColor }}>{error}</Text>}
+          {error && <Text accessibilityRole="alert" style={{ color: textColor }}>{error.toUpperCase()}</Text>}
 
           <View style={styles.footer}>
             {step !== 'category' ? (
@@ -506,20 +506,24 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     fontSize: 20,
     fontWeight: '700',
+    textTransform: 'uppercase',
   },
   destinationCardDescription: {
     color: 'rgba(255,255,255,0.92)',
     fontSize: 13,
     lineHeight: 18,
+    textTransform: 'uppercase',
   },
   optionTitle: {
     fontSize: 16,
     fontWeight: '700',
     marginBottom: 4,
+    textTransform: 'uppercase',
   },
   optionDescription: {
     fontSize: 13,
     lineHeight: 18,
+    textTransform: 'uppercase',
   },
   chipGrid: {
     flexDirection: 'row',
@@ -540,6 +544,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '700',
     textAlign: 'center',
+    textTransform: 'uppercase',
   },
   summaryCard: {
     borderRadius: 14,
@@ -550,6 +555,7 @@ const styles = StyleSheet.create({
     flexShrink: 1,
     fontSize: 14,
     fontWeight: '600',
+    textTransform: 'uppercase',
   },
   carouselWrapper: {
     gap: 8,
@@ -558,6 +564,7 @@ const styles = StyleSheet.create({
   carouselTitle: {
     fontSize: 14,
     fontWeight: '700',
+    textTransform: 'uppercase',
   },
   mapButton: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 12, borderWidth: 2, borderRadius: 28, padding: 14 },
   carouselImage: {

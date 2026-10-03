@@ -44,9 +44,9 @@ export function ASLTaxiRequestModal({ visible, onClose, onSend, isLoading = fals
     try {
       const payload = buildTaxiRequestPayload(draft, 'asl_guided');
       const result = await onSend(payload);
-      if (result === false) throw new Error('Request failed. Please try again.');
-    } catch (error) {
-      setError(error instanceof Error ? error.message : 'Request failed. Please try again.');
+      if (result === false) throw new Error('REQUEST FAILED. TRY AGAIN.');
+    } catch {
+      setError('REQUEST FAILED. CHECK CONNECTION. TRY AGAIN.');
     } finally { lock.current = false; setSending(false); }
   };
   const time = TAXI_TIME_OPTIONS.find(option => option.id === draft.time);
@@ -58,13 +58,13 @@ export function ASLTaxiRequestModal({ visible, onClose, onSend, isLoading = fals
   const dismiss = () => help ? setHelp(null) : close();
   return <Modal visible={visible} transparent animationType="slide" onRequestClose={dismiss}>
     <View style={[styles.overlay, { paddingTop: Math.max(20, insets.top), paddingBottom: Math.max(20, insets.bottom) }]}>
-      <Pressable style={StyleSheet.absoluteFill} onPress={dismiss} accessibilityLabel="Close taxi request" />
+      <Pressable style={StyleSheet.absoluteFill} onPress={dismiss} accessibilityLabel="CLOSE TAXI REQUEST" />
       <View style={[styles.content, { backgroundColor }]}>
       <View style={styles.flow} accessibilityElementsHidden={!!help} importantForAccessibility={help ? 'no-hide-descendants' : 'auto'}>
         <View style={styles.header}>
           <MaterialIcons name={headerIcons[step]} size={26} color={headerColor} />
           <View style={{ flex: 1 }}><Text style={[styles.title, { color }]}>{STEPS[step]}</Text><Text style={{ color }}>{step + 1} / 6</Text></View>
-          <TouchableOpacity disabled={busy} style={styles.icon} accessibilityRole="button" accessibilityLabel="Close taxi request" onPress={close}><MaterialIcons name="close" size={28} color={color} /></TouchableOpacity>
+          <TouchableOpacity disabled={busy} style={styles.icon} accessibilityRole="button" accessibilityLabel="CLOSE TAXI REQUEST" onPress={close}><MaterialIcons name="close" size={28} color={color} /></TouchableOpacity>
         </View>
         <ScrollView key={step} style={styles.scroll} contentContainerStyle={styles.body} nestedScrollEnabled keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator>
           {step === 0 && TAXI_DESTINATION_CATEGORIES.map(category => <VisualChoice key={category.id} label={category.label}
@@ -97,13 +97,13 @@ export function ASLTaxiRequestModal({ visible, onClose, onSend, isLoading = fals
               <View style={styles.cell}><VisualChoice label={draft.luggage ? 'LUGGAGE: YES' : 'LUGGAGE: NO'} icon={draft.luggage ? 'luggage' : 'no-luggage'} iconColor={luggageColor.color} iconBackground={luggageColor.background} /></View>
             </View>
           </>}
-          {error && <Text accessibilityRole="alert" style={[styles.error, { color }]}>{error}</Text>}
+          {error && <Text accessibilityRole="alert" style={[styles.error, { color }]}>{error.toUpperCase()}</Text>}
         </ScrollView>
         <View style={styles.footer}>
-          <TouchableOpacity style={[styles.back, { borderColor: mutedColor }]} accessibilityRole="button" accessibilityLabel={step === 0 ? 'Cancel taxi request' : 'Back'} disabled={busy} onPress={() => { if (step === 0) close(); else { setStep(step - 1); setError(null); } }}>
+          <TouchableOpacity style={[styles.back, { borderColor: mutedColor }]} accessibilityRole="button" accessibilityLabel={step === 0 ? 'CANCEL TAXI REQUEST' : 'BACK'} disabled={busy} onPress={() => { if (step === 0) close(); else { setStep(step - 1); setError(null); } }}>
             <MaterialIcons name={step === 0 ? 'close' : 'arrow-back'} size={26} color={color} />
           </TouchableOpacity>
-          {step > 0 && step < 5 && <TouchableOpacity style={[styles.back, { borderColor: mutedColor }]} accessibilityRole="button" accessibilityLabel="Cancel taxi request" disabled={busy} onPress={close}><MaterialIcons name="close" size={26} color={color} /></TouchableOpacity>}
+          {step > 0 && step < 5 && <TouchableOpacity style={[styles.back, { borderColor: mutedColor }]} accessibilityRole="button" accessibilityLabel="CANCEL TAXI REQUEST" disabled={busy} onPress={close}><MaterialIcons name="close" size={26} color={color} /></TouchableOpacity>}
           {step === 5 && <TouchableOpacity style={[styles.send, busy && { opacity: 0.5 }]} accessibilityRole="button" disabled={busy} onPress={submit}>
             {busy ? <ActivityIndicator color="#FFFFFF" /> : <><MaterialIcons name="send" size={20} color="#FFFFFF" /><Text style={styles.sendLabel}>{error ? 'RETRY REQUEST' : 'SEND REQUEST'}</Text></>}
           </TouchableOpacity>}

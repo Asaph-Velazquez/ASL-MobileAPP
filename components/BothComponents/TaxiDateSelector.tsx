@@ -2,27 +2,27 @@ import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useThemeColor } from '@/hooks/use-theme-color';
-import { shiftTaxiDate, TAXI_TIME_ZONE } from '@/data/taxiRequest';
+import { shiftTaxiDate } from '@/data/taxiRequest';
 
 export function TaxiDateSelector({ value, onChange, iconColor, showGuidance = true }: { value: string; onChange: (date: string) => void; iconColor?: string; showGuidance?: boolean }) {
   const color = useThemeColor({}, 'text');
   const backgroundColor = useThemeColor({}, 'card');
   return <View style={styles.container}>
     <View style={[styles.row, { backgroundColor }]}>
-      <TouchableOpacity accessibilityRole="button" accessibilityLabel="Previous date" style={styles.button} onPress={() => onChange(shiftTaxiDate(value, -1))}>
+      <TouchableOpacity accessibilityRole="button" accessibilityLabel="PREVIOUS DATE" style={styles.button} onPress={() => onChange(shiftTaxiDate(value, -1))}>
         <MaterialIcons name="chevron-left" size={30} color={color} />
       </TouchableOpacity>
       <View style={styles.date}>
         <MaterialIcons name="event" size={28} color={iconColor ?? color} />
         <Text accessibilityLiveRegion="polite" style={[styles.label, { color }]}>{value}</Text>
       </View>
-      <TouchableOpacity accessibilityRole="button" accessibilityLabel="Next date" style={styles.button} onPress={() => onChange(shiftTaxiDate(value, 1))}>
+      <TouchableOpacity accessibilityRole="button" accessibilityLabel="NEXT DATE" style={styles.button} onPress={() => onChange(shiftTaxiDate(value, 1))}>
         <MaterialIcons name="chevron-right" size={30} color={color} />
       </TouchableOpacity>
     </View>
     {showGuidance && <>
-      <Text style={{ color }}>24 hours minimum. 48 hours recommended. No maximum advance booking.</Text>
-      <Text style={{ color }}>{TAXI_TIME_ZONE}</Text>
+      <Text style={{ color }}>SCHEDULE 24 HOURS AHEAD. 48 HOURS RECOMMENDED. NO MAXIMUM ADVANCE.</Text>
+      <Text style={{ color }}>MEXICO CITY TIME</Text>
     </>}
   </View>;
 }

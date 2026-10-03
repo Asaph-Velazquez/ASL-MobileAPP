@@ -42,11 +42,11 @@ export default function LoginScreen() {
           router.replace('/onboarding');
         }, 100);
       } else {
-        setError(result.reason || 'Código QR inválido');
+        setError('INVALID ROOM QR CODE. SCAN AGAIN.');
         setFlowState('error');
       }
     } catch (err) {
-      setError('Error al validar el código QR');
+      setError('QR CODE VALIDATION FAILED.');
       setFlowState('error');
     }
   };

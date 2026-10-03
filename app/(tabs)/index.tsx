@@ -64,9 +64,9 @@ export default function HomeScreen() {
               accessibilityLabel="Hotel logo"
             />
           </View>
-          <Text style={[styles.title, { color: textColor }]}>Canada Central Hotel</Text>
+          <Text style={[styles.title, { color: textColor, textTransform: 'uppercase' }]}>Canada Central Hotel</Text>
           <Text style={[styles.subtitle, { color: mutedColor }]}>
-            ROOM {roomNumber} - WELCOME {guestName}
+            ROOM {roomNumber} - WELCOME {String(guestName ?? '').toUpperCase()}
           </Text>
         </View>
 

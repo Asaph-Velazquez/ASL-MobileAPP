@@ -58,7 +58,7 @@ export function GuestCallVideoStage({
 
       <View testID="call-video-panels" style={[styles.videoPanels, sideBySide && styles.videoPanelsWide]}>
         <View testID="interpreter-video-panel" style={[styles.videoPanel, sideBySide && styles.videoPanelWide]}>
-          <Text style={[styles.localPreviewLabel, { color: textColor }]}>Interpreter video</Text>
+          <Text style={[styles.localPreviewLabel, { color: textColor }]}>INTERPRETER VIDEO</Text>
           <View style={[styles.remoteStage, sideBySide && styles.wideStage, { backgroundColor }]}>
             {remoteStreamUrl && VideoView ? (
               <VideoView objectFit={sideBySide ? 'contain' : 'cover'} streamURL={remoteStreamUrl} style={sideBySide ? styles.wideVideo : styles.remoteVideo} />
@@ -71,7 +71,7 @@ export function GuestCallVideoStage({
         </View>
 
         <View testID="guest-video-panel" style={[styles.localPreviewCard, sideBySide && styles.videoPanelWide, { backgroundColor: cardColor }]}>
-          <Text style={[styles.localPreviewLabel, { color: textColor }]}>Guest preview</Text>
+          <Text style={[styles.localPreviewLabel, { color: textColor }]}>GUEST PREVIEW</Text>
           <View style={[styles.localStage, sideBySide && styles.wideStage, { backgroundColor }]}>
             {showLocalVideo && localStreamUrl && VideoView ? (
               <VideoView mirror objectFit={sideBySide ? 'contain' : 'cover'} streamURL={localStreamUrl} style={sideBySide ? styles.wideVideo : styles.localVideo} />
@@ -85,7 +85,7 @@ export function GuestCallVideoStage({
       </View>
 
       <View style={[styles.mediaCard, { backgroundColor }]}>
-        <Text style={[styles.mediaCardTitle, { color: textColor }]}>Media session</Text>
+        <Text style={[styles.mediaCardTitle, { color: textColor }]}>MEDIA SESSION</Text>
         <Text style={[styles.mediaCardBody, { color: mutedColor }]}>{mediaMessage}</Text>
       </View>
     </View>
@@ -132,7 +132,7 @@ const styles = StyleSheet.create({
     flex: 1,
     textAlign: 'right',
     fontSize: 13,
-    textTransform: 'capitalize',
+    textTransform: 'uppercase',
   },
   remoteStage: {
     minHeight: 330,
@@ -154,6 +154,7 @@ const styles = StyleSheet.create({
     fontSize: 22,
     lineHeight: 30,
     fontWeight: '700',
+    textTransform: 'uppercase',
   },
   localPreviewCard: {
     width: '100%',
@@ -208,6 +209,7 @@ const styles = StyleSheet.create({
     fontSize: 12,
     lineHeight: 17,
     textAlign: 'center',
+    textTransform: 'uppercase',
   },
   mediaCard: {
     borderRadius: 18,
@@ -221,5 +223,6 @@ const styles = StyleSheet.create({
   mediaCardBody: {
     fontSize: 14,
     lineHeight: 20,
+    textTransform: 'uppercase',
   },
 });

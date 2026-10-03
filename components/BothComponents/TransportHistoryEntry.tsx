@@ -56,8 +56,8 @@ export function TransportHistoryEntry({ request, mode }: Props) {
     try {
       await acceptTransportOption(request.id, proposals.revision, selected.id);
       setSelection(null);
-    } catch (failure) {
-      setError(failure instanceof Error ? failure.message : 'OPTION NOT ACCEPTED. TRY AGAIN.');
+    } catch {
+      setError('OPTION NOT ACCEPTED. CHECK CONNECTION. TRY AGAIN.');
     } finally { setBusy(false); }
   };
   const openMap = async () => {
@@ -81,23 +81,23 @@ export function TransportHistoryEntry({ request, mode }: Props) {
     <Modal visible={open} transparent animationType="slide" onRequestClose={close}>
       <View style={[s.overlay, asl && s.aslOverlay, { paddingTop: Math.max(insets.top, 20), paddingBottom: asl ? Math.max(insets.bottom, 20) : 0 }]}>
         <View style={[asl ? s.aslSheet : s.sheet, asl && { height: panelHeight }, { backgroundColor, paddingBottom: asl ? 20 : Math.max(insets.bottom, 16) }]}>
-          <View style={[s.header, asl && s.aslHeader]}><Text style={[s.title, asl && s.aslTitle, s.grow, { color }]}>{canChoose ? 'Transport options' : 'Your request'}</Text><Pressable accessibilityRole="button" accessibilityLabel="Close transport details" disabled={busy} onPress={close} style={s.close}><MaterialIcons name="close" size={24} color={color} /></Pressable></View>
+          <View style={[s.header, asl && s.aslHeader]}><Text style={[s.title, asl && s.aslTitle, s.grow, { color }]}>{canChoose ? 'TRANSPORT OPTIONS' : 'YOUR REQUEST'}</Text><Pressable accessibilityRole="button" accessibilityLabel="CLOSE TRANSPORT DETAILS" disabled={busy} onPress={close} style={s.close}><MaterialIcons name="close" size={24} color={color} /></Pressable></View>
           <ScrollView style={{ flex: 1, minHeight: 0 }} nestedScrollEnabled keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator contentContainerStyle={[s.content, asl && s.aslContent]}>
             {asl ? <ASLTransportDetail details={details} status={request.status} onOpenMap={openMap} /> : <TextTransportDetail details={details} status={request.status} onOpenMap={openMap} />}
             {canChoose && <>
               <Text style={[s.entryTitle, { color }]}>SELECT ONE OPTION</Text>
-              {!asl && <Text style={{ color: theme.muted }}>Compare the hotel proposals, select one and confirm. Prices cover all vehicles in each option.</Text>}
+              {!asl && <Text style={{ color: theme.muted }}>COMPARE HOTEL OPTIONS. SELECT ONE. CONFIRM. PRICE INCLUDES ALL VEHICLES.</Text>}
               {proposals!.options.map(option => asl ? <ASLTransportOptionCard key={`${proposals!.revision}-${option.id}`} option={option} selected={selected?.id === option.id} disabled={busy} onSelect={() => setSelection({ revision: proposals!.revision, id: option.id })} /> :
                 <TextTransportOptionCard key={`${proposals!.revision}-${option.id}`} option={option} selected={selected?.id === option.id} disabled={busy} onSelect={() => setSelection({ revision: proposals!.revision, id: option.id })} />)}
             </>}
-            {!!error && <Text accessibilityRole="alert" style={s.error}>{error}</Text>}
+            {!!error && <Text accessibilityRole="alert" style={s.error}>{asl ? error.toUpperCase() : error}</Text>}
             {!estaConectado && <Text style={s.error}>NO CONNECTION. RECONNECT TO CONTINUE.</Text>}
           </ScrollView>
           {canChoose && <View style={[s.footer, asl && s.aslFooter]}>
             <View style={s.totalRow}><MaterialIcons name="payments" size={26} color={theme.success} /><Text style={[s.total, { color: theme.success }]}>TOTAL {selected ? formatTransportPrice(selected.priceCents) : '—'}</Text></View>
             <View style={s.buttons}>
-              <Pressable style={[s.button, s.cancel]} disabled={busy || !estaConectado} onPress={() => setConfirmCancel(true)} accessibilityRole="button" accessibilityLabel="Cancel taxi request"><MaterialIcons name="cancel" color={theme.danger} size={22} />{!asl && <Text style={s.cancelText}>Cancel request</Text>}</Pressable>
-              <Pressable style={[s.button, s.confirm, (!selected || busy || !estaConectado) && s.disabled]} disabled={!selected || busy || !estaConectado} onPress={accept} accessibilityRole="button">{busy ? <ActivityIndicator color="#FFFFFF" /> : <><MaterialIcons name="check-circle" color="#FFFFFF" size={22} /><Text style={s.confirmText}>Confirm</Text></>}</Pressable>
+              <Pressable style={[s.button, s.cancel]} disabled={busy || !estaConectado} onPress={() => setConfirmCancel(true)} accessibilityRole="button" accessibilityLabel="CANCEL TAXI REQUEST"><MaterialIcons name="cancel" color={theme.danger} size={22} />{!asl && <Text style={s.cancelText}>CANCEL REQUEST</Text>}</Pressable>
+              <Pressable style={[s.button, s.confirm, (!selected || busy || !estaConectado) && s.disabled]} disabled={!selected || busy || !estaConectado} onPress={accept} accessibilityRole="button">{busy ? <ActivityIndicator color="#FFFFFF" /> : <><MaterialIcons name="check-circle" color="#FFFFFF" size={22} /><Text style={s.confirmText}>CONFIRM</Text></>}</Pressable>
             </View>
           </View>}
           {confirmCancel && <View style={s.innerOverlay}>

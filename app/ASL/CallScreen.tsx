@@ -43,9 +43,9 @@ export default function CallScreen() {
   const { width } = useWindowDimensions();
   const sideBySide = width - insets.left - insets.right >= 768;
   const [status, setStatus] = useState<CallStatus>('booting');
-  const [message, setMessage] = useState('Preparing interpreter session...');
+  const [message, setMessage] = useState('PREPARE INTERPRETER SESSION...');
   const [mediaStatus, setMediaStatus] = useState<MediaStatus>('idle');
-  const [mediaMessage, setMediaMessage] = useState('Camera and microphone will start when the interpreter accepts the call.');
+  const [mediaMessage, setMediaMessage] = useState('CAMERA AND MICROPHONE START AFTER INTERPRETER ACCEPT CALL.');
   const [callId, setCallId] = useState<string | null>(null);
   const [localStreamUrl, setLocalStreamUrl] = useState<string | null>(null);
   const [remoteStreamUrl, setRemoteStreamUrl] = useState<string | null>(null);
@@ -87,7 +87,7 @@ export default function CallScreen() {
     setIsCameraEnabled(true);
     setIsRetryingMedia(false);
     setMediaStatus('idle');
-    setMediaMessage('Camera and microphone will start when the interpreter accepts the call.');
+    setMediaMessage('CAMERA AND MICROPHONE START AFTER INTERPRETER ACCEPT CALL.');
   }
 
   function applyTrackEnabled(kind: 'audio' | 'video', enabled: boolean) {
@@ -122,37 +122,37 @@ export default function CallScreen() {
         const hasVideo = stream.getVideoTracks().length > 0;
         setRemoteStreamUrl(hasVideo ? stream.toURL() : null);
         setMediaStatus(hasVideo ? 'connected' : 'connecting');
-        setMediaMessage(hasVideo ? 'Interpreter video track received.' : 'Interpreter audio track received. Waiting for video...');
+        setMediaMessage(hasVideo ? 'INTERPRETER VIDEO RECEIVED.' : 'INTERPRETER AUDIO RECEIVED. WAIT VIDEO...');
         if (hasVideo && (statusRef.current === 'accepted' || statusRef.current === 'connecting')) {
-          updateStatus('connected', 'Interpreter video and audio are now connected.');
+          updateStatus('connected', 'INTERPRETER VIDEO AND AUDIO CONNECTED.');
         }
       },
       onConnectionStateChange: (connectionState) => {
         switch (connectionState) {
           case 'connecting':
             setMediaStatus('connecting');
-            setMediaMessage('Negotiating secure media connection...');
+            setMediaMessage('SECURE MEDIA CONNECTION IN PROGRESS...');
             break;
           case 'connected':
             setMediaStatus('connected');
-            setMediaMessage('Secure video call is active.');
+            setMediaMessage('SECURE VIDEO CALL ACTIVE.');
             if (statusRef.current === 'accepted' || statusRef.current === 'connecting') {
-              updateStatus('connected', 'Interpreter video and audio are now connected.');
+              updateStatus('connected', 'INTERPRETER VIDEO AND AUDIO CONNECTED.');
             }
             break;
           case 'failed':
           case 'closed':
             setMediaStatus('error');
-            setMediaMessage('The media connection failed. End the call and try again.');
+            setMediaMessage('MEDIA CONNECTION FAILED. END CALL. TRY AGAIN.');
             if (statusRef.current !== 'ended' && statusRef.current !== 'unavailable') {
-              updateStatus('error', 'The call is still open, but the media connection failed.');
+              updateStatus('error', 'CALL OPEN. MEDIA CONNECTION FAILED.');
             }
             break;
           case 'disconnected':
             setMediaStatus('connecting');
-            setMediaMessage('Media disconnected. Waiting for reconnection...');
+            setMediaMessage('MEDIA DISCONNECTED. WAIT RECONNECT...');
             if (statusRef.current === 'connected') {
-              updateStatus('accepted', 'Interpreter stayed on the call. Reconnecting media...');
+              updateStatus('accepted', 'INTERPRETER STILL CONNECTED. RECONNECT MEDIA...');
             }
             break;
           default:
@@ -185,26 +185,26 @@ export default function CallScreen() {
       callIdRef.current === currentCallId && socket.readyState === WebSocket.OPEN;
 
     setMediaStatus('requesting');
-    setMediaMessage('Requesting camera and microphone permissions...');
+    setMediaMessage('CAMERA AND MICROPHONE PERMISSION REQUEST...');
     const permissionResult = await requestCallMediaPermissions();
-    if (!isCurrent()) throw new Error('Call ended while requesting media.');
+    if (!isCurrent()) throw new Error('CALL ENDED DURING MEDIA REQUEST.');
     if (!permissionResult.granted) {
       setMediaStatus('error');
-      setMediaMessage(permissionResult.errorMessage || 'Permissions are required to continue.');
-      throw new Error(permissionResult.errorMessage || 'Media permissions denied');
+      setMediaMessage('CAMERA AND MICROPHONE PERMISSION REQUIRED.');
+      throw new Error('MEDIA PERMISSION DENIED.');
     }
 
     setMediaStatus('preparing');
-    setMediaMessage('Starting local camera and microphone...');
+    setMediaMessage('START CAMERA AND MICROPHONE...');
     const stream = await createLocalMediaStream();
     if (!isCurrent()) {
       stopStream(stream);
-      throw new Error('Call ended while starting media.');
+      throw new Error('CALL ENDED DURING MEDIA START.');
     }
     const peer = await ensurePeerSession(currentCallId, socket);
     if (!isCurrent()) {
       stopStream(stream);
-      throw new Error('Call ended while preparing media.');
+      throw new Error('CALL ENDED DURING MEDIA SETUP.');
     }
 
     localStreamRef.current = stream;
@@ -212,9 +212,9 @@ export default function CallScreen() {
     applyTrackEnabled('video', isCameraEnabled);
     setLocalStreamUrl(stream.toURL());
     await attachLocalStream(peer, stream);
-    if (!isCurrent()) throw new Error('Call ended while attaching media.');
+    if (!isCurrent()) throw new Error('CALL ENDED DURING MEDIA CONNECTION.');
     setMediaStatus('ready');
-    setMediaMessage('Local camera preview is ready. Waiting for interpreter media...');
+    setMediaMessage('CAMERA PREVIEW READY. WAIT INTERPRETER MEDIA...');
 
     return stream;
   }
@@ -247,7 +247,7 @@ export default function CallScreen() {
           });
         }
         setMediaStatus('connecting');
-        setMediaMessage('Interpreter offer accepted. Finalizing media connection...');
+        setMediaMessage('INTERPRETER OFFER ACCEPTED. CONNECT MEDIA...');
         break;
       }
       case 'WEBRTC_ANSWER': {
@@ -259,7 +259,7 @@ export default function CallScreen() {
         await applyRemoteDescription(peer, description);
         for (const candidate of pendingIceRef.current.splice(0)) await applyIceCandidate(peer, candidate);
         setMediaStatus('connecting');
-        setMediaMessage('Interpreter answered. Finalizing media connection...');
+        setMediaMessage('INTERPRETER ANSWER RECEIVED. CONNECT MEDIA...');
         break;
       }
       case 'WEBRTC_ICE_CANDIDATE': {
@@ -283,7 +283,7 @@ export default function CallScreen() {
   useEffect(() => {
     if (!isFocused) return;
     if (!token) {
-      updateStatus('error', 'Guest session is not available.');
+      updateStatus('error', 'GUEST SESSION NOT AVAILABLE.');
       return;
     }
 
@@ -297,25 +297,25 @@ export default function CallScreen() {
 
     const boot = async () => {
       try {
-        updateStatus('connecting', 'Requesting interpreter call session...');
+        updateStatus('connecting', 'REQUEST INTERPRETER CALL...');
         const session = await requestCallSession(token);
         if (disposed) return;
         setCallId(session.callId);
         callIdRef.current = session.callId;
-        setMessage('Connecting to interpreter call server...');
+        setMessage('CONNECT TO INTERPRETER CALL SERVER...');
 
         const socket = new WebSocket(buildCallSocketUrl(session.callServerUrl, session.callToken));
         wsRef.current = socket;
 
         connectionTimer = setTimeout(() => {
           if (disposed) return;
-          updateStatus('error', 'The call server did not acknowledge the request. End this attempt and try again.');
+          updateStatus('error', 'CALL SERVER NO RESPONSE. END CALL. TRY AGAIN.');
           socket.close();
         }, 15000);
 
         socket.onopen = () => {
           if (disposed) return;
-          setMessage('Connected to call server. Requesting an available interpreter...');
+          setMessage('CALL SERVER CONNECTED. FIND INTERPRETER...');
           sendCallServerMessage(socket, {
             type: 'CALL_REQUEST',
             payload: { callId: session.callId },
@@ -338,34 +338,34 @@ export default function CallScreen() {
               if (disposed || generation !== mediaGenerationRef.current) return;
               switch (incoming.type) {
                 case 'CALL_PENDING':
-                  updateStatus('pending', 'Interpreter has been notified. Waiting for acceptance...');
+                  updateStatus('pending', 'INTERPRETER NOTIFIED. WAIT ACCEPTANCE...');
                   break;
                 case 'CALL_ACCEPTED':
                   updateStatus(
                     'accepted',
-                    `Interpreter ${incoming.payload?.interpreterName || ''} accepted the call. Starting your media...`.trim(),
+                    `INTERPRETER ${incoming.payload?.interpreterName || ''} ACCEPTED. START MEDIA...`.trim().toUpperCase(),
                   );
                   await ensureLocalMedia(session.callId, socket);
                   break;
                 case 'CALL_REJECTED':
                   callIdRef.current = null;
                   cleanupMediaSession();
-                  updateStatus('unavailable', 'The interpreter rejected the call. Please try again later.');
+                  updateStatus('unavailable', 'INTERPRETER DECLINED. TRY AGAIN LATER.');
                   break;
                 case 'CALL_UNAVAILABLE':
                   callIdRef.current = null;
                   cleanupMediaSession();
-                  updateStatus('unavailable', 'No interpreter is available at the moment.');
+                  updateStatus('unavailable', 'INTERPRETER NOT AVAILABLE NOW.');
                   break;
                 case 'CALL_ENDED':
                   callIdRef.current = null;
                   cleanupMediaSession();
-                  updateStatus('ended', 'The call has ended. Hotel follow-up will continue from ASL-Web if needed.');
+                  updateStatus('ended', 'CALL ENDED. HOTEL STAFF FOLLOW-UP IF NEEDED.');
                   break;
                 case 'CALL_ERROR':
                   callIdRef.current = null;
                   cleanupMediaSession();
-                  updateStatus('error', 'The call server could not process the request. End this attempt and try again.');
+                  updateStatus('error', 'CALL SERVER REQUEST FAILED. END CALL. TRY AGAIN.');
                   break;
                 case 'WEBRTC_OFFER':
                 case 'WEBRTC_ANSWER':
@@ -375,11 +375,11 @@ export default function CallScreen() {
                 default:
                   break;
               }
-            } catch (error) {
+            } catch {
               if (disposed || generation !== mediaGenerationRef.current) return;
               setMediaStatus('error');
-              setMediaMessage(error instanceof Error ? error.message : 'Unable to initialize guest media.');
-              updateStatus('error', 'The call signaling failed while starting media.');
+              setMediaMessage('GUEST MEDIA SETUP FAILED. CHECK PERMISSION AND CONNECTION.');
+              updateStatus('error', 'CALL SIGNAL FAILED. MEDIA START FAILED.');
             }
           };
           // Serialize SDP/ICE, but allow CALL_ENDED to cancel pending permissions.
@@ -393,7 +393,7 @@ export default function CallScreen() {
         socket.onerror = () => {
           if (disposed) return;
           clearConnectionTimer();
-          updateStatus('error', 'Unable to connect to the call server.');
+          updateStatus('error', 'CANNOT CONNECT TO CALL SERVER.');
         };
 
         socket.onclose = () => {
@@ -407,12 +407,12 @@ export default function CallScreen() {
               statusRef.current === 'pending' ||
               statusRef.current === 'connecting'
             ) {
-              updateStatus('ended', 'The call server closed the session.');
+              updateStatus('ended', 'CALL SERVER CLOSED SESSION.');
             }
           }
         };
-      } catch (error) {
-        updateStatus('error', error instanceof Error ? error.message : 'Unable to start call');
+      } catch {
+        updateStatus('error', 'CANNOT START CALL. CHECK CONNECTION. TRY AGAIN.');
       }
     };
 
@@ -434,68 +434,68 @@ export default function CallScreen() {
 
   const phaseDetails = useMemo(() => {
     if (status === 'error') {
-      return { label: 'Error', tone: 'danger' as const };
+      return { label: 'ERROR', tone: 'danger' as const };
     }
     if (status === 'ended') {
-      return { label: 'Ended', tone: 'neutral' as const };
+      return { label: 'ENDED', tone: 'neutral' as const };
     }
     if (status === 'unavailable') {
-      return { label: 'Unavailable', tone: 'danger' as const };
+      return { label: 'NOT AVAILABLE', tone: 'danger' as const };
     }
     if (status === 'pending') {
-      return { label: 'Pending', tone: 'info' as const };
+      return { label: 'PENDING', tone: 'info' as const };
     }
     if (mediaStatus === 'connected' || status === 'connected') {
-      return { label: 'Connected', tone: 'success' as const };
+      return { label: 'CONNECTED', tone: 'success' as const };
     }
     if (mediaStatus === 'connecting') {
-      return { label: 'Connecting', tone: 'info' as const };
+      return { label: 'CONNECTING', tone: 'info' as const };
     }
     if (status === 'accepted') {
-      return { label: 'Accepted', tone: 'success' as const };
+      return { label: 'ACCEPTED', tone: 'success' as const };
     }
-    return { label: 'Connecting', tone: 'info' as const };
+    return { label: 'CONNECTING', tone: 'info' as const };
   }, [mediaStatus, status]);
 
   const remotePlaceholder = useMemo(() => {
     if (status === 'pending') {
-      return 'Your interpreter has been notified. Remote video will appear once the call is accepted.';
+      return 'INTERPRETER NOTIFIED. VIDEO START AFTER ACCEPTANCE.';
     }
     if (status === 'accepted' || mediaStatus === 'requesting' || mediaStatus === 'preparing') {
-      return 'The interpreter accepted the call. We are preparing your camera and microphone.';
+      return 'INTERPRETER ACCEPTED. PREPARE CAMERA AND MICROPHONE.';
     }
     if (mediaStatus === 'ready' || mediaStatus === 'connecting') {
-      return 'Your local preview is ready. Waiting for the interpreter stream to finish connecting.';
+      return 'CAMERA PREVIEW READY. WAIT INTERPRETER VIDEO...';
     }
     if (status === 'ended') {
-      return 'The video session ended. You can return to the previous screen.';
+      return 'VIDEO SESSION ENDED. RETURN PREVIOUS SCREEN.';
     }
     if (status === 'error' && mediaStatus === 'idle') {
-      return 'The call server could not be reached. End this attempt and start a new call after checking the connection.';
+      return 'CALL SERVER NOT REACHABLE. CHECK CONNECTION. START NEW CALL.';
     }
     if (status === 'error' || mediaStatus === 'error') {
-      return 'The call is open, but the video stream could not be established. Retry media or end the call.';
+      return 'CALL OPEN. VIDEO STREAM FAILED. RETRY MEDIA OR END CALL.';
     }
     if (status === 'unavailable') {
-      return 'No interpreter video is available for this session right now.';
+      return 'INTERPRETER VIDEO NOT AVAILABLE NOW.';
     }
-    return 'Video will appear here when the secure interpreter stream is ready.';
+    return 'SECURE INTERPRETER VIDEO APPEAR HERE WHEN READY.';
   }, [mediaStatus, status]);
 
   const localPlaceholder = useMemo(() => {
     if (!isCameraEnabled) {
-      return 'Your camera is turned off.';
+      return 'CAMERA OFF.';
     }
     if (mediaStatus === 'requesting') {
-      return 'Requesting permission...';
+      return 'REQUEST PERMISSION...';
     }
     if (mediaStatus === 'preparing') {
-      return 'Starting your local preview...';
+      return 'START CAMERA PREVIEW...';
     }
     if (mediaStatus === 'error') {
-      return 'Unable to start your preview. Use Retry media to try again.';
+      return 'CAMERA PREVIEW FAILED. RETRY MEDIA.';
     }
-    return 'Your local camera preview will appear here.';
+    return 'CAMERA PREVIEW APPEAR HERE.';
   }, [isCameraEnabled, mediaStatus]);
 
   const canToggleMedia = Boolean(localStreamRef.current) && status !== 'ended' && status !== 'unavailable';
@@ -536,7 +536,7 @@ export default function CallScreen() {
 
     setIsRetryingMedia(true);
     setMediaStatus('requesting');
-    setMediaMessage('Retrying camera and microphone setup...');
+    setMediaMessage('RETRY CAMERA AND MICROPHONE SETUP...');
 
     stopStream(localStreamRef.current);
     localStreamRef.current = null;
@@ -545,12 +545,12 @@ export default function CallScreen() {
     try {
       await ensureLocalMedia(currentCallId, socket);
       if (statusRef.current === 'error') {
-        updateStatus('accepted', 'Media is retrying. Waiting for the interpreter stream...');
+        updateStatus('accepted', 'MEDIA RETRY. WAIT INTERPRETER VIDEO...');
       }
-    } catch (error) {
+    } catch {
       if (callIdRef.current !== currentCallId) return;
       setMediaStatus('error');
-      setMediaMessage(error instanceof Error ? error.message : 'Unable to restart local media.');
+      setMediaMessage('CANNOT RESTART CAMERA AND MICROPHONE. CHECK PERMISSION.');
     } finally {
       setIsRetryingMedia(false);
     }
@@ -577,8 +577,8 @@ export default function CallScreen() {
         paddingRight: Math.max(insets.right, 16),
       }]}>
         <View style={[styles.card, { backgroundColor: cardColor }]}>
-          <Text style={[styles.eyebrow, { color: mutedColor }]}>ASL Interpreter Call</Text>
-          <Text style={[styles.title, { color: textColor }]}>{guestName || 'Guest'} • Room {roomNumber || '--'}</Text>
+          <Text style={[styles.eyebrow, { color: mutedColor }]}>ASL INTERPRETER CALL</Text>
+          <Text style={[styles.title, { color: textColor }]}>{(guestName || 'GUEST').toUpperCase()} • ROOM {roomNumber || '--'}</Text>
           <Text style={[styles.message, { color: mutedColor }]}>{message}</Text>
 
           {(status === 'booting' || status === 'connecting') && (
@@ -658,10 +658,12 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 26,
     fontWeight: '700',
+    textTransform: 'uppercase',
   },
   message: {
     fontSize: 16,
     lineHeight: 24,
+    textTransform: 'uppercase',
   },
   loader: {
     marginTop: 8,

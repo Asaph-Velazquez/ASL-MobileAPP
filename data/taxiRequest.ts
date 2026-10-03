@@ -54,11 +54,11 @@ export function shiftTaxiDate(date: string, days: number) {
 // Resolve wall time using the named zone, never the device's local timezone.
 export function buildScheduledAt(date: string, time: string): string {
   if (!/^\d{4}-\d{2}-\d{2}$/.test(date) || !TAXI_TIME_OPTIONS.some(option => option.id === time)) {
-    throw new Error('Select a valid date and time.');
+    throw new Error('SELECT VALID DATE AND TIME.');
   }
   const wall = Date.parse(`${date}T${time}:00Z`);
   if (!Number.isFinite(wall) || new Date(wall).toISOString().slice(0, 10) !== date) {
-    throw new Error('Select a valid calendar date.');
+    throw new Error('SELECT VALID CALENDAR DATE.');
   }
   let instant = wall;
   for (let i = 0; i < 3; i++) {
@@ -66,16 +66,16 @@ export function buildScheduledAt(date: string, time: string): string {
     instant += wall - Date.parse(`${parts.date}T${parts.time}Z`);
   }
   const resolved = cityParts(new Date(instant));
-  if (resolved.date !== date || resolved.time !== `${time}:00`) throw new Error('This time is unavailable.');
+  if (resolved.date !== date || resolved.time !== `${time}:00`) throw new Error('TIME NOT AVAILABLE.');
   return new Date(instant).toISOString();
 }
 
 export function taxiScheduleError(date: string, time: string, now = new Date()): string | null {
   try {
     return Date.parse(buildScheduledAt(date, time)) - now.getTime() < 24 * 3600000
-      ? 'Choose a time at least 24 hours ahead. 48 hours is recommended.' : null;
+      ? 'SCHEDULE AT LEAST 24 HOURS AHEAD. 48 HOURS RECOMMENDED.' : null;
   } catch (error) {
-    return error instanceof Error ? error.message : 'Select a valid date and time.';
+    return error instanceof Error ? error.message : 'SELECT VALID DATE AND TIME.';
   }
 }
 
@@ -83,7 +83,7 @@ export function buildTaxiRequestPayload(draft: TaxiRequestDraft, sourceMode: Tax
   const { category, destination, date, time, passengers, luggage } = draft;
   if (!category || !destination || destination.category !== category || !time ||
     passengers === null || !TAXI_PASSENGER_OPTIONS.includes(passengers) || typeof luggage !== 'boolean') {
-    throw new Error('Complete all request selections.');
+    throw new Error('COMPLETE ALL REQUEST SELECTIONS.');
   }
   const error = taxiScheduleError(date, time, now);
   if (error) throw new Error(error);
