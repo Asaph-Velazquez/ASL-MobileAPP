@@ -17,7 +17,7 @@ interface RatingModalProps {
  */
 export function RatingModal({ visible, onSubmit, onCancel, mode }: RatingModalProps) {
     const backgroundColor = useThemeColor({}, 'background');
-    const mutedColor = useThemeColor({}, 'tabIconDefault');
+    const emptyStarColor = useThemeColor({ light: '#2563EB', dark: '#60A5FA' }, 'icon');
     
     const [rating, setRating] = useState(0);
     const [hoveredStar, setHoveredStar] = useState(0);
@@ -67,7 +67,7 @@ export function RatingModal({ visible, onSubmit, onCancel, mode }: RatingModalPr
                                 <MaterialIcons 
                                     name={star <= displayRating ? "star" : "star-border"}
                                     size={48}
-                                    color={star <= displayRating ? "#FFD700" : mutedColor}
+                                    color={star <= displayRating ? "#FFD700" : emptyStarColor}
                                 />
                             </TouchableOpacity>
                         ))}
