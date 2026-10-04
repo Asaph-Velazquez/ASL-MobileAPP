@@ -15,7 +15,7 @@ export function ASLTransportOptionCard({ option, selected, disabled, onSelect }:
   return (
     <View style={[s.option, selected && s.selected]}>
       <Pressable accessibilityRole="radio" accessibilityState={{ checked: selected, disabled }}
-        accessibilityLabel={`${option.vehicleCount} ${transportVehicleLabels[option.vehicleType]}, ${option.totalCapacity} SEATS, ${formatTransportPrice(option.priceCents)}${option.description ? `, ${option.description}` : ''}`.toUpperCase()}
+        accessibilityLabel={`${option.vehicleCount} ${transportVehicleLabels[option.vehicleType]}, ${option.totalCapacity} SEATS, ${formatTransportPrice(option.priceCents)}${option.vehicles?.map(vehicle => `, MODEL ${vehicle.vehicleModel}, PLATE ${vehicle.vehiclePlate}`).join('') || ''}${option.description ? `, ${option.description}` : ''}`.toUpperCase()}
         disabled={disabled} onPress={onSelect} style={s.optionTouch}>
         <View style={s.row}>
           <Text style={s.quantity}>{option.vehicleCount} ×</Text>
@@ -24,6 +24,10 @@ export function ASLTransportOptionCard({ option, selected, disabled, onSelect }:
           <MaterialIcons name={selected ? 'check-circle' : 'radio-button-unchecked'} size={28} color={selected ? theme.accent : theme.muted} />
         </View>
         <View style={s.capacity}><Text style={s.body}>{option.totalCapacity}</Text><MaterialIcons name="airline-seat-recline-normal" size={23} color={theme.teal} /></View>
+        {option.vehicles?.map((vehicle, index) => <View key={index}>
+          <Text style={s.label}>VEHICLE {index + 1} MODEL</Text><Text style={s.heading}>{vehicle.vehicleModel}</Text>
+          <Text style={s.label}>PLATE</Text><Text style={s.body}>{vehicle.vehiclePlate}</Text>
+        </View>)}
         {!!option.description && <View style={s.row}><MaterialIcons name="info-outline" size={23} color={theme.blue} /><Text style={[s.body, s.grow]}>{option.description}</Text></View>}
         <Text style={s.price}>{formatTransportPrice(option.priceCents)}</Text>
       </Pressable>
@@ -66,7 +70,15 @@ export function ASLTransportDetail({ details, status, onOpenMap }: { details: Tr
           <MaterialIcons name={typeof details.hasLuggage !== 'boolean' ? 'help-outline' : details.hasLuggage ? 'check-circle' : 'cancel'} size={26} color={details.hasLuggage ? theme.success : theme.danger} />
         </View>
       </View>
-      {accepted && <View style={s.panel}><Text style={s.label}>ACCEPTED OPTION</Text><Text style={s.heading}>{accepted.option.vehicleCount} × {transportVehicleLabels[accepted.option.vehicleType]}</Text>{!!accepted.option.description && <Text style={s.body}>{accepted.option.description}</Text>}{!vehicles.length && <Text style={s.body}>VEHICLE DETAILS WAIT STAFF</Text>}</View>}
+      {accepted && <View style={s.panel}>
+        <Text style={s.label}>ACCEPTED OPTION</Text><Text style={s.heading}>{accepted.option.vehicleCount} × {transportVehicleLabels[accepted.option.vehicleType]}</Text>
+        {accepted.option.vehicles?.map((vehicle, index) => <View key={index}>
+          <Text style={s.label}>VEHICLE {index + 1} MODEL</Text><Text style={s.heading}>{vehicle.vehicleModel}</Text>
+          <Text style={s.label}>PLATE</Text><Text style={s.body}>{vehicle.vehiclePlate}</Text>
+        </View>)}
+        {!!accepted.option.description && <Text style={s.body}>{accepted.option.description}</Text>}
+        {!vehicles.length && <Text style={s.body}>ASSIGNMENT WAIT STAFF</Text>}
+      </View>}
       {vehicles.map((vehicle, index) => <View style={s.panel} key={`${index}-${vehicle.vehiclePlate}`}>
         <Text style={s.label}>ASSIGNED VEHICLE {vehicles.length > 1 ? index + 1 : ''}</Text>
         <View style={s.row}><MaterialIcons name={accepted ? icons[accepted.option.vehicleType] : 'directions-car'} size={38} color={vehicleColors[accepted?.option.vehicleType ?? 'car']} /><Text style={[s.heading, s.grow]}>{vehicle.vehicleModel}</Text><MaterialIcons name="check-circle" color={theme.success} size={28} /></View>

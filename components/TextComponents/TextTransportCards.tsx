@@ -25,6 +25,10 @@ export function TextTransportOptionCard({ option, selected, disabled, onSelect }
     </View>
     <InfoRow icon="directions-car" label="VEHICLES INCLUDED" value={String(option.vehicleCount)} />
     <InfoRow icon="airline-seat-recline-normal" label="TOTAL PASSENGER CAPACITY" value={`${option.totalCapacity} SEATS`} />
+    {option.vehicles?.map((vehicle, index) => <View key={index} style={s.vehicle}>
+      <InfoRow icon="directions-car" label={`VEHICLE ${index + 1} MODEL`} value={vehicle.vehicleModel} />
+      <InfoRow icon="confirmation-number" label="PLATE" value={vehicle.vehiclePlate} />
+    </View>)}
     {!!option.description && <InfoRow icon="info-outline" label="HOTEL DETAILS" value={option.description} />}
     <View style={[s.priceRow, { borderColor: theme.border }]}>
       <MaterialIcons name="payments" size={26} color={theme.success} />
@@ -47,6 +51,10 @@ export function TextTransportDetail({ details, status, onOpenMap }: { details: T
     <InfoRow icon={details.hasLuggage === false ? 'no-luggage' : 'luggage'} label="LUGGAGE" value={typeof details.hasLuggage !== 'boolean' ? 'NOT PROVIDED' : details.hasLuggage ? 'YES' : 'NO'} />
     {accepted && <>
       <InfoRow icon={transportVehicleIcons[accepted.vehicleType]} label="ACCEPTED OPTION" value={`${accepted.vehicleCount} × ${transportVehicleLabels[accepted.vehicleType]} · ${accepted.totalCapacity} SEATS`.toUpperCase()} />
+      {accepted.vehicles?.map((vehicle, index) => <View key={index} style={s.vehicle}>
+        <InfoRow icon="directions-car" label={`ACCEPTED VEHICLE ${index + 1} MODEL`} value={vehicle.vehicleModel} />
+        <InfoRow icon="confirmation-number" label="PLATE" value={vehicle.vehiclePlate} />
+      </View>)}
       {!!accepted.description && <InfoRow icon="info-outline" label="HOTEL DETAILS" value={accepted.description} />}
       <InfoRow icon="payments" label="ACCEPTED TOTAL" value={formatTransportPrice(accepted.priceCents)} />
     </>}

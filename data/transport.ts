@@ -5,6 +5,7 @@ export interface TransportOption {
   totalCapacity: number;
   priceCents: number;
   description?: string;
+  vehicles?: TransportVehicle[];
 }
 
 export interface TransportVehicle {
