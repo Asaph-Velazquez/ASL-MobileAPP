@@ -7,10 +7,11 @@ import { GifPreviewContainer } from "@/components/ASLComponents/GifPreviewContai
 import { ASLGridView, ASLOption } from "@/components/ASLComponents/ASLGridView";
 
 export default function ASLHome(){
-    const [selectedGif, setSelectedGif] = useState<any>(require('../../assets/gifs/ComidaGif.gif'));
+    const [selectedGif, setSelectedGif] = useState<any>(require('../../assets/gifs/00005.mp4'));
+    const [selectedMediaType, setSelectedMediaType] = useState<'gif' | 'video'>('video');
     const [refreshing, setRefreshing] = useState(false);
     
-    const defaultGif = require('../../assets/gifs/ComidaGif.gif');
+    const defaultGif = require('../../assets/gifs/00005.mp4');
     
     const opciones: ASLOption[] = [
         {
@@ -84,13 +85,17 @@ export default function ASLHome(){
             }
         >
         <ThemedView style={commonStyles.container}>
-            <GifPreviewContainer gifSource={selectedGif} />
+            <GifPreviewContainer gifSource={selectedGif} mediaType={selectedMediaType} />
             
             <ASLGridView 
                 options={opciones}
                 onOptionPress={handlePress}
-                onPreviewChange={setSelectedGif}
+                onPreviewChange={(source, mediaType) => {
+                    setSelectedGif(source);
+                    setSelectedMediaType(mediaType);
+                }}
                 defaultGif={defaultGif}
+                defaultMediaType="video"
             />
         </ThemedView>
         </ScrollView>

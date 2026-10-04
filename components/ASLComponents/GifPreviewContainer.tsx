@@ -1,15 +1,17 @@
 import { Image, StyleSheet, View } from "react-native";
 import { useThemeColor } from '@/hooks/use-theme-color';
+import { ASLVideoPreview } from './ASLVideoPreview';
 
 interface GifPreviewContainerProps {
     gifSource: any;
+    mediaType?: 'gif' | 'video';
 }
 
 /**
  * Contenedor para mostrar GIF grande en modo ASL
  * Usado en todas las pantallas ASL para preview
  */
-export function GifPreviewContainer({ gifSource }: GifPreviewContainerProps) {
+export function GifPreviewContainer({ gifSource, mediaType = 'gif' }: GifPreviewContainerProps) {
     const backgroundColor = useThemeColor({}, 'background');
     // Función helper para manejar tanto URLs como rutas locales
     const getImageSource = (source: any) => {
@@ -21,11 +23,15 @@ export function GifPreviewContainer({ gifSource }: GifPreviewContainerProps) {
 
     return (
         <View style={[styles.container, { backgroundColor }]}>
-            <Image 
-                source={getImageSource(gifSource)}
-                style={styles.gif}
-                resizeMode="contain"
-            />
+            {mediaType === 'video' ? (
+                <ASLVideoPreview source={gifSource} style={styles.gif} />
+            ) : (
+                <Image
+                    source={getImageSource(gifSource)}
+                    style={styles.gif}
+                    resizeMode="contain"
+                />
+            )}
         </View>
     );
 }

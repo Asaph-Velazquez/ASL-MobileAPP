@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Image, Dimensions } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Dimensions } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { useAuth } from '@/components/BothComponents/auth-provider';
 import { useThemeColor } from '@/hooks/use-theme-color';
 import { ThemedView } from '@/components/BothComponents/themed-view';
+import { ASLVideoPreview } from '@/components/ASLComponents/ASLVideoPreview';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
@@ -13,37 +14,37 @@ interface OnboardingSlide {
   title: string;
   description: string;
   icon: string;
-  gif?: any;
+  video?: any;
 }
 
 const slides: OnboardingSlide[] = [
   {
     id: 1,
-    title: 'HOTEL WELCOME',
-    description: 'THIS APP HELP YOU COMMUNICATE WITH HOTEL STAFF. YOUR COMFORT IMPORTANT.',
+    title: 'WELCOME!',
+    description: 'APP THIS YOU COMFORTABLE, WE MOST-IMPORTANT. APP THIS HELP YOU HOTEL STAFF COMMUNICATE FAST.',
     icon: 'hotel',
-    gif: require('../assets/gifs/ComidaGif.gif'), // Cambiar por GIF de "Bienvenida" en ASL
+    video: require('../assets/gifs/00001.mp4'),
   },
   {
     id: 2,
-    title: 'COMMUNICATION MODE CHOOSE',
-    description: 'ASL OR TEXT YOU CHOOSE. BOTH HELP YOU COMMUNICATE WITH STAFF.',
+    title: 'ASL, WRITE, WHICH?',
+    description: 'YOU CHOOSE. HOTEL STAFF COMMUNICATE.',
     icon: 'compare-arrows',
-    gif: require('../assets/gifs/ComidaGif.gif'), // Cambiar por GIF de "Elegir modo" en ASL
+    video: require('../assets/gifs/00002.mp4'),
   },
   {
     id: 3,
-    title: 'SERVICE REQUEST EASY',
-    description: 'ROOM SERVICE ORDER, HOUSEKEEPING REQUEST, PROBLEM REPORT, MORE.',
-    icon: 'room-service',
-    gif: require('../assets/gifs/ComidaGif.gif'), // Cambiar por GIF de "Servicios" en ASL
+    title: 'NEXT SCREEN,',
+    description: 'MODE YOU PREFER, CHOOSE.',
+    icon: 'compare-arrows',
+    video: require('../assets/gifs/00003.mp4'),
   },
   {
     id: 4,
-    title: 'START NOW',
-    description: 'NEXT SCREEN, YOUR PREFERRED MODE YOU CHOOSE.',
-    icon: 'check-circle',
-    gif: require('../assets/gifs/ComidaGif.gif'), // Cambiar por GIF de "Comenzar" en ASL
+    title: 'OUR HOTEL SERVICE ALL,',
+    description: 'YOU LEARN CAN.',
+    icon: 'room-service',
+    video: require('../assets/gifs/00004.mp4'),
   },
 ];
 
@@ -106,13 +107,9 @@ export default function OnboardingScreen() {
       <View style={styles.content}>
         {/* GIF/Icon area */}
         <View style={styles.iconContainer}>
-          {slide.gif ? (
+          {slide.video ? (
             <View style={[styles.gifContainer, { backgroundColor }]}>
-              <Image 
-                source={slide.gif}
-                style={styles.gif}
-                resizeMode="contain"
-              />
+              <ASLVideoPreview source={slide.video} style={styles.gif} />
             </View>
           ) : (
             <View style={[styles.iconCircle, { backgroundColor }]}>

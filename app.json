@@ -52,7 +52,8 @@
           "cameraPermission": "Allow $(PRODUCT_NAME) to access your camera for sign language video calls.",
           "microphonePermission": "Allow $(PRODUCT_NAME) to access your microphone for interpreter video calls."
         }
-      ]
+      ],
+      "expo-video"
     ],
     "experiments": {
       "typedRoutes": true,

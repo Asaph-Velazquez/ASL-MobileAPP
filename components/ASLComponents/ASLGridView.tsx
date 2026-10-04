@@ -10,13 +10,15 @@ export interface ASLOption {
     iconColor: string;
     bgColor: string; // Se mantiene para compatibilidad pero se usa como borderColor
     cameraText?: string;
+    mediaType?: 'gif' | 'video';
 }
 
 interface ASLGridViewProps {
     options: ASLOption[];
     onOptionPress: (option: ASLOption) => void;
-    onPreviewChange: (gifSource: any) => void;
+    onPreviewChange: (gifSource: any, mediaType: 'gif' | 'video') => void;
     defaultGif: any;
+    defaultMediaType?: 'gif' | 'video';
 }
 
 /**
@@ -27,7 +29,8 @@ export function ASLGridView({
     options, 
     onOptionPress, 
     onPreviewChange,
-    defaultGif 
+    defaultGif,
+    defaultMediaType = 'gif'
 }: ASLGridViewProps) {
     const cardBg = useThemeColor({}, 'card');
 
@@ -37,8 +40,8 @@ export function ASLGridView({
                 <TouchableOpacity 
                     key={index}
                     style={[styles.gridItem, { backgroundColor: cardBg }]}
-                    onPressIn={() => onPreviewChange(option.gifSource)}
-                    onPressOut={() => onPreviewChange(defaultGif)}
+                    onPressIn={() => onPreviewChange(option.gifSource, option.mediaType ?? 'gif')}
+                    onPressOut={() => onPreviewChange(defaultGif, defaultMediaType)}
                     onPress={() => onOptionPress(option)}
                     activeOpacity={0.7}
                 >
