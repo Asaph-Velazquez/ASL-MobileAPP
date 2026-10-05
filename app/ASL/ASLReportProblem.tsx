@@ -14,15 +14,17 @@ export default function ASLReportProblem(){
     const [cameraActive, setCameraActive] = useState(false);
     const [permission, requestPermission] = useCameraPermissions();
     const { sendPetition, isLoading } = usePetitionSender();
-    const [selectedGif, setSelectedGif] = useState<any>(require('../../assets/gifs/ComidaGif.gif'));
+    const [selectedGif, setSelectedGif] = useState<any>(require('../../assets/gifs/00018.mp4'));
+    const [selectedMediaType, setSelectedMediaType] = useState<'gif' | 'video'>('video');
     const [refreshing, setRefreshing] = useState(false);
     
-    const defaultGif = require('../../assets/gifs/ComidaGif.gif');
+    const defaultGif = require('../../assets/gifs/00018.mp4');
        
     const problemOptions: ASLOption[] = [
         {
             id: "AIR CONDITIONING",
-            gifSource: require('../../assets/gifs/ComidaGif.gif'),
+            gifSource: require('../../assets/gifs/00019.mp4'),
+            mediaType: 'video',
             icon: "ac-unit",
             iconType: "material",
             iconColor: "#2196F3",
@@ -31,7 +33,8 @@ export default function ASLReportProblem(){
         },
         {
             id: "PLUMBING",
-            gifSource: require('../../assets/gifs/ComidaGif.gif'),
+            gifSource: require('../../assets/gifs/00020.mp4'),
+            mediaType: 'video',
             icon: "plumbing",
             iconType: "material",
             iconColor: "#03A9F4",
@@ -40,7 +43,8 @@ export default function ASLReportProblem(){
         },
         {
             id: "ELECTRICITY",
-            gifSource: require('../../assets/gifs/ComidaGif.gif'),
+            gifSource: require('../../assets/gifs/00021.mp4'),
+            mediaType: 'video',
             icon: "bolt",
             iconType: "material",
             iconColor: "#FFC107",
@@ -49,7 +53,8 @@ export default function ASLReportProblem(){
         },
         {
             id: "HOUSEKEEPING",
-            gifSource: require('../../assets/gifs/ComidaGif.gif'),
+            gifSource: require('../../assets/gifs/00022.mp4'),
+            mediaType: 'video',
             icon: "cleaning-services",
             iconType: "material",
             iconColor: "#4CAF50",
@@ -58,7 +63,8 @@ export default function ASLReportProblem(){
         },
         {
             id: "FURNITURE",
-            gifSource: require('../../assets/gifs/ComidaGif.gif'),
+            gifSource: require('../../assets/gifs/00023.mp4'),
+            mediaType: 'video',
             icon: "weekend",
             iconType: "material",
             iconColor: "#795548",
@@ -67,7 +73,8 @@ export default function ASLReportProblem(){
         },
         {
             id: "TV / INTERNET",
-            gifSource: require('../../assets/gifs/ComidaGif.gif'),
+            gifSource: require('../../assets/gifs/00024.mp4'),
+            mediaType: 'video',
             icon: "wifi-off",
             iconType: "material",
             iconColor: "#9C27B0",
@@ -76,7 +83,8 @@ export default function ASLReportProblem(){
         },
         {
             id: "OTHER PROBLEM",
-            gifSource: require('../../assets/gifs/ComidaGif.gif'),
+            gifSource: require('../../assets/gifs/00025.mp4'),
+            mediaType: 'video',
             icon: "report-problem",
             iconType: "material",
             iconColor: "#F44336",
@@ -133,13 +141,17 @@ export default function ASLReportProblem(){
             }
         >
         <ThemedView style={commonStyles.container}>
-            <GifPreviewContainer gifSource={selectedGif} />
+            <GifPreviewContainer gifSource={selectedGif} mediaType={selectedMediaType} />
             
             <ASLGridView 
                 options={problemOptions}
                 onOptionPress={handlePress}
-                onPreviewChange={setSelectedGif}
+                onPreviewChange={(source, mediaType) => {
+                    setSelectedGif(source);
+                    setSelectedMediaType(mediaType);
+                }}
                 defaultGif={defaultGif}
+                defaultMediaType="video"
             />
 
             <ASLPetitionModal

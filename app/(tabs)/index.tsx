@@ -6,6 +6,7 @@ import { ThemedView } from '@/components/BothComponents/themed-view';
 import { useThemeColor } from '@/hooks/use-theme-color';
 import { useAuth } from '@/components/BothComponents/auth-provider';
 import { useWebSocket } from '@/components/BothComponents/websocket-provider';
+import { ASLVideoPreview } from '@/components/ASLComponents/ASLVideoPreview';
 export default function HomeScreen() {
   const scheme = useColorScheme();
   const isDark = scheme === 'dark';
@@ -13,16 +14,7 @@ export default function HomeScreen() {
   const mutedColor = useThemeColor({}, 'muted');
   const { guestName, roomNumber } = useAuth();
   const { reconectar, estaConectado } = useWebSocket();
-  const [selectedGif, setSelectedGif] = useState<any>(require('../../assets/gifs/ModASL.gif'));
   const [refreshing, setRefreshing] = useState(false);
-
-  // Función helper para manejar tanto URLs como rutas locales
-  const getImageSource = (source: any) => {
-    if (typeof source === 'string') {
-      return { uri: source };
-    }
-    return source;
-  };
 
   const onRefresh = async () => {
     setRefreshing(true);
@@ -86,11 +78,9 @@ export default function HomeScreen() {
             android_ripple={{ color: 'rgba(255,255,255,0.2)' }}
           >
             <View style={styles.cardContentLarge}>
-              {/* GIF de ASL */}
-              <Image 
-                source={getImageSource(require('../../assets/gifs/ModASL.gif'))}
+              <ASLVideoPreview
+                source={require('../../assets/gifs/00007.mp4')}
                 style={styles.gifImage}
-                resizeMode="contain"
               />
               <View style={styles.iconBadge}>
                 <MaterialCommunityIcons name="sign-language" size={32} color="#FFFFFF" />

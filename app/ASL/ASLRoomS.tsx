@@ -14,15 +14,17 @@ export default function ASLRoomS(){
     const [cameraActive, setCameraActive] = useState(false);
     const [permission, requestPermission] = useCameraPermissions();
     const { sendPetition, isLoading } = usePetitionSender();
-    const [selectedGif, setSelectedGif] = useState<any>(require('../../assets/gifs/ComidaGif.gif'));
+    const [selectedGif, setSelectedGif] = useState<any>(require('../../assets/gifs/00012.mp4'));
+    const [selectedMediaType, setSelectedMediaType] = useState<'gif' | 'video'>('video');
     const [refreshing, setRefreshing] = useState(false);
     
-    const defaultGif = require('../../assets/gifs/ComidaGif.gif');
+    const defaultGif = require('../../assets/gifs/00012.mp4');
     
     const opciones: ASLOption[] = [
         {
             id: "FOOD",
-            gifSource: require('../../assets/gifs/ComidaGif.gif'),
+            gifSource: require('../../assets/gifs/00013.mp4'),
+            mediaType: 'video',
             icon: "flatware",
             iconType: "material",
             iconColor: "#FF6B6B",
@@ -31,7 +33,8 @@ export default function ASLRoomS(){
         },
         {
             id: "AMENITIES",
-            gifSource: require('../../assets/gifs/ComidaGif.gif'),
+            gifSource: require('../../assets/gifs/00014.mp4'),
+            mediaType: 'video',
             icon: "sanitizer",
             iconType: "material",
             iconColor: "#4ECDC4",
@@ -40,7 +43,8 @@ export default function ASLRoomS(){
         },
         {
             id: "LINENS",
-            gifSource: require('../../assets/gifs/ComidaGif.gif'),
+            gifSource: require('../../assets/gifs/00015.mp4'),
+            mediaType: 'video',
             icon: "bed",
             iconType: "material",
             iconColor: "#95E1D3",
@@ -49,7 +53,8 @@ export default function ASLRoomS(){
         },
         {
             id: "COMFORT ITEMS",
-            gifSource: require('../../assets/gifs/ComidaGif.gif'),
+            gifSource: require('../../assets/gifs/00016.mp4'),
+            mediaType: 'video',
             icon: "self-improvement",
             iconType: "material",
             iconColor: "#A29BFE",
@@ -58,7 +63,8 @@ export default function ASLRoomS(){
         },
         {
             id: "EXTRA",
-            gifSource: require('../../assets/gifs/ComidaGif.gif'),
+            gifSource: require('../../assets/gifs/00017.mp4'),
+            mediaType: 'video',
             icon: "question-mark",
             iconType: "material",
             iconColor: "#FDCB6E",
@@ -114,13 +120,17 @@ export default function ASLRoomS(){
             }
         >
         <ThemedView style={commonStyles.container}>
-            <GifPreviewContainer gifSource={selectedGif} />
+            <GifPreviewContainer gifSource={selectedGif} mediaType={selectedMediaType} />
             
             <ASLGridView 
                 options={opciones}
                 onOptionPress={handlePress}
-                onPreviewChange={setSelectedGif}
+                onPreviewChange={(source, mediaType) => {
+                    setSelectedGif(source);
+                    setSelectedMediaType(mediaType);
+                }}
                 defaultGif={defaultGif}
+                defaultMediaType="video"
             />
 
             <ASLPetitionModal

@@ -6,18 +6,13 @@ import { MaterialCommunityIcons, MaterialIcons } from "@expo/vector-icons";
 import { useEffect, useRef, useState } from 'react';
 import { Image, Modal, Pressable, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
 import { SignCameraView } from './SignCameraView';
+import { ASLVideoPreview } from './ASLVideoPreview';
+import type { ASLOption } from './ASLGridView';
 
 interface ASLPetitionModalProps {
     visible: boolean;
     onClose: () => void;
-    selectedOption: {
-        id: string;
-        gifSource: any;
-        icon: string;
-        iconType: 'material' | 'community';
-        iconColor: string;
-        bgColor: string;
-    } | null;
+    selectedOption: ASLOption | null;
     cameraActive: boolean;
     onActivateCamera: () => void;
     onCloseCamera: () => void;
@@ -138,7 +133,7 @@ export function ASLPetitionModal({
         if (success && generation.current === sendGeneration) onCloseCamera();
     };
 
-    if (!selectedOption) return null;
+    if (!visible || !selectedOption) return null;
 
     return (
         <Modal
@@ -183,12 +178,18 @@ export function ASLPetitionModal({
                                 </View>
                             </View>
 
-                            {/* GIF de la petición del servicio seleccionado */}
-                            <Image 
-                                source={selectedOption.gifSource}
-                                style={styles.instructionGif}
-                                resizeMode="contain"
-                            />
+                            {selectedOption.mediaType === 'video' ? (
+                                <ASLVideoPreview
+                                    source={selectedOption.gifSource}
+                                    style={styles.instructionGif}
+                                />
+                            ) : (
+                                <Image
+                                    source={selectedOption.gifSource}
+                                    style={styles.instructionGif}
+                                    resizeMode="contain"
+                                />
+                            )}
                             {/* Botones */}
                             <View style={styles.buttonContainer}>
                                 <TouchableOpacity 

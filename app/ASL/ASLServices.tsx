@@ -1,20 +1,30 @@
 import { ThemedView } from "@/components/BothComponents/themed-view";
 import { ASLCardIcon } from '@/components/ASLComponents/ASLCardIcon';
+import { ASLVideoPreview } from '@/components/ASLComponents/ASLVideoPreview';
 import { useThemeColor } from '@/hooks/use-theme-color';
 import { commonStyles } from '@/styles/common';
 import { MaterialCommunityIcons, MaterialIcons } from "@expo/vector-icons";
 import { useState } from "react";
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Image, Modal, Pressable, ScrollView, RefreshControl, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { Image, Modal, Pressable, ScrollView, RefreshControl, StyleSheet, Text, TouchableOpacity, useWindowDimensions, View } from "react-native";
+
+type ServiceDetail = 'horarioGif' | 'ubicacionGif' | 'incluyeGif' | 'notaGif';
 
 export default function ASLServices(){
     const insets = useSafeAreaInsets();
+    const { width, height } = useWindowDimensions();
+    const modalVideoHeight = Math.min(Math.max(width - 80, 0), (height - insets.top - insets.bottom) * 0.55, 420);
     const cardBg = useThemeColor({}, 'card');
     const backgroundColor = useThemeColor({}, 'background');
+    const textColor = useThemeColor({}, 'text');
     const [modalVisible, setModalVisible] = useState(false);
     const [selectedService, setSelectedService] = useState<any>(null);
-    const [selectedGif, setSelectedGif] = useState<any>(require('../../assets/gifs/ComidaGif.gif'));
+    const [selectedGif, setSelectedGif] = useState<any>(require('../../assets/gifs/00006.mp4'));
+    const [selectedMediaType, setSelectedMediaType] = useState<'gif' | 'video'>('video');
     const [modalGif, setModalGif] = useState<any>(null);
+    const [modalMediaType, setModalMediaType] = useState<'gif' | 'video'>('video');
+    const [selectedDetail, setSelectedDetail] = useState<ServiceDetail | null>(null);
+    const [replayToken, setReplayToken] = useState(0);
     const [refreshing, setRefreshing] = useState(false);
     
     // Función helper para manejar tanto URLs como rutas locales
@@ -28,67 +38,79 @@ export default function ASLServices(){
     const ServiceOptions =[{
         id: "Desayuno incluido",
         // GIF de "Desayuno incluido" en ASL
-        gifUrl: require('../../assets/gifs/ComidaGif.gif'),
+        gifUrl: require('../../assets/gifs/00008.mp4'),
+        mediaType: 'video' as const,
         icon: "food-bank",
         iconType: "material" as const,
         iconColor: "#FF9800",
         bgColor: "#FFF3E0",
         detalles: {
             // GIF de horario en ASL
-            horarioGif: require('../../assets/gifs/ComidaGif.gif'),
+            horarioGif: require('../../assets/gifs/00008.mp4'),
             // GIF de ubicación en ASL
-            ubicacionGif: require('../../assets/gifs/ComidaGif.gif'),
-            // GIF de lo que incluye en ASL
-            incluyeGif: require('../../assets/gifs/ComidaGif.gif'),
-            // GIF de nota en ASL
-            notaGif: require('../../assets/gifs/ComidaGif.gif')
+            ubicacionGif: require('../../assets/gifs/00008.mp4'),
+            incluyeGif: null,
+            notaGif: null
         }
         },{
         id: "Alberca",
-        gifUrl: require('../../assets/gifs/ComidaGif.gif'),
+        gifUrl: require('../../assets/gifs/00009.mp4'),
+        mediaType: 'video' as const,
         icon: "pool",
         iconType: "material" as const,
         iconColor: "#00BCD4",
         bgColor: "#E0F7FA",
         detalles: {
-            horarioGif: require('../../assets/gifs/ComidaGif.gif'),
-            ubicacionGif: require('../../assets/gifs/ComidaGif.gif'),
-            incluyeGif: require('../../assets/gifs/ComidaGif.gif'),
-            notaGif: require('../../assets/gifs/ComidaGif.gif')
+            horarioGif: require('../../assets/gifs/00009.mp4'),
+            ubicacionGif: require('../../assets/gifs/00009.mp4'),
+            incluyeGif: null,
+            notaGif: null
         }
         },{
         id: "Gimnasio",
-        gifUrl: require('../../assets/gifs/ComidaGif.gif'),
+        gifUrl: require('../../assets/gifs/00010.mp4'),
+        mediaType: 'video' as const,
         icon: "fitness-center",
         iconType: "material" as const,
         iconColor: "#F44336",
         bgColor: "#FFEBEE",
         detalles: {
-            horarioGif: require('../../assets/gifs/ComidaGif.gif'),
-            ubicacionGif: require('../../assets/gifs/ComidaGif.gif'),
-            incluyeGif: require('../../assets/gifs/ComidaGif.gif'),
-            notaGif: require('../../assets/gifs/ComidaGif.gif')
+            horarioGif: require('../../assets/gifs/00010.mp4'),
+            ubicacionGif: require('../../assets/gifs/00010.mp4'),
+            incluyeGif: null,
+            notaGif: null
         }
         },
         {
         id: "Spa",
-        gifUrl: require('../../assets/gifs/ComidaGif.gif'),
+        gifUrl: require('../../assets/gifs/00011.mp4'),
+        mediaType: 'video' as const,
         icon: "spa",
         iconType: "material" as const,
         iconColor: "#9C27B0",
         bgColor: "#F3E5F5",
         detalles: {
-            horarioGif: require('../../assets/gifs/ComidaGif.gif'),
-            ubicacionGif: require('../../assets/gifs/ComidaGif.gif'),
-            incluyeGif: require('../../assets/gifs/ComidaGif.gif'),
-            notaGif: require('../../assets/gifs/ComidaGif.gif')
+            horarioGif: require('../../assets/gifs/00011.mp4'),
+            ubicacionGif: require('../../assets/gifs/00011.mp4'),
+            incluyeGif: null,
+            notaGif: null
         }
     }];
 
     const handlePress = (opcion: any) => {
         setSelectedService(opcion);
-        setModalGif(opcion.gifUrl); // Iniciar con el GIF del servicio
+        setModalGif(opcion.gifUrl);
+        setModalMediaType(opcion.mediaType ?? 'gif');
+        setSelectedDetail(null);
+        setReplayToken(0);
         setModalVisible(true);
+    };
+
+    const showDetail = (detail: ServiceDetail) => {
+        setSelectedDetail(detail);
+        setModalGif(selectedService.detalles[detail]);
+        setModalMediaType(selectedService.mediaType ?? 'gif');
+        setReplayToken(current => current + 1);
     };
 
     const onRefresh = async () => {
@@ -119,11 +141,9 @@ export default function ASLServices(){
         <ThemedView style={commonStyles.container}>
             {/* Área de visualización del GIF grande */}
             <View style={styles.gifPreviewContainer}>
-                <Image 
-                    source={getImageSource(selectedGif)}
-                    style={styles.gifPreview}
-                    resizeMode="contain"
-                />
+                {selectedMediaType === 'video' ? <ASLVideoPreview source={selectedGif} style={styles.gifPreview} /> : <Image
+                    source={getImageSource(selectedGif)} style={styles.gifPreview} resizeMode="contain"
+                />}
             </View>
             
             {/* Cuadrícula de opciones */}
@@ -132,8 +152,8 @@ export default function ASLServices(){
                     <TouchableOpacity 
                         key={index}
                         style={[styles.gridItem, { backgroundColor: cardBg }]}
-                        onPressIn={() => setSelectedGif(opcion.gifUrl)}
-                        onPressOut={() => setSelectedGif(require('../../assets/gifs/ComidaGif.gif'))}
+                        onPressIn={() => { setSelectedGif(opcion.gifUrl); setSelectedMediaType(opcion.mediaType ?? 'gif'); }}
+                        onPressOut={() => { setSelectedGif(require('../../assets/gifs/00006.mp4')); setSelectedMediaType('video'); }}
                         onPress={() => handlePress(opcion)}
                         activeOpacity={0.7}
                     >
@@ -156,7 +176,7 @@ export default function ASLServices(){
                     <View
                         style={[styles.modalContent, { backgroundColor: cardBg }]}
                     >
-                        {selectedService && (
+                        {modalVisible && selectedService && (
                             <ScrollView style={styles.modalScroll} contentContainerStyle={styles.modalInner} nestedScrollEnabled>
                                 {/* Header del modal */}
                                 <View style={styles.modalHeader}>
@@ -177,22 +197,36 @@ export default function ASLServices(){
                                     </View>
                                 </View>
 
-                                {/* Área de visualización del GIF grande */}
                                 <View style={styles.modalGifContainer}>
-                                    <Image 
-                                        source={getImageSource(modalGif)}
-                                        style={styles.modalGifPreview}
-                                        resizeMode="contain"
-                                    />
+                                    {modalGif == null ? (
+                                        <View style={[styles.unavailableVideo, { height: modalVideoHeight }]}>
+                                            <MaterialIcons name="videocam-off" size={48} color={textColor} />
+                                            <Text style={[styles.unavailableText, { color: textColor }]}>ASL VIDEO NOT AVAILABLE</Text>
+                                        </View>
+                                    ) : modalMediaType === 'video' ? (
+                                        <ASLVideoPreview
+                                            source={modalGif}
+                                            replayToken={replayToken}
+                                            style={[styles.modalGifPreview, { height: modalVideoHeight }]}
+                                        />
+                                    ) : (
+                                        <Image
+                                            source={getImageSource(modalGif)}
+                                            style={[styles.modalGifPreview, { height: modalVideoHeight }]}
+                                            resizeMode="contain"
+                                        />
+                                    )}
                                 </View>
 
                                 {/* Cuadrícula de detalles */}
                                 <View style={styles.modalGridContainer}>
                                     {/* Horario */}
                                     <TouchableOpacity 
-                                        style={[styles.modalGridItem, { backgroundColor: selectedService.bgColor }]}
-                                        onPressIn={() => setModalGif(selectedService.detalles.horarioGif)}
-                                        onPressOut={() => setModalGif(selectedService.gifUrl)}
+                                        style={[styles.modalGridItem, { backgroundColor: selectedService.bgColor, borderColor: selectedDetail === 'horarioGif' ? selectedService.iconColor : 'transparent' }]}
+                                        onPress={() => showDetail('horarioGif')}
+                                        accessibilityLabel="SCHEDULE"
+                                        accessibilityRole="button"
+                                        accessibilityState={{ selected: selectedDetail === 'horarioGif' }}
                                         activeOpacity={0.7}
                                     >
                                         <ASLCardIcon name="schedule" type="material" color={selectedService.iconColor} />
@@ -200,9 +234,11 @@ export default function ASLServices(){
 
                                     {/* Ubicación */}
                                     <TouchableOpacity 
-                                        style={[styles.modalGridItem, { backgroundColor: selectedService.bgColor }]}
-                                        onPressIn={() => setModalGif(selectedService.detalles.ubicacionGif)}
-                                        onPressOut={() => setModalGif(selectedService.gifUrl)}
+                                        style={[styles.modalGridItem, { backgroundColor: selectedService.bgColor, borderColor: selectedDetail === 'ubicacionGif' ? selectedService.iconColor : 'transparent' }]}
+                                        onPress={() => showDetail('ubicacionGif')}
+                                        accessibilityLabel="LOCATION"
+                                        accessibilityRole="button"
+                                        accessibilityState={{ selected: selectedDetail === 'ubicacionGif' }}
                                         activeOpacity={0.7}
                                     >
                                         <ASLCardIcon name="location-on" type="material" color={selectedService.iconColor} />
@@ -210,9 +246,11 @@ export default function ASLServices(){
 
                                     {/* Incluye */}
                                     <TouchableOpacity 
-                                        style={[styles.modalGridItem, { backgroundColor: selectedService.bgColor }]}
-                                        onPressIn={() => setModalGif(selectedService.detalles.incluyeGif)}
-                                        onPressOut={() => setModalGif(selectedService.gifUrl)}
+                                        style={[styles.modalGridItem, { backgroundColor: selectedService.bgColor, borderColor: selectedDetail === 'incluyeGif' ? selectedService.iconColor : 'transparent' }]}
+                                        onPress={() => showDetail('incluyeGif')}
+                                        accessibilityLabel="INCLUDED"
+                                        accessibilityRole="button"
+                                        accessibilityState={{ selected: selectedDetail === 'incluyeGif' }}
                                         activeOpacity={0.7}
                                     >
                                         <ASLCardIcon name="check-circle" type="material" color={selectedService.iconColor} />
@@ -220,9 +258,11 @@ export default function ASLServices(){
 
                                     {/* Nota */}
                                     <TouchableOpacity 
-                                        style={[styles.modalGridItem, { backgroundColor: selectedService.bgColor }]}
-                                        onPressIn={() => setModalGif(selectedService.detalles.notaGif)}
-                                        onPressOut={() => setModalGif(selectedService.gifUrl)}
+                                        style={[styles.modalGridItem, { backgroundColor: selectedService.bgColor, borderColor: selectedDetail === 'notaGif' ? selectedService.iconColor : 'transparent' }]}
+                                        onPress={() => showDetail('notaGif')}
+                                        accessibilityLabel="NOTES"
+                                        accessibilityRole="button"
+                                        accessibilityState={{ selected: selectedDetail === 'notaGif' }}
                                         activeOpacity={0.7}
                                     >
                                         <ASLCardIcon name="info" type="material" color={selectedService.iconColor} />
@@ -316,7 +356,7 @@ const styles = StyleSheet.create({
         borderRadius: 20,
         padding: 20,
         width: '100%',
-        maxWidth: 500,
+        maxWidth: 640,
         maxHeight: '100%',
         shadowColor: "#000",
         shadowOffset: {
@@ -344,15 +384,20 @@ const styles = StyleSheet.create({
     },
     modalGifContainer: {
         borderRadius: 16,
-        padding: 12,
-        minHeight: 160,
+        overflow: 'hidden',
         justifyContent: 'center',
         alignItems: 'center',
     },
     modalGifPreview: {
         width: '100%',
-        height: 160,
     },
+    unavailableVideo: {
+        width: '100%',
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: 12,
+    },
+    unavailableText: { fontSize: 16, textAlign: 'center', fontWeight: '600' },
     modalGridContainer: {
         flexDirection: 'row',
         flexWrap: 'wrap',
@@ -365,6 +410,7 @@ const styles = StyleSheet.create({
         aspectRatio: 1,
         borderRadius: 12,
         padding: 8,
+        borderWidth: 2,
         justifyContent: 'center',
         alignItems: 'center',
     },
