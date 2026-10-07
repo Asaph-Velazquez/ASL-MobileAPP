@@ -12,7 +12,8 @@
     "typecheck": "tsc --noEmit",
     "test:call": "node --test tests/callMedia.test.cjs tests/callLayout.test.cjs tests/callHistory.test.cjs tests/remoteStream.test.cjs",
     "test:transport": "node --test tests/transport.test.cjs tests/transportSocket.test.cjs",
-    "test:asl": "node --test tests/signSequence.test.cjs tests/aslRecognition.test.cjs"
+    "test:asl": "node --test tests/signSequence.test.cjs tests/aslRecognition.test.cjs",
+    "test:video": "node --test tests/videoSession.test.cjs"
   },
   "dependencies": {
     "@config-plugins/react-native-webrtc": "^13.0.0",

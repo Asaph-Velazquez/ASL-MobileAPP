@@ -1,13 +1,12 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Dimensions } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, useWindowDimensions } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { MaterialIcons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { useAuth } from '@/components/BothComponents/auth-provider';
 import { useThemeColor } from '@/hooks/use-theme-color';
 import { ThemedView } from '@/components/BothComponents/themed-view';
 import { ASLVideoPreview } from '@/components/ASLComponents/ASLVideoPreview';
-
-const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
 interface OnboardingSlide {
   id: number;
@@ -49,6 +48,10 @@ const slides: OnboardingSlide[] = [
 ];
 
 export default function OnboardingScreen() {
+  const { width, height } = useWindowDimensions();
+  const insets = useSafeAreaInsets();
+  const videoWidth = Math.max(Math.min(width - 40, 560), 0);
+  const videoHeight = Math.min(videoWidth * 0.75, (height - insets.top - insets.bottom) * 0.5, 400);
   const [currentSlide, setCurrentSlide] = useState(0);
   const { roomNumber, isOffline } = useAuth();
   const textColor = useThemeColor({}, 'text');
@@ -104,11 +107,11 @@ export default function OnboardingScreen() {
       </View>
 
       {/* Content */}
-      <View style={styles.content}>
+      <ScrollView contentContainerStyle={[styles.content, { paddingTop: Math.max(120, insets.top + 88), paddingBottom: Math.max(32, insets.bottom + 16) }]}>
         {/* GIF/Icon area */}
         <View style={styles.iconContainer}>
           {slide.video ? (
-            <View style={[styles.gifContainer, { backgroundColor }]}>
+            <View style={[styles.gifContainer, { backgroundColor, width: videoWidth, height: videoHeight }]}>
               <ASLVideoPreview source={slide.video} style={styles.gif} />
             </View>
           ) : (
@@ -162,7 +165,7 @@ export default function OnboardingScreen() {
             <MaterialIcons name="arrow-forward" size={24} color="#FFFFFF" />
           </TouchableOpacity>
         </View>
-      </View>
+      </ScrollView>
     </ThemedView>
   );
 }
@@ -224,22 +227,18 @@ const styles = StyleSheet.create({
     color: '#FFA000',
   },
   content: {
-    flex: 1,
+    flexGrow: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    paddingHorizontal: 40,
-    paddingTop: 40,
+    paddingHorizontal: 20,
   },
   iconContainer: {
     marginBottom: 30,
   },
   gifContainer: {
-    width: 280,
-    height: 240,
     borderRadius: 20,
     justifyContent: 'center',
     alignItems: 'center',
-    padding: 20,
     shadowColor: '#000',
     shadowOffset: {
       width: 0,
@@ -282,7 +281,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     textAlign: 'center',
     lineHeight: 24,
-    maxWidth: SCREEN_WIDTH * 0.8,
+    maxWidth: 560,
   },
   pagination: {
     flexDirection: 'row',
@@ -295,6 +294,7 @@ const styles = StyleSheet.create({
   },
   navigationContainer: {
     flexDirection: 'row',
+    flexWrap: 'wrap',
     alignItems: 'center',
     justifyContent: 'center',
     gap: 16,

@@ -4,7 +4,8 @@ import { appendRecognizedSign, MIN_SIGN_CONFIDENCE, predictSign } from '@/servic
 import { SignSequenceCollector } from '@/services/signSequence';
 import { MaterialCommunityIcons, MaterialIcons } from "@expo/vector-icons";
 import { useEffect, useRef, useState } from 'react';
-import { Image, Modal, Pressable, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
+import { Image, Modal, Pressable, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, useWindowDimensions, View } from "react-native";
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { SignCameraView } from './SignCameraView';
 import { ASLVideoPreview } from './ASLVideoPreview';
 import type { ASLOption } from './ASLGridView';
@@ -32,6 +33,12 @@ export function ASLPetitionModal({
     onSend,
     isSending = false,
 }: ASLPetitionModalProps) {
+    const { width, height } = useWindowDimensions();
+    const insets = useSafeAreaInsets();
+    const modalVideoWidth = Math.max(Math.min(width - 40, 640) - 32, 0);
+    const availableHeight = Math.max(height - Math.max(20, insets.top) - Math.max(20, insets.bottom), 0);
+    const modalVideoHeight = Math.min(modalVideoWidth, availableHeight * 0.5, 360);
+    const modalHeight = Math.min(availableHeight * 0.9, cameraActive ? 820 : modalVideoHeight + 328);
     const textColor = useThemeColor({}, 'text');
     const backgroundColor = useThemeColor({}, 'background');
     const { token } = useAuth();
@@ -142,16 +149,15 @@ export function ASLPetitionModal({
             visible={visible}
             onRequestClose={onClose}
         >
-            <Pressable 
-                style={styles.modalOverlay}
-                onPress={onClose}
+            <View
+                style={[styles.modalOverlay, { paddingTop: Math.max(20, insets.top), paddingBottom: Math.max(20, insets.bottom) }]}
             >
-                <Pressable 
-                    style={[styles.modalContent, { backgroundColor: backgroundColor }]}
-                    onPress={(e) => e.stopPropagation()}
+                <Pressable style={StyleSheet.absoluteFill} onPress={onClose} accessibilityLabel="CLOSE" />
+                <View
+                    style={[styles.modalContent, { backgroundColor, height: modalHeight }]}
                 >
                     {!cameraActive ? (
-                        <View style={styles.modalInner}>
+                        <ScrollView style={styles.instructionScroll} contentContainerStyle={styles.modalInner} nestedScrollEnabled>
                             {/* Header del modal */}
                             <View style={styles.modalHeader}>
                                 <View style={[
@@ -179,10 +185,12 @@ export function ASLPetitionModal({
                             </View>
 
                             {selectedOption.mediaType === 'video' ? (
-                                <ASLVideoPreview
-                                    source={selectedOption.gifSource}
-                                    style={styles.instructionGif}
-                                />
+                                <View pointerEvents="none" style={[styles.instructionGif, { height: modalVideoHeight }]}>
+                                    <ASLVideoPreview
+                                        source={selectedOption.gifSource}
+                                        style={styles.instructionVideo}
+                                    />
+                                </View>
                             ) : (
                                 <Image
                                     source={selectedOption.gifSource}
@@ -207,9 +215,9 @@ export function ASLPetitionModal({
                                     <MaterialIcons name="close" size={24} color={textColor} />
                                 </TouchableOpacity>
                             </View>
-                        </View>
+                        </ScrollView>
                     ) : (
-                        <ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={styles.form}>
+                        <ScrollView style={styles.instructionScroll} nestedScrollEnabled keyboardShouldPersistTaps="handled" contentContainerStyle={styles.form}>
                             <View style={styles.heading}>
                                 <Text style={[styles.cameraText, { color: textColor }]}>{cameraText}</Text>
                                 <TouchableOpacity onPress={onCloseCamera}>
@@ -252,8 +260,8 @@ export function ASLPetitionModal({
                             </TouchableOpacity>
                         </ScrollView>
                     )}
-                </Pressable>
-            </Pressable>
+                </View>
+            </View>
         </Modal>
     );
 }
@@ -268,9 +276,9 @@ const styles = StyleSheet.create({
     },
     modalContent: {
         borderRadius: 20,
-        padding: 24,
+        padding: 16,
         width: '100%',
-        maxWidth: 500,
+        maxWidth: 640,
         maxHeight: '90%',
         shadowColor: "#000",
         shadowOffset: {
@@ -284,6 +292,7 @@ const styles = StyleSheet.create({
     modalInner: {
         gap: 20,
     },
+    instructionScroll: { flex: 1, minHeight: 0 },
     modalHeader: {
         alignItems: 'center',
         marginBottom: 12,
@@ -300,6 +309,7 @@ const styles = StyleSheet.create({
         width: '100%',
         height: 200,
     },
+    instructionVideo: { width: '100%', height: '100%' },
     buttonContainer: {
         gap: 12,
         marginTop: 8,

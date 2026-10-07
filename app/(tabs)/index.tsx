@@ -67,6 +67,8 @@ export default function HomeScreen() {
           {/* Botón ASL */}
           <Pressable
             onPress={() => router.push('/ASL/ASLHome')}
+            accessibilityRole="button"
+            accessibilityLabel="ASL MODE"
             style={({ pressed }) => [
               styles.card,
               styles.aslCard,
@@ -77,7 +79,7 @@ export default function HomeScreen() {
             ]}
             android_ripple={{ color: 'rgba(255,255,255,0.2)' }}
           >
-            <View style={styles.cardContentLarge}>
+            <View style={styles.cardContentLarge} pointerEvents="none">
               <ASLVideoPreview
                 source={require('../../assets/gifs/00007.mp4')}
                 style={styles.gifImage}

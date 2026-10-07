@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
 import { Platform, StyleSheet, View } from 'react-native';
-import { useVideoPlayer, VideoView } from 'expo-video';
-import type { VideoViewProps } from 'expo-video';
+import { createVideoPlayer, useVideoPlayer, VideoView } from 'expo-video';
+import type { VideoPlayer, VideoViewProps } from 'expo-video';
+import { createVideoSession } from '@/services/videoSession';
 
 type ASLVideoPreviewProps = Pick<VideoViewProps, 'style' | 'contentFit'> & {
   source: number;
@@ -9,22 +10,66 @@ type ASLVideoPreviewProps = Pick<VideoViewProps, 'style' | 'contentFit'> & {
 };
 
 export function ASLVideoPreview(props: ASLVideoPreviewProps) {
-  // Keep the native view and its player in the same lifetime when the asset changes.
-  return <ASLVideoInstance key={props.source} {...props} />;
+  return Platform.OS === 'web'
+    ? <ASLVideoInstance key={props.source} {...props} />
+    : <NativeASLVideoInstance {...props} />;
+}
+
+type VideoSession = ReturnType<typeof createVideoSession<VideoPlayer>>;
+
+function NativeASLVideoInstance({ source, style, contentFit, replayToken }: ASLVideoPreviewProps) {
+  const [session, setSession] = useState<VideoSession | null>(null);
+  const [loadFailed, setLoadFailed] = useState(false);
+
+  useEffect(() => {
+    const player = createVideoPlayer(null);
+    player.loop = true;
+    player.muted = true;
+    const owned = createVideoSession(player);
+    setSession(owned);
+    return () => owned.dispose();
+  }, []);
+
+  useEffect(() => {
+    if (!session?.active) return;
+    let current = true;
+    setLoadFailed(false);
+    void session.load(source).then(loaded => {
+      if (current && loaded && session.ready) session.player.play();
+    }).catch(() => {
+      if (current && session.active) setLoadFailed(true);
+    });
+    return () => { current = false; };
+  }, [session, source]);
+
+  if (!session?.active) return <View style={[style, styles.frame]} />;
+  return <ASLVideoSurface player={session.player} session={session} style={style}
+    contentFit={contentFit} replayToken={replayToken} loadFailed={loadFailed} />;
 }
 
 function ASLVideoInstance({ source, style, contentFit = 'contain', replayToken = 0 }: ASLVideoPreviewProps) {
-  const viewRef = useRef<VideoView>(null);
-  const [needsControls, setNeedsControls] = useState(false);
   const player = useVideoPlayer(source, (videoPlayer) => {
     videoPlayer.loop = true;
     videoPlayer.muted = true;
   });
 
+  return <ASLVideoSurface player={player} style={style} contentFit={contentFit} replayToken={replayToken} />;
+}
+
+type ASLVideoSurfaceProps = Pick<ASLVideoPreviewProps, 'style' | 'contentFit' | 'replayToken'> & {
+  player: ReturnType<typeof useVideoPlayer>;
+  session?: VideoSession;
+  loadFailed?: boolean;
+};
+
+function ASLVideoSurface({ player, session, style, contentFit = 'contain', replayToken = 0, loadFailed = false }: ASLVideoSurfaceProps) {
+  const viewRef = useRef<VideoView>(null);
+  const [needsControls, setNeedsControls] = useState(false);
+
   useEffect(() => {
     let disposed = false;
     const play = () => {
-      if (disposed) return;
+      if (disposed || (session && !session.ready)) return;
       if (Platform.OS !== 'web') {
         player.play();
         return;
@@ -46,11 +91,12 @@ function ASLVideoInstance({ source, style, contentFit = 'contain', replayToken =
       if (status === 'readyToPlay') play();
     });
     const endSubscription = player.addListener('playToEnd', () => {
+      if (disposed || (session && !session.ready)) return;
       player.currentTime = 0;
       play();
     });
 
-    if (replayToken > 0) player.currentTime = 0;
+    if (replayToken > 0 && (!session || session.ready)) player.currentTime = 0;
     play();
 
     return () => {
@@ -58,18 +104,21 @@ function ASLVideoInstance({ source, style, contentFit = 'contain', replayToken =
       statusSubscription.remove();
       endSubscription.remove();
     };
-  }, [player, replayToken]);
+  }, [player, replayToken, session]);
 
   return (
     <View style={[style, styles.frame]}>
       <VideoView
-        ref={viewRef}
+        ref={view => {
+          viewRef.current = view;
+          session?.setAttached(view !== null);
+        }}
         player={player}
         style={[styles.video, styles.frame]}
         contentFit={contentFit}
         // TextureView participates in rounded clipping on Android.
         surfaceType="textureView"
-        nativeControls={needsControls}
+        nativeControls={needsControls || loadFailed}
         playsInline
       />
     </View>

@@ -13,7 +13,10 @@ type ServiceDetail = 'horarioGif' | 'ubicacionGif' | 'incluyeGif' | 'notaGif';
 export default function ASLServices(){
     const insets = useSafeAreaInsets();
     const { width, height } = useWindowDimensions();
-    const modalVideoHeight = Math.min(Math.max(width - 80, 0), (height - insets.top - insets.bottom) * 0.55, 420);
+    const modalVideoWidth = Math.max(Math.min(width - 40, 640) - 32, 0);
+    const availableHeight = Math.max(height - Math.max(20, insets.top) - Math.max(20, insets.bottom), 0);
+    const modalVideoHeight = Math.min(modalVideoWidth, availableHeight * 0.5, 360);
+    const modalHeight = Math.min(availableHeight * 0.9, modalVideoHeight + 560);
     const cardBg = useThemeColor({}, 'card');
     const backgroundColor = useThemeColor({}, 'background');
     const textColor = useThemeColor({}, 'text');
@@ -174,7 +177,7 @@ export default function ASLServices(){
                 >
                     <Pressable style={StyleSheet.absoluteFill} onPress={() => setModalVisible(false)} accessibilityLabel="Close service details" />
                     <View
-                        style={[styles.modalContent, { backgroundColor: cardBg }]}
+                        style={[styles.modalContent, { backgroundColor: cardBg, height: modalHeight }]}
                     >
                         {modalVisible && selectedService && (
                             <ScrollView style={styles.modalScroll} contentContainerStyle={styles.modalInner} nestedScrollEnabled>
@@ -197,7 +200,7 @@ export default function ASLServices(){
                                     </View>
                                 </View>
 
-                                <View style={styles.modalGifContainer}>
+                                <View style={styles.modalGifContainer} pointerEvents="none">
                                     {modalGif == null ? (
                                         <View style={[styles.unavailableVideo, { height: modalVideoHeight }]}>
                                             <MaterialIcons name="videocam-off" size={48} color={textColor} />
@@ -354,7 +357,7 @@ const styles = StyleSheet.create({
     },
     modalContent: {
         borderRadius: 20,
-        padding: 20,
+        padding: 16,
         width: '100%',
         maxWidth: 640,
         maxHeight: '100%',
@@ -367,7 +370,7 @@ const styles = StyleSheet.create({
         shadowRadius: 4,
         elevation: 5,
     },
-    modalScroll: { flexShrink: 1, minHeight: 0 },
+    modalScroll: { flex: 1, minHeight: 0 },
     modalInner: {
         gap: 16,
     },
