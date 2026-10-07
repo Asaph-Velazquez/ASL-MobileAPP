@@ -1,24 +1,35 @@
 import { useThemeColor } from '@/hooks/use-theme-color';
+import { ASLVideoPreview } from '@/components/ASLComponents/ASLVideoPreview';
 import { MaterialIcons } from "@expo/vector-icons";
-import { Image, Modal, Pressable, StyleSheet, TouchableOpacity, View } from "react-native";
+import { Image, Modal, Pressable, ScrollView, StyleSheet, TouchableOpacity, useWindowDimensions, View } from "react-native";
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 interface CallModalProps {
     visible: boolean;
     onClose: () => void;
     onMakeCall: () => void;
     gifSource?: any;
+    videoSource?: number;
 }
 
 export function CallModal({
     visible,
     onClose,
     onMakeCall,
-    gifSource = require('../../assets/gifs/ComidaGif.gif'), // GIF por defecto, cambiar por el de llamada
+    gifSource,
+    videoSource = require('../../assets/gifs/00026.mp4'),
 }: CallModalProps) {
+    const { width, height } = useWindowDimensions();
+    const insets = useSafeAreaInsets();
+    const mediaWidth = Math.max(Math.min(width - 40, 640) - 32, 0);
+    const availableHeight = Math.max(height - Math.max(20, insets.top) - Math.max(20, insets.bottom), 0);
+    const mediaHeight = Math.min(mediaWidth, availableHeight * 0.5, 360);
+    const modalHeight = Math.min(availableHeight * 0.9, mediaHeight + 240);
     const backgroundColor = useThemeColor({}, 'background');
     const textColor = useThemeColor({}, 'text');
-    const cardColor = useThemeColor({}, 'card');
-    const tintColor = useThemeColor({}, 'tint');
+    const iconColor = useThemeColor({ light: '#21864B', dark: '#81C784' }, 'tint');
+
+    if (!visible) return null;
 
     return (
         <Modal
@@ -27,47 +38,47 @@ export function CallModal({
             visible={visible}
             onRequestClose={onClose}
         >
-            <Pressable
-                style={styles.modalOverlay}
-                onPress={onClose}
+            <View
+                style={[styles.modalOverlay, { paddingTop: Math.max(20, insets.top), paddingBottom: Math.max(20, insets.bottom) }]}
             >
-                <Pressable
-                    style={[styles.modalContent, { backgroundColor: backgroundColor }]}
-                    onPress={(e) => e.stopPropagation()}
+                <Pressable style={StyleSheet.absoluteFill} onPress={onClose} accessibilityLabel="CLOSE" />
+                <View
+                    style={[styles.modalContent, { backgroundColor, height: modalHeight }]}
                 >
-                    <View style={styles.modalInner}>
+                    <ScrollView style={styles.modalScroll} contentContainerStyle={styles.modalInner} nestedScrollEnabled>
                         {/* Header del modal */}
                         <View style={styles.modalHeader}>
-                            <View style={[styles.modalIcon, { backgroundColor: tintColor }]}>
+                            <View style={[styles.modalIcon, { backgroundColor, borderColor: iconColor, borderWidth: 2 }]}>
                                 <MaterialIcons
                                     name="phone"
                                     size={48}
-                                    color="#FFFFFF"
+                                    color={iconColor}
                                 />
                             </View>
                         </View>
 
-                        {/* GIF de instrucción para llamada en ASL */}
-                        <Image
-                            source={gifSource}
-                            style={styles.instructionGif}
-                            resizeMode="contain"
-                        />
+                        <View pointerEvents="none" style={[styles.instructionMedia, { height: mediaHeight }]}>
+                            {gifSource ? (
+                                <Image source={gifSource} style={styles.media} resizeMode="contain" />
+                            ) : (
+                                <ASLVideoPreview source={videoSource} style={styles.media} />
+                            )}
+                        </View>
 
                         {/* Botones */}
                         <View style={styles.buttonContainer}>
                             <TouchableOpacity
-                                style={[styles.actionButton, { backgroundColor: tintColor }]}
+                                style={[styles.actionButton, { backgroundColor: '#21864B' }]}
                                 accessibilityRole="button"
                                 accessibilityLabel="Start video call"
                                 onPress={onMakeCall}
                                 activeOpacity={0.8}
                             >
-                            <MaterialIcons name="phone" size={24} color="#FFFFFF" />
+                                <MaterialIcons name="phone" size={24} color="#FFFFFF" />
                             </TouchableOpacity>
 
                             <TouchableOpacity
-                                style={[styles.cancelButton, { backgroundColor: cardColor, borderColor: textColor }]}
+                                style={[styles.cancelButton, { backgroundColor, borderColor: textColor }]}
                                 accessibilityRole="button"
                                 accessibilityLabel="Cancel"
                                 onPress={onClose}
@@ -76,9 +87,9 @@ export function CallModal({
                                 <MaterialIcons name="close" size={24} color={textColor} />
                             </TouchableOpacity>
                         </View>
-                    </View>
-                </Pressable>
-            </Pressable>
+                    </ScrollView>
+                </View>
+            </View>
         </Modal>
     );
 }
@@ -93,9 +104,9 @@ const styles = StyleSheet.create({
     },
     modalContent: {
         borderRadius: 20,
-        padding: 24,
+        padding: 16,
         width: '100%',
-        maxWidth: 500,
+        maxWidth: 640,
         shadowColor: "#000",
         shadowOffset: {
             width: 0,
@@ -108,6 +119,7 @@ const styles = StyleSheet.create({
     modalInner: {
         gap: 20,
     },
+    modalScroll: { flex: 1, minHeight: 0 },
     modalHeader: {
         alignItems: 'center',
         marginBottom: 12,
@@ -131,10 +143,12 @@ const styles = StyleSheet.create({
         textAlign: 'center',
         opacity: 0.7,
     },
-    instructionGif: {
+    instructionMedia: {
         width: '100%',
-        height: 200,
+        borderRadius: 16,
+        overflow: 'hidden',
     },
+    media: { width: '100%', height: '100%' },
     buttonContainer: {
         flexDirection: 'row',
         gap: 12,
@@ -161,8 +175,7 @@ const styles = StyleSheet.create({
         borderRadius: 12,
         padding: 16,
         alignItems: 'center',
-        borderWidth: 1,
-        borderColor: '#E0E0E0',
+        borderWidth: 2,
     },
     cancelButtonText: {
         fontSize: 16,
