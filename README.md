@@ -10,6 +10,7 @@ Aplicación móvil para hoteles que permite a los huéspedes comunicarse con el 
 ### Modo ASL
 - Comunicación mediante lenguaje de señas (en desarrollo)
 - Las peticiones por cámara de Room Service, Report Problem y Valet usan un módulo nativo de MediaPipe. Requieren una development build (`npx expo run:android` o `npx expo run:ios`); Expo Go no reconoce señas.
+- Estas peticiones envian `details.generatedFromSignCapture: true` y `sourceMode: "asl"`. El dashboard muestra la etiqueta `ASL CAMERA`, incluso si el huesped edita el borrador. La bandera identifica el flujo de captura, no garantiza que todo el texto provenga del modelo; el taxi guiado y el modo Text no la envian.
 - Configure `EXPO_PUBLIC_API_URL` y `EXPO_PUBLIC_WS_URL` con la URL del gateway que expone `/api/asl/predict`. El huésped revisa y puede editar la glosa antes de enviarla al hotel.
 - Las glosas con confianza >= 0.60 se incorporan al borrador; las menores se muestran como candidatos, sin enviarse automaticamente. Las respuestas posteriores a una cancelacion se descartan. `npm run test:asl` verifica estos contratos sin sustituir la prueba de camara en dispositivo.
 - Ante HTTP 413, verifica que ngrok publique el gateway (8080), no el servidor del hotel (3001). No se recortan landmarks ni se reduce su precision para eludir un error de enrutamiento.
