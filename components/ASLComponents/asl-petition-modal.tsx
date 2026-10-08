@@ -4,8 +4,9 @@ import { appendRecognizedSign, MIN_SIGN_CONFIDENCE, predictSign } from '@/servic
 import { SignSequenceCollector } from '@/services/signSequence';
 import { MaterialCommunityIcons, MaterialIcons } from "@expo/vector-icons";
 import { useEffect, useRef, useState } from 'react';
-import { Image, Modal, Pressable, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, useWindowDimensions, View } from "react-native";
+import { ActivityIndicator, Image, Modal, Pressable, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, useWindowDimensions, View } from "react-native";
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import Svg, { Circle } from 'react-native-svg';
 import { SignCameraView } from './SignCameraView';
 import { ASLVideoPreview } from './ASLVideoPreview';
 import type { ASLOption } from './ASLGridView';
@@ -14,6 +15,30 @@ interface SignCaptureRequestDetails {
     sourceMode: 'asl';
     generatedFromSignCapture: true;
 }
+
+type CaptureState = 'starting' | 'noFrames' | 'removeHand' | 'recording' | 'wrongHand' | 'noHand';
+type ProcessingState = 'session' | 'processing' | 'short' | 'camera' | 'connection' | 'busy' | 'timeout' | 'model';
+const CAPTURE_MESSAGES: Record<CaptureState | ProcessingState, {
+    icon: keyof typeof MaterialCommunityIcons.glyphMap;
+    title: string;
+    instruction: string;
+    tone: 'info' | 'warning' | 'error' | 'success';
+}> = {
+    starting: { icon: 'camera', title: 'CAMERA STARTING', instruction: 'HAND READY. WAIT.', tone: 'info' },
+    noFrames: { icon: 'camera-off', title: 'CAMERA NO IMAGE', instruction: 'CAMERA CLOSE. REOPEN.', tone: 'error' },
+    removeHand: { icon: 'hand-wave', title: 'NEXT SIGN', instruction: 'HAND REMOVE. NEXT SIGN.', tone: 'info' },
+    recording: { icon: 'hand-back-right', title: 'HAND DETECTED', instruction: 'SIGN SHOW. THEN HAND REMOVE.', tone: 'success' },
+    wrongHand: { icon: 'hand-back-left', title: 'OTHER HAND DETECTED', instruction: 'HAND SELECT ABOVE.', tone: 'warning' },
+    noHand: { icon: 'hand-back-right-off', title: 'HAND NOT DETECTED', instruction: 'WHOLE HAND SHOW IN CAMERA.', tone: 'warning' },
+    session: { icon: 'account-lock', title: 'SESSION EXPIRED', instruction: 'SIGN IN AGAIN.', tone: 'error' },
+    processing: { icon: 'sync', title: 'SIGN PROCESSING', instruction: 'WAIT.', tone: 'info' },
+    short: { icon: 'timer-outline', title: 'SIGN TOO SHORT', instruction: 'HAND KEEP VISIBLE LONGER.', tone: 'warning' },
+    camera: { icon: 'camera-off', title: 'CAMERA UNAVAILABLE', instruction: 'CAMERA PERMISSION CHECK. REOPEN.', tone: 'error' },
+    connection: { icon: 'wifi-off', title: 'CONNECTION ERROR', instruction: 'CONNECTION CHECK. SIGN TRY AGAIN.', tone: 'error' },
+    busy: { icon: 'timer-sand', title: 'SERVICE BUSY', instruction: 'WAIT. SIGN TRY AGAIN.', tone: 'warning' },
+    timeout: { icon: 'timer-off-outline', title: 'RESPONSE TIMEOUT', instruction: 'WAIT. SIGN TRY AGAIN.', tone: 'warning' },
+    model: { icon: 'alert-circle-outline', title: 'SIGN PROCESSING FAILED', instruction: 'HOTEL STAFF HELP REQUEST.', tone: 'error' },
+};
 
 interface ASLPetitionModalProps {
     visible: boolean;
@@ -46,12 +71,20 @@ export function ASLPetitionModal({
     const modalHeight = Math.min(availableHeight * 0.9, cameraActive ? 820 : modalVideoHeight + 328);
     const textColor = useThemeColor({}, 'text');
     const backgroundColor = useThemeColor({}, 'background');
+    const mutedColor = useThemeColor({}, 'muted');
+    const secondaryColor = useThemeColor({ light: '#1565C0', dark: '#90CAF9' }, 'text');
+    const dangerColor = useThemeColor({ light: '#B3261E', dark: '#FFB4AB' }, 'text');
+    const successColor = useThemeColor({ light: '#21864B', dark: '#81C784' }, 'text');
+    const warningColor = useThemeColor({ light: '#946200', dark: '#FFD54F' }, 'text');
+    const confidenceTrackColor = useThemeColor({ light: '#E3E7EB', dark: '#343A40' }, 'background');
     const { token } = useAuth();
     const [draft, setDraft] = useState('');
     const [hand, setHand] = useState<'right' | 'left'>('right');
-    const [status, setStatus] = useState('');
-    const [candidate, setCandidate] = useState('');
-    const [captureStatus, setCaptureStatus] = useState('WAITING FOR CAMERA FRAMES...');
+    const [status, setStatus] = useState<ProcessingState | null>(null);
+    const [frameCount, setFrameCount] = useState(0);
+    const [confidence, setConfidence] = useState<number | null>(null);
+    const [lastGlosa, setLastGlosa] = useState('');
+    const [captureStatus, setCaptureStatus] = useState<CaptureState>('starting');
     const capture = useRef({ lastEventAt: 0, handPresent: false, detectedHands: [] as string[] });
     const sequence = useRef(new SignSequenceCollector());
     const busy = useRef(false);
@@ -60,21 +93,25 @@ export function ASLPetitionModal({
 
     useEffect(() => {
         capture.current = { lastEventAt: 0, handPresent: false, detectedHands: [] };
-        setCaptureStatus('WAITING FOR CAMERA FRAMES...');
+        setCaptureStatus('starting');
+        setFrameCount(0);
         if (!visible || !cameraActive) return;
+        const startedAt = Date.now();
         const interval = setInterval(() => {
             const current = capture.current;
             const progress = sequence.current.getSnapshot();
-            if (!current.lastEventAt || Date.now() - current.lastEventAt > 3000) {
-                setCaptureStatus('NO CAMERA FRAMES. CLOSE AND REOPEN CAMERA.');
+            if (!current.lastEventAt && Date.now() - startedAt < 3000) {
+                setCaptureStatus('starting');
+            } else if (!current.lastEventAt || Date.now() - current.lastEventAt > 3000) {
+                setCaptureStatus('noFrames');
             } else if (progress.waitingForExit) {
-                setCaptureStatus('REMOVE YOUR HAND BEFORE THE NEXT SIGN');
+                setCaptureStatus('removeHand');
             } else if (current.handPresent) {
-                setCaptureStatus(`${hand.toUpperCase()} HAND DETECTED - ${progress.frameCount}/60 FRAMES (15 MIN)`);
+                setCaptureStatus('recording');
             } else if (current.detectedHands.length) {
-                setCaptureStatus(`DETECTED: ${current.detectedHands.join(', ').toUpperCase()}. SELECT THAT HAND OR USE ${hand.toUpperCase()}.`);
+                setCaptureStatus('wrongHand');
             } else {
-                setCaptureStatus(`NO ${hand.toUpperCase()} HAND DETECTED. SHOW YOUR WHOLE HAND.`);
+                setCaptureStatus('noHand');
             }
         }, 250);
         return () => clearInterval(interval);
@@ -87,8 +124,10 @@ export function ASLPetitionModal({
         sequence.current.reset();
         busy.current = false;
         setDraft('');
-        setCandidate('');
-        setStatus('');
+        setFrameCount(0);
+        setConfidence(null);
+        setLastGlosa('');
+        setStatus(null);
     }, [visible, cameraActive]);
 
     useEffect(() => () => {
@@ -98,7 +137,7 @@ export function ASLPetitionModal({
 
     const submitFrames = async (sequence: number[][]) => {
         if (!token) {
-            setStatus('SESSION REQUIRED. SIGN IN AGAIN.');
+            setStatus('session');
             return;
         }
         if (busy.current || sequence.length < 15) return;
@@ -106,22 +145,24 @@ export function ASLPetitionModal({
         const requestGeneration = generation.current;
         const abort = new AbortController();
         controller.current = abort;
-        setStatus('PROCESSING SIGN...');
+        setStatus('processing');
         try {
             const result = await predictSign(sequence, token, abort.signal);
             if (requestGeneration !== generation.current) return;
-            const confidence = `${Math.round(result.confidence * 100)}%`;
+            setConfidence(Math.max(0, Math.min(1, result.confidence)));
+            setLastGlosa(result.glosa);
             if (result.confidence >= MIN_SIGN_CONFIDENCE) {
                 setDraft(current => appendRecognizedSign(current, result));
-                setCandidate('');
-                setStatus(`${result.glosa} - ${confidence}`);
-            } else {
-                setCandidate(`${result.glosa} - ${confidence}`);
-                setStatus('LOW CONFIDENCE. CHECK CANDIDATE.');
             }
-        } catch {
+            setStatus(null);
+        } catch (error) {
             if (requestGeneration === generation.current && !abort.signal.aborted) {
-                setStatus('SIGN PROCESSING FAILED. CHECK CONNECTION. TRY AGAIN.');
+                const message = error instanceof Error ? error.message : '';
+                setStatus(message.includes('SESSION') ? 'session'
+                    : message.includes('TIMED OUT') ? 'timeout'
+                    : message.includes('BUSY') ? 'busy'
+                    : /ROUTE NOT FOUND|DATA REJECTED|INVALID MODEL|SIGN PROCESSING FAILED/.test(message) ? 'model'
+                    : 'connection');
             }
         } finally {
             if (requestGeneration === generation.current) busy.current = false;
@@ -131,10 +172,17 @@ export function ASLPetitionModal({
     const handleLandmarks = (landmarks: number[] | null, detectedHands: string[] = []) => {
         capture.current = { lastEventAt: Date.now(), handPresent: !!landmarks, detectedHands };
         const previous = sequence.current.getSnapshot();
+        if (landmarks && previous.frameCount === 0 && !previous.waitingForExit && !busy.current) {
+            setStatus(current => current === 'session' ? current : null);
+        }
         const ready = sequence.current.feed(landmarks, Date.now(), busy.current);
+        if (!busy.current) {
+            const progress = sequence.current.getSnapshot();
+            setFrameCount(ready ? ready.length : progress.waitingForExit ? 60 : progress.frameCount);
+        }
         if (ready) void submitFrames(ready);
         else if (previous.frameCount > 0 && previous.frameCount < 15 && sequence.current.getSnapshot().frameCount === 0) {
-            setStatus('SIGN TOO SHORT. KEEP YOUR HAND VISIBLE LONGER.');
+            setStatus('short');
         }
     };
 
@@ -149,6 +197,20 @@ export function ASLPetitionModal({
     };
 
     if (!visible || !selectedOption) return null;
+
+    const confidencePercent = confidence === null ? null : Math.round(confidence * 100);
+    const confidenceColor = confidence === null ? mutedColor
+        : confidence >= 0.8 ? successColor
+        : confidence >= MIN_SIGN_CONFIDENCE ? warningColor : dangerColor;
+    const confidenceIcon = confidence === null ? 'help-outline'
+        : confidence >= 0.8 ? 'check-circle'
+        : confidence >= MIN_SIGN_CONFIDENCE ? 'info-outline' : 'error-outline';
+    const hasDraft = !!draft.trim();
+    const displayState = !token ? 'session' : status ?? captureStatus;
+    const message = CAPTURE_MESSAGES[displayState];
+    const messageColor = message.tone === 'error' ? dangerColor : message.tone === 'warning'
+        ? warningColor : message.tone === 'success' ? successColor : secondaryColor;
+    const handIcon = hand === 'left' ? 'hand-back-left' : 'hand-back-right';
 
     return (
         <Modal
@@ -233,38 +295,131 @@ export function ASLPetitionModal({
                                 </TouchableOpacity>
                             </View>
                             <View style={styles.cameraViewContainer}>
-                                <SignCameraView hand={hand} onLandmarks={handleLandmarks} onError={() => setStatus('CAMERA UNAVAILABLE. CHECK PERMISSION. RESTART APP.')} />
+                                <SignCameraView hand={hand} onLandmarks={handleLandmarks} onError={() => setStatus('camera')} />
                             </View>
-                            <TouchableOpacity onPress={() => {
-                                generation.current += 1;
-                                controller.current?.abort();
-                                busy.current = false;
-                                setHand(current => current === 'right' ? 'left' : 'right');
-                                sequence.current.reset();
-                                setStatus('');
-                                setCandidate('');
-                            }}>
-                                <Text style={[styles.hint, { color: textColor }]}>HAND: {hand.toUpperCase()} - TAP TO CHANGE</Text>
-                            </TouchableOpacity>
-                            <Text style={[styles.hint, { color: textColor }]}>{captureStatus}</Text>
-                            {!token && <Text style={[styles.hint, { color: textColor }]}>SESSION REQUIRED. SIGN IN AGAIN.</Text>}
-                            <Text style={[styles.hint, { color: textColor }]}>{status || 'SHOW A SIGN, THEN REMOVE YOUR HAND'}</Text>
-                            {!!candidate && <Text style={[styles.hint, { color: textColor }]}>CANDIDATE: {candidate}</Text>}
+                            <View style={styles.handSelector}>
+                                {(['left', 'right'] as const).map(option => {
+                                    const selected = hand === option;
+                                    return <TouchableOpacity key={option}
+                                        accessibilityRole="button"
+                                        accessibilityLabel={`${option.toUpperCase()} HAND`}
+                                        accessibilityState={{ selected, disabled: isSending }}
+                                        disabled={isSending}
+                                        style={[styles.handButton, {
+                                            borderColor: selected ? secondaryColor : confidenceTrackColor,
+                                            backgroundColor: selected ? `${secondaryColor}18` : backgroundColor,
+                                        }]}
+                                        onPress={() => {
+                                            if (selected) return;
+                                            generation.current += 1;
+                                            controller.current?.abort();
+                                            busy.current = false;
+                                            setHand(option);
+                                            sequence.current.reset();
+                                            setStatus(null);
+                                            setFrameCount(0);
+                                            setConfidence(null);
+                                            setLastGlosa('');
+                                        }}>
+                                        <MaterialCommunityIcons name={option === 'left' ? 'hand-back-left' : 'hand-back-right'}
+                                            size={32} color={selected ? secondaryColor : mutedColor} />
+                                        <Text style={[styles.handLabel, { color: selected ? secondaryColor : textColor }]}>
+                                            {option.toUpperCase()}
+                                        </Text>
+                                        {selected && <MaterialIcons name="check-circle" size={18} color={secondaryColor} />}
+                                    </TouchableOpacity>;
+                                })}
+                            </View>
+                            <View style={[styles.framePanel, { borderColor: confidenceTrackColor }]}>
+                                <View accessible accessibilityRole="progressbar"
+                                    accessibilityLabel="SIGN CAPTURE FRAMES"
+                                    accessibilityValue={{ min: 0, max: 60, now: frameCount }}
+                                    style={styles.frameCircle}>
+                                    <Svg width={80} height={80} viewBox="0 0 80 80">
+                                        <Circle cx={40} cy={40} r={34} stroke={confidenceTrackColor} strokeWidth={6} fill="none" />
+                                        <Circle cx={40} cy={40} r={34}
+                                            stroke={frameCount >= 15 ? successColor : secondaryColor}
+                                            strokeWidth={6} fill="none" strokeLinecap="round"
+                                            strokeDasharray={2 * Math.PI * 34}
+                                            strokeDashoffset={2 * Math.PI * 34 * (1 - frameCount / 60)}
+                                            rotation={-90} origin="40, 40" />
+                                    </Svg>
+                                    <View pointerEvents="none" style={styles.frameCircleLabel}>
+                                        <Text style={[styles.frameNumber, { color: textColor }]}>{frameCount}</Text>
+                                        <Text style={[styles.hint, { color: mutedColor }]}>/ 60</Text>
+                                    </View>
+                                </View>
+                                <View style={styles.frameDescription}>
+                                    <Text style={[styles.handLabel, { color: textColor }]}>FRAMES</Text>
+                                    <View accessible accessibilityRole={message.tone === 'error' ? 'alert' : 'text'}
+                                        accessibilityLiveRegion="polite"
+                                        accessibilityLabel={`${message.title}. ${message.instruction}`}
+                                        style={[styles.statusCard, { borderColor: messageColor, backgroundColor: `${messageColor}12` }]}>
+                                        <View style={[styles.statusIcon, { backgroundColor: `${messageColor}18` }]}>
+                                            {displayState === 'processing'
+                                                ? <ActivityIndicator color={messageColor} size="small" />
+                                                : <MaterialCommunityIcons name={displayState === 'recording' ? handIcon : message.icon}
+                                                    size={26} color={messageColor} />}
+                                        </View>
+                                        <View style={styles.statusCopy}>
+                                            <Text style={[styles.statusTitle, { color: messageColor }]}>{message.title}</Text>
+                                            <Text style={[styles.hint, { color: textColor }]}>{message.instruction}</Text>
+                                        </View>
+                                    </View>
+                                </View>
+                            </View>
+                            <View style={[styles.confidencePanel, { borderColor: confidenceTrackColor }]}>
+                                <View style={styles.confidenceHeading}>
+                                    <MaterialIcons name={confidenceIcon} size={22} color={confidenceColor} />
+                                    <Text style={[styles.confidenceLabel, { color: textColor }]}>CONFIDENCE</Text>
+                                    {!!lastGlosa && <View style={[styles.glosaChip, { backgroundColor: `${confidenceColor}18` }]}>
+                                        <Text style={[styles.glosaLabel, { color: confidenceColor }]}>{lastGlosa}</Text>
+                                    </View>}
+                                    <Text style={[styles.confidenceValue, { color: confidenceColor }]}>
+                                        {confidencePercent === null ? '—' : `${confidencePercent}%`}
+                                    </Text>
+                                </View>
+                                <View
+                                    accessible accessibilityRole="progressbar"
+                                    accessibilityLabel="LAST SIGN CONFIDENCE"
+                                    accessibilityValue={confidencePercent === null
+                                        ? { text: 'NO PREDICTION YET' }
+                                        : { min: 0, max: 100, now: confidencePercent }}
+                                    style={[styles.confidenceTrack, { backgroundColor: confidenceTrackColor }]}
+                                >
+                                    <View style={[styles.confidenceFill, {
+                                        width: `${confidencePercent ?? 0}%`, backgroundColor: confidenceColor,
+                                    }]} />
+                                </View>
+                            </View>
                             <TextInput multiline value={draft} onChangeText={setDraft}
                                 placeholder="RECOGNIZED SIGNS / EDIT MESSAGE" placeholderTextColor="#888"
                                 style={[styles.input, { color: textColor, borderColor: selectedOption.iconColor }]} />
                             <View style={styles.controls}>
-                                <TouchableOpacity onPress={() => setDraft(current => current.trim().split(/\s+/).slice(0, -1).join(' '))}>
-                                    <Text style={[styles.hint, { color: textColor }]}>DELETE LAST</Text>
+                                <TouchableOpacity disabled={!hasDraft || isSending}
+                                    accessibilityRole="button" accessibilityLabel="DELETE LAST WORD"
+                                    accessibilityHint="REMOVE THE LAST WORD FROM YOUR MESSAGE"
+                                    accessibilityState={{ disabled: !hasDraft || isSending }}
+                                    style={[styles.editButton, { borderColor: secondaryColor, opacity: !hasDraft || isSending ? 0.4 : 1 }]}
+                                    onPress={() => setDraft(current => current.trim().split(/\s+/).slice(0, -1).join(' '))}>
+                                    <MaterialIcons name="backspace" size={26} color={secondaryColor} />
                                 </TouchableOpacity>
-                                <TouchableOpacity onPress={() => setDraft('')}>
-                                    <Text style={[styles.hint, { color: textColor }]}>CLEAR</Text>
+                                <TouchableOpacity disabled={!hasDraft || isSending}
+                                    accessibilityRole="button" accessibilityLabel="CLEAR MESSAGE"
+                                    accessibilityHint="REMOVE ALL WORDS FROM YOUR MESSAGE"
+                                    accessibilityState={{ disabled: !hasDraft || isSending }}
+                                    style={[styles.editButton, { borderColor: dangerColor, opacity: !hasDraft || isSending ? 0.4 : 1 }]}
+                                    onPress={() => setDraft('')}>
+                                    <MaterialIcons name="delete-sweep" size={28} color={dangerColor} />
                                 </TouchableOpacity>
                             </View>
                             <TouchableOpacity disabled={!draft.trim() || isSending}
+                                accessibilityRole="button" accessibilityLabel={isSending ? 'SENDING REQUEST' : 'SEND REQUEST'}
+                                accessibilityState={{ disabled: !hasDraft || isSending, busy: isSending }}
                                 style={[styles.actionButton, { backgroundColor: '#21864B', opacity: !draft.trim() || isSending ? 0.5 : 1 }]}
                                 onPress={handleSend}>
-                                <Text style={styles.sendText}>{isSending ? 'SENDING...' : 'SEND REQUEST'}</Text>
+                                {isSending ? <ActivityIndicator size="small" color="#FFFFFF" />
+                                    : <MaterialCommunityIcons name="send" size={30} color="#FFFFFF" />}
                             </TouchableOpacity>
                         </ScrollView>
                     )}
@@ -351,6 +506,26 @@ const styles = StyleSheet.create({
     heading: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
     hint: { fontSize: 12, fontWeight: '600' },
     input: { borderWidth: 1, borderRadius: 10, minHeight: 100, textAlignVertical: 'top', padding: 12, fontSize: 16 },
-    controls: { flexDirection: 'row', justifyContent: 'space-between' },
-    sendText: { color: '#fff', fontSize: 16, fontWeight: '700' },
+    controls: { flexDirection: 'row', gap: 12 },
+    handSelector: { flexDirection: 'row', gap: 12 },
+    handButton: { flex: 1, flexDirection: 'row', flexWrap: 'wrap', gap: 8, borderWidth: 2, borderRadius: 12, minHeight: 60, padding: 10, alignItems: 'center', justifyContent: 'center' },
+    handLabel: { fontSize: 12, fontWeight: '700' },
+    framePanel: { flexDirection: 'row', alignItems: 'center', gap: 12, borderWidth: 1, borderRadius: 12, padding: 12 },
+    frameCircle: { width: 80, height: 80 },
+    frameCircleLabel: { ...StyleSheet.absoluteFillObject, alignItems: 'center', justifyContent: 'center' },
+    frameNumber: { fontSize: 22, fontWeight: '700' },
+    frameDescription: { flex: 1, gap: 6 },
+    statusCard: { flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', gap: 8, padding: 10, borderWidth: 1, borderRadius: 12 },
+    statusIcon: { width: 38, height: 38, borderRadius: 10, alignItems: 'center', justifyContent: 'center' },
+    statusCopy: { flex: 1, minWidth: 90, gap: 4 },
+    statusTitle: { fontSize: 12, fontWeight: '800' },
+    editButton: { flex: 1, minHeight: 52, borderRadius: 12, borderWidth: 1.5, alignItems: 'center', justifyContent: 'center' },
+    confidencePanel: { borderWidth: 1, borderRadius: 12, padding: 12, gap: 10 },
+    confidenceHeading: { flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', gap: 8 },
+    confidenceLabel: { fontSize: 12, fontWeight: '700' },
+    glosaChip: { flexShrink: 1, borderRadius: 8, paddingHorizontal: 8, paddingVertical: 4 },
+    glosaLabel: { fontSize: 13, fontWeight: '700' },
+    confidenceValue: { fontSize: 17, fontWeight: '700' },
+    confidenceTrack: { height: 8, borderRadius: 4, overflow: 'hidden' },
+    confidenceFill: { height: '100%', borderRadius: 4 },
 });
