@@ -203,13 +203,8 @@ export function ASLPetitionHistory({
           }
         }}
         onCancel={() => setModalVisible(false)}
-        mode="ASL"
-        title=""
-        gif={require("../../assets/gifs/ComidaGif.gif")} // GIF específico para cancelación en modo ASL
         iconName="warning"
         iconColor="#F44336"
-        confirmText=""
-        cancelText=""
       />
       <RatingModal
         visible={ratingModalVisible}

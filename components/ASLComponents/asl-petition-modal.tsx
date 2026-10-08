@@ -10,6 +10,11 @@ import { SignCameraView } from './SignCameraView';
 import { ASLVideoPreview } from './ASLVideoPreview';
 import type { ASLOption } from './ASLGridView';
 
+interface SignCaptureRequestDetails {
+    sourceMode: 'asl';
+    generatedFromSignCapture: true;
+}
+
 interface ASLPetitionModalProps {
     visible: boolean;
     onClose: () => void;
@@ -18,7 +23,7 @@ interface ASLPetitionModalProps {
     onActivateCamera: () => void;
     onCloseCamera: () => void;
     cameraText?: string;
-    onSend: (description: string) => Promise<boolean>;
+    onSend: (description: string, details: SignCaptureRequestDetails) => Promise<boolean>;
     isSending?: boolean;
 }
 
@@ -136,7 +141,10 @@ export function ASLPetitionModal({
     const handleSend = async () => {
         if (!draft.trim() || isSending) return;
         const sendGeneration = generation.current;
-        const success = await onSend(draft.trim());
+        const success = await onSend(draft.trim(), {
+            sourceMode: 'asl',
+            generatedFromSignCapture: true,
+        });
         if (success && generation.current === sendGeneration) onCloseCamera();
     };
 
@@ -184,20 +192,20 @@ export function ASLPetitionModal({
                                 </View>
                             </View>
 
-                            {selectedOption.mediaType === 'video' ? (
+                            {selectedOption.videoSource !== undefined ? (
                                 <View pointerEvents="none" style={[styles.instructionGif, { height: modalVideoHeight }]}>
                                     <ASLVideoPreview
-                                        source={selectedOption.gifSource}
+                                        source={selectedOption.videoSource}
                                         style={styles.instructionVideo}
                                     />
                                 </View>
-                            ) : (
+                            ) : selectedOption.gifSource ? (
                                 <Image
                                     source={selectedOption.gifSource}
                                     style={styles.instructionGif}
                                     resizeMode="contain"
                                 />
-                            )}
+                            ) : null}
                             {/* Botones */}
                             <View style={styles.buttonContainer}>
                                 <TouchableOpacity 

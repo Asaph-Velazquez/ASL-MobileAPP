@@ -23,7 +23,7 @@ export default function ASLReportProblem(){
     const problemOptions: ASLOption[] = [
         {
             id: "AIR CONDITIONING",
-            gifSource: require('../../assets/gifs/00019.mp4'),
+            videoSource: require('../../assets/gifs/00019.mp4'),
             mediaType: 'video',
             icon: "ac-unit",
             iconType: "material",
@@ -33,7 +33,7 @@ export default function ASLReportProblem(){
         },
         {
             id: "PLUMBING",
-            gifSource: require('../../assets/gifs/00020.mp4'),
+            videoSource: require('../../assets/gifs/00020.mp4'),
             mediaType: 'video',
             icon: "plumbing",
             iconType: "material",
@@ -43,7 +43,7 @@ export default function ASLReportProblem(){
         },
         {
             id: "ELECTRICITY",
-            gifSource: require('../../assets/gifs/00021.mp4'),
+            videoSource: require('../../assets/gifs/00021.mp4'),
             mediaType: 'video',
             icon: "bolt",
             iconType: "material",
@@ -53,7 +53,7 @@ export default function ASLReportProblem(){
         },
         {
             id: "HOUSEKEEPING",
-            gifSource: require('../../assets/gifs/00022.mp4'),
+            videoSource: require('../../assets/gifs/00022.mp4'),
             mediaType: 'video',
             icon: "cleaning-services",
             iconType: "material",
@@ -63,7 +63,7 @@ export default function ASLReportProblem(){
         },
         {
             id: "FURNITURE",
-            gifSource: require('../../assets/gifs/00023.mp4'),
+            videoSource: require('../../assets/gifs/00023.mp4'),
             mediaType: 'video',
             icon: "weekend",
             iconType: "material",
@@ -73,7 +73,7 @@ export default function ASLReportProblem(){
         },
         {
             id: "TV / INTERNET",
-            gifSource: require('../../assets/gifs/00024.mp4'),
+            videoSource: require('../../assets/gifs/00024.mp4'),
             mediaType: 'video',
             icon: "wifi-off",
             iconType: "material",
@@ -83,7 +83,7 @@ export default function ASLReportProblem(){
         },
         {
             id: "OTHER PROBLEM",
-            gifSource: require('../../assets/gifs/00025.mp4'),
+            videoSource: require('../../assets/gifs/00025.mp4'),
             mediaType: 'video',
             icon: "report-problem",
             iconType: "material",
@@ -163,10 +163,11 @@ export default function ASLReportProblem(){
                 onCloseCamera={handleCloseCamera}
                 cameraText="PROBLEM DESCRIBE IN SIGN LANGUAGE"
                 isSending={isLoading}
-                onSend={description => sendPetition({
+                onSend={(description, details) => sendPetition({
                     type: 'problem',
                     serviceName: problemaSeleccionado?.id ?? 'PROBLEM',
                     description,
+                    details,
                     requireConfirmation: true,
                 })}
             />

@@ -1,9 +1,8 @@
 import React from 'react';
-import { Modal, StyleSheet, Text, TouchableOpacity, View, Dimensions, Image } from 'react-native';
+import { Modal, StyleSheet, Text, TouchableOpacity, useWindowDimensions, View } from 'react-native';
+import { ASLVideoPreview } from '@/components/ASLComponents/ASLVideoPreview';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useThemeColor } from '@/hooks/use-theme-color';
-
-const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
 interface LogoutModalProps {
   visible: boolean;
@@ -15,6 +14,11 @@ export function LogoutModal({ visible, onConfirm, onCancel }: LogoutModalProps) 
   const backgroundColor = useThemeColor({}, 'background');
   const textColor = useThemeColor({}, 'text');
   const mutedColor = useThemeColor({}, 'muted');
+  const { width, height } = useWindowDimensions();
+  const modalWidth = Math.min(width * 0.85, 400);
+  const videoSize = Math.max(0, Math.min(modalWidth - 48, height * 0.3, 260));
+
+  if (!visible) return null;
 
   return (
     <Modal
@@ -24,7 +28,7 @@ export function LogoutModal({ visible, onConfirm, onCancel }: LogoutModalProps) 
       onRequestClose={onCancel}
     >
       <View style={styles.overlay}>
-        <View style={[styles.modalContainer, { backgroundColor: backgroundColor }]}>
+        <View style={[styles.modalContainer, { backgroundColor, width: modalWidth }]}>
           {/* Icon */}
           <View style={styles.iconContainer}>
             <View style={styles.iconCircle}>
@@ -32,12 +36,10 @@ export function LogoutModal({ visible, onConfirm, onCancel }: LogoutModalProps) 
             </View>
           </View>
 
-          {/* GIF explicativo en ASL */}
-          <View style={[styles.gifContainer, { backgroundColor: backgroundColor }]}>
-            <Image 
-              source={require('../../assets/gifs/ComidaGif.gif')} // Cambiar por GIF de "Logout" en ASL
+          <View style={[styles.gifContainer, { backgroundColor, width: videoSize, height: videoSize }]}>
+            <ASLVideoPreview
+              source={require('../../assets/gifs/00028.mp4')}
               style={styles.gif}
-              resizeMode="contain"
             />
           </View>
 
@@ -86,7 +88,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
   },
   modalContainer: {
-    width: SCREEN_WIDTH * 0.85,
     maxWidth: 400,
     borderRadius: 24,
     padding: 24,
@@ -120,12 +121,9 @@ const styles = StyleSheet.create({
     elevation: 5,
   },
   gifContainer: {
-    width: '100%',
-    height: 160,
     borderRadius: 16,
     justifyContent: 'center',
     alignItems: 'center',
-    padding: 16,
     marginBottom: 20,
     overflow: 'hidden',
   },

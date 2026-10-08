@@ -16,7 +16,7 @@ export default function ASLHome(){
     const opciones: ASLOption[] = [
         {
             id: "SERVICES",
-            gifSource: require('../../assets/gifs/ComidaGif.gif'),
+            videoSource: require('../../assets/gifs/00006.mp4'),
             icon: "room-service",
             iconType: "material",
             iconColor: "#4A90E2",
@@ -24,7 +24,7 @@ export default function ASLHome(){
         },
         {
             id: "ROOM SERVICE",
-            gifSource: require('../../assets/gifs/ComidaGif.gif'),
+            videoSource: require('../../assets/gifs/00012.mp4'),
             icon: "silverware-fork-knife",
             iconType: "community",
             iconColor: "#9C27B0",
@@ -32,7 +32,7 @@ export default function ASLHome(){
         },
         {
             id: "PROBLEM",
-            gifSource: require('../../assets/gifs/ComidaGif.gif'),
+            videoSource: require('../../assets/gifs/00018.mp4'),
             icon: "warning",
             iconType: "material",
             iconColor: "#F44336",
@@ -40,7 +40,7 @@ export default function ASLHome(){
         },
         {
             id: "MOBILITY",
-            gifSource: require('../../assets/gifs/ComidaGif.gif'),
+            videoSource: require('../../assets/gifs/00029.mp4'),
             icon: "local-taxi",
             iconType: "material",
             iconColor: "#ffe100ff",

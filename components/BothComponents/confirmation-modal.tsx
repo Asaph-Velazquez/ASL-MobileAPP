@@ -9,32 +9,30 @@ interface ConfirmationModalProps {
   visible: boolean;
   onConfirm: () => void;
   onCancel: () => void;
-  mode: 'ASL' | 'Text';
-  title: string;
+  title?: string;
   description?: string;
   gif?: any;
   iconName: keyof typeof MaterialIcons.glyphMap;
   iconColor?: string;
-  confirmText: string;
-  cancelText: string;
+  confirmText?: string;
+  cancelText?: string;
 }
 
 export function ConfirmationModal({ 
   visible, 
   onConfirm, 
   onCancel, 
-  mode,
-  title,
-  description,
-  gif,
+  title = 'CANCEL REQUEST?',
+  description = 'THIS SERVICE YOU NOT NEED NOW. HOTEL STAFF RECEIVE NOTICE. ACTION CANNOT UNDO.',
+  gif = require('../../assets/gifs/ComidaGif.gif'),
   iconName,
   iconColor = '#F44336',
-  confirmText,
-  cancelText
+  confirmText = 'YES CANCEL',
+  cancelText = 'NO KEEP'
 }: ConfirmationModalProps) {
   const backgroundColor = useThemeColor({}, 'background');
   const textColor = useThemeColor({}, 'text');
-  const mutedColor = useThemeColor({}, 'tabIconDefault');
+  const mutedColor = useThemeColor({}, 'muted');
 
   return (
     <Modal
@@ -52,8 +50,7 @@ export function ConfirmationModal({
             </View>
           </View>
 
-          {/* GIF para modo ASL */}
-          {mode === 'ASL' && gif && (
+          {gif && (
             <View style={[styles.gifContainer, { backgroundColor: backgroundColor }]}>
               <Image 
                 source={gif}
@@ -68,7 +65,7 @@ export function ConfirmationModal({
             <Text style={[styles.title, { color: textColor }]}>
               {title}
             </Text>
-            {mode === 'Text' && description && (
+            {description && (
               <Text style={[styles.description, { color: mutedColor }]}>
                 {description}
               </Text>
@@ -82,8 +79,8 @@ export function ConfirmationModal({
               onPress={onCancel}
               activeOpacity={0.7}
             >
-              <MaterialIcons name="close" size={20} color="#6B7280" />
-              <Text style={styles.cancelButtonText}>{cancelText}</Text>
+              <MaterialIcons name="close" size={20} color={textColor} />
+              <Text style={[styles.cancelButtonText, { color: textColor }]}>{cancelText}</Text>
             </TouchableOpacity>
 
             <TouchableOpacity 
@@ -198,7 +195,6 @@ const styles = StyleSheet.create({
     borderColor: '#E5E7EB',
   },
   cancelButtonText: {
-    color: '#6B7280',
     fontSize: 16,
     fontWeight: '600',
   },

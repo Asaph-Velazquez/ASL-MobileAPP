@@ -23,7 +23,7 @@ export default function ASLRoomS(){
     const opciones: ASLOption[] = [
         {
             id: "FOOD",
-            gifSource: require('../../assets/gifs/00013.mp4'),
+            videoSource: require('../../assets/gifs/00013.mp4'),
             mediaType: 'video',
             icon: "flatware",
             iconType: "material",
@@ -33,7 +33,7 @@ export default function ASLRoomS(){
         },
         {
             id: "AMENITIES",
-            gifSource: require('../../assets/gifs/00014.mp4'),
+            videoSource: require('../../assets/gifs/00014.mp4'),
             mediaType: 'video',
             icon: "sanitizer",
             iconType: "material",
@@ -43,7 +43,7 @@ export default function ASLRoomS(){
         },
         {
             id: "LINENS",
-            gifSource: require('../../assets/gifs/00015.mp4'),
+            videoSource: require('../../assets/gifs/00015.mp4'),
             mediaType: 'video',
             icon: "bed",
             iconType: "material",
@@ -53,7 +53,7 @@ export default function ASLRoomS(){
         },
         {
             id: "COMFORT ITEMS",
-            gifSource: require('../../assets/gifs/00016.mp4'),
+            videoSource: require('../../assets/gifs/00016.mp4'),
             mediaType: 'video',
             icon: "self-improvement",
             iconType: "material",
@@ -63,7 +63,7 @@ export default function ASLRoomS(){
         },
         {
             id: "EXTRA",
-            gifSource: require('../../assets/gifs/00017.mp4'),
+            videoSource: require('../../assets/gifs/00017.mp4'),
             mediaType: 'video',
             icon: "question-mark",
             iconType: "material",
@@ -142,10 +142,11 @@ export default function ASLRoomS(){
                 onCloseCamera={handleCloseCamera}
                 cameraText="YOUR MESSAGE SHOW IN SIGN LANGUAGE"
                 isSending={isLoading}
-                onSend={description => sendPetition({
+                onSend={(description, details) => sendPetition({
                     type: 'room-service',
                     serviceName: servicioSeleccionado?.id ?? 'ROOM SERVICE',
                     description,
+                    details,
                     requireConfirmation: true,
                 })}
             />

@@ -21,15 +21,15 @@ export default function ASLMovilidad(){
     const [noticeVisible, setNoticeVisible] = useState(false);
     const [cameraActive, setCameraActive] = useState(false);
     const [permission, requestPermission] = useCameraPermissions();
-    const [selectedGif, setSelectedGif] = useState<any>(require('../../assets/gifs/ComidaGif.gif'));
+    const [selectedGif, setSelectedGif] = useState<any>(require('../../assets/gifs/00029.mp4'));
+    const [selectedMediaType, setSelectedMediaType] = useState<'gif' | 'video'>('video');
     const [refreshing, setRefreshing] = useState(false);
     const { sendPetition, isLoading } = usePetitionSender();
     
-    const defaultGif = require('../../assets/gifs/ComidaGif.gif');
+    const defaultGif = require('../../assets/gifs/00029.mp4');
     
     const MovilidadOptions: ASLOption[] = [{
         id: "VALET PARKING",
-        gifSource: require('../../assets/gifs/ComidaGif.gif'),
         icon: "local-parking",
         iconType: "material",
         iconColor: "#3F51B5",
@@ -37,7 +37,6 @@ export default function ASLMovilidad(){
         cameraText: "VALET PARKING REQUEST IN SIGN LANGUAGE"
     }, {
         id: "TAXI OR RIDE-HAIL",
-        gifSource: require('../../assets/gifs/ComidaGif.gif'),
         icon: "local-taxi",
         iconType: "material",
         iconColor: "#FFEB3B",
@@ -136,7 +135,7 @@ export default function ASLMovilidad(){
                 title="TRANSPORT SERVICE"
                 subtitle="SERVICE YOU NEED WHAT?"
             />
-            <GifPreviewContainer gifSource={selectedGif} />
+            <GifPreviewContainer gifSource={selectedGif} mediaType={selectedMediaType} />
             <TouchableOpacity
                 style={styles.helpButton}
                 onPress={() => setNoticeVisible(true)}
@@ -148,8 +147,12 @@ export default function ASLMovilidad(){
             <ASLGridView 
                 options={MovilidadOptions}
                 onOptionPress={handlePress}
-                onPreviewChange={setSelectedGif}
+                onPreviewChange={(source, mediaType) => {
+                    setSelectedGif(source);
+                    setSelectedMediaType(mediaType);
+                }}
                 defaultGif={defaultGif}
+                defaultMediaType="video"
             />
 
             <ASLPetitionModal
@@ -161,12 +164,12 @@ export default function ASLMovilidad(){
                 onCloseCamera={handleCloseCamera}
                 cameraText="YOUR MESSAGE SHOW IN SIGN LANGUAGE"
                 isSending={isLoading}
-                onSend={description => sendPetition({
+                onSend={(description, details) => sendPetition({
                     type: 'services',
                     serviceName: 'VALET PARKING',
                     description,
                     requireConfirmation: true,
-                    details: { serviceType: 'valet', sourceMode: 'asl' },
+                    details: { ...details, serviceType: 'valet' },
                 })}
             />
 

@@ -1,5 +1,6 @@
 import { MaterialIcons } from '@expo/vector-icons';
-import { Image, Modal, Pressable, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Modal, Pressable, StyleSheet, Text, TouchableOpacity, useWindowDimensions, View } from 'react-native';
+import { ASLVideoPreview } from '@/components/ASLComponents/ASLVideoPreview';
 import { useThemeColor } from '@/hooks/use-theme-color';
 
 interface MobilityNoticeModalProps {
@@ -11,6 +12,10 @@ export function MobilityNoticeModal({ visible, onClose }: MobilityNoticeModalPro
   const textColor = useThemeColor({}, 'text');
   const mutedColor = useThemeColor({}, 'muted');
   const backgroundColor = useThemeColor({}, 'background');
+  const { width, height } = useWindowDimensions();
+  const videoSize = Math.max(0, Math.min(Math.min(width - 40, 460) - 48, height * 0.3, 260));
+
+  if (!visible) return null;
 
   return (
     <Modal transparent animationType="fade" visible={visible} onRequestClose={onClose}>
@@ -32,11 +37,10 @@ export function MobilityNoticeModal({ visible, onClose }: MobilityNoticeModalPro
             TAXI REQUEST: BOOK 24 HOURS AHEAD. 48 HOURS RECOMMENDED.
           </Text>
 
-          <View style={styles.gifContainer}>
-            <Image
-              source={require('../../assets/gifs/ModASL.gif')}
+          <View style={[styles.gifContainer, { width: videoSize, height: videoSize }]}>
+            <ASLVideoPreview
+              source={require('../../assets/gifs/00027.mp4')}
               style={styles.gif}
-              resizeMode="contain"
             />
           </View>
 
@@ -94,9 +98,8 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   gifContainer: {
-    width: '100%',
-    height: 170,
     borderRadius: 16,
+    overflow: 'hidden',
     borderWidth: 2,
     borderColor: '#FFD54F',
     backgroundColor: '#FFF8D6',

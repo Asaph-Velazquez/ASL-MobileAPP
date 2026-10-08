@@ -4,7 +4,8 @@ import { StyleSheet, TouchableOpacity, View } from "react-native";
 
 export interface ASLOption {
     id: string;
-    gifSource: any;
+    gifSource?: any;
+    videoSource?: number;
     icon: string;
     iconType: 'material' | 'community';
     iconColor: string;
@@ -40,7 +41,13 @@ export function ASLGridView({
                 <TouchableOpacity 
                     key={index}
                     style={[styles.gridItem, { backgroundColor: cardBg }]}
-                    onPressIn={() => onPreviewChange(option.gifSource, option.mediaType ?? 'gif')}
+                    onPressIn={() => {
+                        if (option.videoSource !== undefined) {
+                            onPreviewChange(option.videoSource, 'video');
+                        } else if (option.gifSource) {
+                            onPreviewChange(option.gifSource, 'gif');
+                        }
+                    }}
                     onPressOut={() => onPreviewChange(defaultGif, defaultMediaType)}
                     onPress={() => onOptionPress(option)}
                     activeOpacity={0.7}

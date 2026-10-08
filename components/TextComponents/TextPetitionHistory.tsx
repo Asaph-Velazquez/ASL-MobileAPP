@@ -169,13 +169,8 @@ export function TextPetitionHistory({ peticiones, onCancelar, onRate }: TextPeti
                 visible={modalVisible}
                 onConfirm={confirmCancelar}
                 onCancel={() => setModalVisible(false)}
-                mode="Text"
-                title="CANCEL REQUEST?"
-                description="THIS SERVICE YOU NOT NEED NOW. HOTEL STAFF RECEIVE NOTICE. ACTION CANNOT UNDO."
                 iconName="warning"
                 iconColor="#F44336"
-                confirmText="YES CANCEL"
-                cancelText="NO KEEP"
             />
             <RatingModal
                 visible={ratingModalVisible}
