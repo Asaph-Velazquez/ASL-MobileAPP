@@ -88,8 +88,9 @@ final class ExpoSignCameraView: ExpoView, AVCaptureVideoDataOutputSampleBufferDe
       var detectedHands: [String] = []
       for (index, points) in result.landmarks.enumerated() {
         guard index < result.handedness.count, let category = result.handedness[index].first else { continue }
-        // MediaPipe assumes mirrored input; the capture output is not mirrored.
-        let physical = category.categoryName?.lowercased() == "left" ? "right" : "left"
+        // Preview mirroring must not swap the analysis result's handedness.
+        guard let physical = category.categoryName?.lowercased(),
+              physical == "left" || physical == "right" else { continue }
         detectedHands.append(physical)
         if physical != hand { continue }
         selected = points.flatMap { [$0.x, $0.y, $0.z] }

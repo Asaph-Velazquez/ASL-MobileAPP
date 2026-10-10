@@ -100,9 +100,9 @@ class ExpoSignCameraView(context: Context, appContext: AppContext) : ExpoView(co
               val detectedHands = mutableListOf<String>()
               if (result != null) {
                 for (i in result.landmarks().indices) {
-                  // MediaPipe labels assume mirrored input; CameraX analysis frames are not mirrored.
-                  val label = result.handednesses()[i][0].categoryName().lowercase()
-                  val physical = if (label == "left") "right" else "left"
+                  // Preview mirroring must not swap the analysis result's handedness.
+                  val physical = result.handednesses()[i][0].categoryName().lowercase()
+                  if (physical != "left" && physical != "right") continue
                   detectedHands.add(physical)
                   if (physical != hand) continue
                   selected = result.landmarks()[i].flatMap { listOf(it.x(), it.y(), it.z()) }
