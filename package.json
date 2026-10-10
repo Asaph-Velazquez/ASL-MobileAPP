@@ -10,7 +10,7 @@
     "web": "expo start --web",
     "lint": "expo lint",
     "typecheck": "tsc --noEmit",
-    "test:call": "node --test tests/callMedia.test.cjs tests/callLayout.test.cjs tests/callHistory.test.cjs tests/remoteStream.test.cjs",
+    "test:call": "node --test tests/callMedia.test.cjs tests/callSession.test.cjs tests/callLayout.test.cjs tests/callHistory.test.cjs tests/remoteStream.test.cjs",
     "test:transport": "node --test tests/transport.test.cjs tests/transportSocket.test.cjs",
     "test:asl": "node --test tests/signSequence.test.cjs tests/aslRecognition.test.cjs",
     "test:video": "node --test tests/videoSession.test.cjs"

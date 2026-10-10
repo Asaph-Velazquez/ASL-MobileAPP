@@ -38,27 +38,41 @@ export interface CallServerMessage {
   payload?: {
     callId?: string;
     reason?: string;
+    endReason?: string;
     interpreterName?: string;
     sdp?: WebRtcSessionDescriptionPayload;
     candidate?: WebRtcIceCandidatePayload;
   };
 }
 
-export async function requestCallSession(token: string): Promise<CallSessionResponse> {
-  const response = await fetch(`${API_BASE_URL}/api/calls/session`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${token}`,
-    },
-  });
+export async function requestCallSession(token: string, signal?: AbortSignal): Promise<CallSessionResponse> {
+  const controller = new AbortController();
+  const cancel = () => controller.abort();
+  signal?.addEventListener('abort', cancel);
+  if (signal?.aborted) cancel();
+  const timeout = setTimeout(cancel, 15000);
+  try {
+    const response = await fetch(`${API_BASE_URL}/api/calls/session`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
+      signal: controller.signal,
+    });
 
-  const data = await response.json().catch(() => null);
-  if (!response.ok || !data) {
-    throw new Error(data?.error || 'Unable to create call session');
+    const data = await response.json().catch(() => null);
+    if (controller.signal.aborted) throw new Error('CALL SESSION REQUEST CANCELLED OR TIMED OUT');
+    if (!response.ok || !data) {
+      const error = new Error(data?.error || 'Unable to create call session');
+      throw Object.assign(error, { status: response.status });
+    }
+
+    return data as CallSessionResponse;
+  } finally {
+    clearTimeout(timeout);
+    signal?.removeEventListener('abort', cancel);
   }
-
-  return data as CallSessionResponse;
 }
 
 export function parseCallServerMessage(raw: string): CallServerMessage | null {

@@ -11,9 +11,11 @@ function deferred() {
   return { promise, resolve };
 }
 
-function harness({ focused = true, width = 390, left = 0, right = 0 } = {}) {
+function harness({ focused = true, width = 390, left = 0, right = 0, sessionFailures = [] } = {}) {
   const effects = [], state = [], sockets = [], peers = [], timers = new Map();
   let timerId = 0;
+  let sessionRequests = 0;
+  const timerDelays = new Map();
   const permission = deferred(), capture = deferred();
   let permissionRequests = 0, captures = 0, stops = 0;
   const react = {
@@ -35,6 +37,9 @@ function harness({ focused = true, width = 390, left = 0, right = 0 } = {}) {
     createLocalMediaStream: () => { captures++; return capture.promise; },
     createGuestPeerConnection: handlers => {
       const peer = { handlers, remoteDescription: null, candidates: [],
+        connectionState: 'new',
+        offers: [],
+        async createOffer(options) { this.offers.push(options); return { type: 'offer', sdp: 'restart' }; },
         createAnswer: async () => ({ type: 'answer', sdp: 'answer' }),
         async setLocalDescription(sdp) { this.localDescription = sdp; },
       };
@@ -52,7 +57,12 @@ function harness({ focused = true, width = 390, left = 0, right = 0 } = {}) {
     stopStream: value => { if (value === stream) stops++; },
   };
   const call = {
-    requestCallSession: async () => ({ callId: 'qa-call', callServerUrl: 'ws://test', callToken: 'qa' }),
+    requestCallSession: async () => {
+      sessionRequests++;
+      const failure = sessionFailures.shift();
+      if (failure) throw failure;
+      return { callId: 'qa-call', callServerUrl: 'ws://test', callToken: 'qa' };
+    },
     buildCallSocketUrl: value => value,
     parseCallServerMessage: JSON.parse,
     sendCallServerMessage: (socket, value) => socket.send(JSON.stringify(value)),
@@ -73,13 +83,23 @@ function harness({ focused = true, width = 390, left = 0, right = 0 } = {}) {
   const module = { exports: {} };
   new Function('module', 'exports', 'require', 'WebSocket', 'setTimeout', 'clearTimeout', code)(
     module, module.exports, name => imports[name] || {}, Socket,
-    callback => { timers.set(++timerId, callback); return timerId; }, id => timers.delete(id),
+    (callback, delay) => {
+      const id = ++timerId;
+      timerDelays.set(id, delay);
+      timers.set(id, () => { timers.delete(id); timerDelays.delete(id); callback(); });
+      return id;
+    }, id => { timers.delete(id); timerDelays.delete(id); },
   );
   const tree = module.exports.default();
   const cleanups = effects.map(fn => fn());
   return { tree, sockets, peers, state, permission, capture, stream, timers,
+    runTimer(delay) {
+      const id = [...timerDelays.entries()].find(([, value]) => value === delay)?.[0];
+      assert.ok(id, `expected timer with ${delay}ms delay`);
+      timers.get(id)();
+    },
     cleanup: () => cleanups.forEach(fn => fn?.()),
-    counts: () => ({ permissionRequests, captures, stops }),
+    counts: () => ({ permissionRequests, captures, stops, sessionRequests }),
   };
 }
 
@@ -163,16 +183,136 @@ test('call layout uses two columns on tablets/desktops and stacks on narrow wind
   }
 });
 
-test('server errors end the connecting state without requesting media', async () => {
+test('server errors schedule recovery after ten seconds without requesting media', async () => {
   const h = harness();
   await flush();
   h.sockets[0].onopen();
   assert.equal(h.sockets[0].sent[0].type, 'CALL_REQUEST');
   h.sockets[0].receive('CALL_ERROR', { reason: 'call_processing_failed' });
   assert.ok(h.state.includes('error'));
-  assert.equal(h.timers.size, 0);
+  assert.equal(h.timers.size, 1);
   assert.equal(h.counts().permissionRequests, 0);
+  h.runTimer(10000);
+  await flush();
+  assert.equal(h.sockets.length, 2);
   h.cleanup();
+});
+
+test('unavailable interpreters are polled every ten seconds on the same session until pending', async () => {
+  const h = harness();
+  await flush();
+  const socket = h.sockets[0];
+  socket.onopen();
+  for (let attempt = 0; attempt < 3; attempt++) {
+    socket.receive('CALL_UNAVAILABLE');
+    assert.equal(h.timers.size, 1);
+    h.runTimer(10000);
+  }
+  assert.equal(socket.sent.filter(message => message.type === 'CALL_REQUEST').length, 4);
+  assert.equal(h.counts().sessionRequests, 1);
+  assert.equal(h.counts().permissionRequests, 0);
+  socket.receive('CALL_PENDING');
+  assert.equal(h.timers.size, 0);
+  h.cleanup();
+});
+
+test('a disconnected socket reconnects in place and stale sockets cannot end the new attempt', async () => {
+  const h = harness();
+  await flush();
+  const socket = h.sockets[0];
+  const staleMessage = socket.onmessage;
+  socket.onopen();
+  socket.receive('CALL_PENDING');
+  socket.close();
+  h.runTimer(10000);
+  await flush();
+  assert.equal(h.sockets.length, 2);
+  const newSocket = h.sockets[1];
+  newSocket.onopen();
+  newSocket.receive('CALL_PENDING');
+  staleMessage({ data: JSON.stringify({ type: 'CALL_ENDED', payload: { callId: 'qa-call' } }) });
+  assert.ok(h.state.includes('pending'));
+  assert.ok(!h.state.includes('ended'));
+  h.cleanup();
+  assert.equal(h.timers.size, 0);
+});
+
+test('network-ended calls retry while completed calls remain ended', async () => {
+  for (const [reason, retries] of [['network_error', true], ['completed', false]]) {
+    const h = harness();
+    await flush();
+    h.sockets[0].receive('CALL_ENDED', { endReason: reason });
+    if (retries) {
+      h.runTimer(10000);
+      await flush();
+      assert.equal(h.sockets.length, 2);
+    } else {
+      assert.ok(h.state.includes('ended'));
+      assert.equal(h.timers.size, 0);
+      h.sockets[0].close();
+      assert.equal(h.timers.size, 0);
+    }
+    h.cleanup();
+  }
+});
+
+test('ending during availability wait clears retries and sends guest cancellation', async () => {
+  const h = harness();
+  await flush();
+  const socket = h.sockets[0];
+  socket.receive('CALL_UNAVAILABLE');
+  function findControls(node) {
+    if (!node || typeof node !== 'object') return null;
+    if (node.props?.onEndCall) return node.props;
+    for (const child of Object.values(node)) {
+      const result = findControls(child);
+      if (result) return result;
+    }
+    return null;
+  }
+  findControls(h.tree).onEndCall();
+  assert.equal(h.timers.size, 0);
+  assert.ok(socket.sent.some(message => message.type === 'CALL_ENDED'));
+  assert.equal(h.sockets.length, 1);
+  h.cleanup();
+});
+
+test('lost media renegotiates ICE while preserving the local camera stream', async () => {
+  const h = harness();
+  await flush();
+  const socket = h.sockets[0];
+  socket.receive('CALL_ACCEPTED');
+  h.permission.resolve({ granted: true });
+  await flush();
+  h.capture.resolve(h.stream);
+  await flush();
+  const peer = h.peers[0];
+  peer.connectionState = 'disconnected';
+  peer.handlers.onConnectionStateChange('disconnected');
+  h.runTimer(10000);
+  await flush();
+  assert.deepEqual(peer.offers, [{ iceRestart: true }]);
+  assert.ok(socket.sent.some(message => message.type === 'WEBRTC_OFFER'));
+  assert.equal(h.counts().captures, 1);
+  assert.equal(h.counts().stops, 0);
+  peer.connectionState = 'connected';
+  peer.handlers.onConnectionStateChange('connected');
+  assert.equal(h.timers.size, 0);
+  h.cleanup();
+});
+
+test('expired guest sessions do not retry while transient session failures do', async () => {
+  for (const [failure, retries] of [[Object.assign(new Error('expired'), { status: 401 }), false], [new Error('network'), true]]) {
+    const h = harness({ sessionFailures: [failure] });
+    await flush();
+    assert.equal(h.counts().sessionRequests, 1);
+    if (retries) {
+      h.runTimer(10000);
+      await flush();
+      assert.equal(h.counts().sessionRequests, 2);
+    } else assert.equal(h.timers.size, 0);
+    h.cleanup();
+  }
 });
 
 test('a silent call server times out instead of leaving the guest connecting forever', async () => {

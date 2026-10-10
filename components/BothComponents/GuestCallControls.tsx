@@ -18,6 +18,7 @@ type GuestCallControlsProps = {
   canToggleMedia: boolean;
   canRetryMedia: boolean;
   isRetryingMedia: boolean;
+  retryLabel?: string;
   onToggleMicrophone: () => void;
   onToggleCamera: () => void;
   onRetryMedia: () => void;
@@ -64,6 +65,7 @@ export function GuestCallControls({
   canToggleMedia,
   canRetryMedia,
   isRetryingMedia,
+  retryLabel = 'RETRY MEDIA',
   onToggleMicrophone,
   onToggleCamera,
   onRetryMedia,
@@ -91,7 +93,7 @@ export function GuestCallControls({
         <ControlButton
           disabled={!canRetryMedia || isRetryingMedia}
           icon="refresh"
-          label={isRetryingMedia ? 'Retrying' : 'Retry media'}
+          label={isRetryingMedia ? 'RETRYING' : retryLabel}
           onPress={onRetryMedia}
         />
         <ControlButton icon="call" label="End call" onPress={onEndCall} variant="danger" />
