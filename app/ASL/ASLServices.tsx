@@ -111,7 +111,7 @@ export default function ASLServices(){
 
     const showDetail = (detail: ServiceDetail) => {
         setSelectedDetail(detail);
-        setModalGif(selectedService.detalles[detail]);
+        setModalGif(selectedService.detalles[detail] ?? selectedService.gifUrl);
         setModalMediaType(selectedService.mediaType ?? 'gif');
         setReplayToken(current => current + 1);
     };
