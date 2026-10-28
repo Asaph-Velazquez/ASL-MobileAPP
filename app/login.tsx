@@ -5,10 +5,12 @@ import { MaterialIcons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { useAuth } from '@/components/BothComponents/auth-provider';
 import { validateToken } from '@/services/auth';
+import { TermsConsentModal } from '@/components/BothComponents/TermsConsentModal';
 
 type FlowState = 'camera' | 'validating' | 'error';
 
 export default function LoginScreen() {
+  const [termsAccepted, setTermsAccepted] = useState(false);
   const [permission, requestPermission] = useCameraPermissions();
   const [flowState, setFlowState] = useState<FlowState>('camera');
   const [scanned, setScanned] = useState(false);
@@ -19,7 +21,7 @@ export default function LoginScreen() {
 
   // Manejador para escaneo de código de barras
   const handleBarcodeScan = async ({ data }: { data: string }) => {
-    if (scanned) return;
+    if (!termsAccepted || scanned) return;
     
     setScanned(true);
     setFlowState('validating');
@@ -59,6 +61,11 @@ export default function LoginScreen() {
     setToken('');
     setRoomNumber('');
   };
+
+  // Keep the scanner and camera permission prompt behind explicit consent.
+  if (!termsAccepted) {
+    return <TermsConsentModal onContinue={() => setTermsAccepted(true)} />;
+  }
 
   // Solicitar permisos de cámara
   if (!permission) {
