@@ -27,10 +27,13 @@ function socketHarness() {
   const code = ts.transpileModule(source, { compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 } }).outputText;
   const module = { exports: {} };
   new Function('module', 'exports', 'require', 'WebSocket', 'setTimeout', 'clearTimeout', code)(module, module.exports,
-    name => name === 'react' ? react : { HOTEL_WS_URL: 'ws://test.invalid' }, Socket,
+    name => name === 'react' ? react : name === 'react-native'
+      ? { AppState: { addEventListener: () => ({ remove() {} }) } }
+      : { HOTEL_WS_URL: 'ws://test.invalid' }, Socket,
     callback => { timers.set(++timerId, callback); return timerId; }, id => timers.delete(id));
   const api = module.exports.useWebSocketMobile('test-token');
   effects.forEach(effect => effect());
+  connection.receive({ type: 'INIT_REQUESTS', payload: { requests: [] } });
   return { api, connection, state, timers };
 }
 const request = { type: 'services', roomNumber: '101', guestName: 'Test', message: 'TAXI: Test trip', priority: 'medium', details: { serviceType: 'taxi' } };

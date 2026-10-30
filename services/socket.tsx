@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
+import { AppState } from 'react-native';
 import { HOTEL_WS_URL } from '@/constants/network';
 
 interface Peticion {
@@ -62,13 +63,14 @@ export function useWebSocketMobile(token: string | null, onSessionRevoked?: () =
   const [misPeticiones, setMisPeticiones] = useState<Peticion[]>([]);
   const [ultimaActualizacion, setUltimaActualizacion] = useState<any>(null);
   const refWs = useRef<WebSocket | null>(null);
-  const refTimeoutReconexion = useRef<number | undefined>(undefined);
+  const refTimeoutReconexion = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+  const refInitTimeout = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   const refIntentosReconexion = useRef(0);
-  const refReconectandoManual = useRef(false);
+  const refActive = useRef(false);
+  const refInitialized = useRef(false);
   const refSessionRevoked = useRef(false);
   const refOnSessionRevoked = useRef(onSessionRevoked);
   refOnSessionRevoked.current = onSessionRevoked;
-  const maxIntentosReconexion = 5;
   const requestRetry = useRef<{ key: string; request: Peticion } | null>(null);
   const sentConfirmedIds = useRef(new Set<string>());
   const pendingTransport = useRef(new Map<string, { resolve: () => void; reject: (error: Error) => void; timer: ReturnType<typeof setTimeout> }>());
@@ -83,7 +85,7 @@ export function useWebSocketMobile(token: string | null, onSessionRevoked?: () =
 
   const sendTransportOperation = (type: string, payload: unknown): Promise<void> => {
     const ws = refWs.current;
-    if (!ws || ws.readyState !== WebSocket.OPEN) return Promise.reject(new Error('NO CONNECTION. TRY AGAIN.'));
+    if (!refInitialized.current || !ws || ws.readyState !== WebSocket.OPEN) return Promise.reject(new Error('NO CONNECTION. TRY AGAIN.'));
     const operationId = `transport-${Date.now()}-${Math.random().toString(36).slice(2)}`;
     return new Promise((resolve, reject) => {
       const timer = setTimeout(() => {
@@ -121,27 +123,58 @@ export function useWebSocketMobile(token: string | null, onSessionRevoked?: () =
 
   // Conexión WebSocket con reconexión automática
   const conectar = useCallback(() => {
-    if (!token || refSessionRevoked.current) {
+    if (!token || refSessionRevoked.current || !refActive.current) {
       setEstaConectado(false);
       return;
     }
+    if (refWs.current && (refWs.current.readyState === WebSocket.OPEN || refWs.current.readyState === WebSocket.CONNECTING)) return;
+
+    const scheduleReconnect = () => {
+      if (!refActive.current || refSessionRevoked.current || refTimeoutReconexion.current !== undefined) return;
+      const timeout = Math.min(1000 * Math.pow(2, Math.min(refIntentosReconexion.current++, 5)), 30000);
+      refTimeoutReconexion.current = setTimeout(() => {
+        refTimeoutReconexion.current = undefined;
+        conectar();
+      }, timeout);
+    };
 
     try {
       const wsUrl = `${HOTEL_WS_URL}?token=${encodeURIComponent(token)}`;
       const ws = new WebSocket(wsUrl);
-
-      ws.onopen = () => {
-        refIntentosReconexion.current = 0;
+      refWs.current = ws;
+      refInitialized.current = false;
+      const isCurrent = () => refActive.current && !refSessionRevoked.current && refWs.current === ws;
+      const handleDisconnect = () => {
+        if (!isCurrent()) return;
+        clearTimeout(refInitTimeout.current);
+        refInitTimeout.current = undefined;
+        rejectPendingTransport();
+        refInitialized.current = false;
+        setEstaConectado(false);
+        refWs.current = null;
+        scheduleReconnect();
       };
+      refInitTimeout.current = setTimeout(() => {
+        if (!isCurrent() || refInitialized.current) return;
+        handleDisconnect();
+        ws.close();
+      }, 10000);
 
       // Escuchar mensajes del servidor (BIDIRECCIONAL)
       ws.onmessage = (evento) => {
+        if (!isCurrent()) return;
         try {
           const mensaje = JSON.parse(evento.data);
 
           switch (mensaje.type) {
             case 'SESSION_REVOKED':
               refSessionRevoked.current = true;
+              refInitialized.current = false;
+              clearTimeout(refInitTimeout.current);
+              refInitTimeout.current = undefined;
+              clearTimeout(refTimeoutReconexion.current);
+              refTimeoutReconexion.current = undefined;
+              refWs.current = null;
               rejectPendingTransport();
               setEstaConectado(false);
               refOnSessionRevoked.current?.();
@@ -222,6 +255,10 @@ export function useWebSocketMobile(token: string | null, onSessionRevoked?: () =
               break;
 
             case 'INIT_REQUESTS':
+              clearTimeout(refInitTimeout.current);
+              refInitTimeout.current = undefined;
+              refInitialized.current = true;
+              refIntentosReconexion.current = 0;
               setMisPeticiones(previous => {
                 const incoming: Peticion[] = Array.isArray(mensaje.payload?.requests)
                   ? mensaje.payload.requests.map(mapPersistedRequestToPeticion) : [];
@@ -243,32 +280,15 @@ export function useWebSocketMobile(token: string | null, onSessionRevoked?: () =
         }
       };
 
-      ws.onclose = () => {
-        rejectPendingTransport();
-        setEstaConectado(false);
-        refWs.current = null;
-
-        if (refSessionRevoked.current) return;
-
-        if (refReconectandoManual.current) {
-          refReconectandoManual.current = false;
-          return;
-        }
-
-        // Reconexión automática con backoff exponencial
-        if (token && refIntentosReconexion.current < maxIntentosReconexion) {
-          const timeout = Math.min(1000 * Math.pow(2, refIntentosReconexion.current), 30000);
-
-          refTimeoutReconexion.current = setTimeout(() => {
-            refIntentosReconexion.current++;
-            conectar();
-          }, timeout) as any;
-        }
+      ws.onclose = handleDisconnect;
+      ws.onerror = () => {
+        if (!isCurrent()) return;
+        handleDisconnect();
+        ws.close();
       };
-
-      refWs.current = ws;
     } catch {
       setEstaConectado(false);
+      scheduleReconnect();
     }
   }, [token, rejectPendingTransport]);
 
@@ -281,7 +301,7 @@ export function useWebSocketMobile(token: string | null, onSessionRevoked?: () =
     priority: 'low' | 'medium' | 'high' | 'urgent';
     details?: unknown;
   }) => {
-    if (refWs.current && refWs.current.readyState === WebSocket.OPEN) {
+    if (refInitialized.current && refWs.current && refWs.current.readyState === WebSocket.OPEN) {
       const carga: Peticion = {
         id: Date.now().toString(),
         ...peticion,
@@ -307,7 +327,7 @@ export function useWebSocketMobile(token: string | null, onSessionRevoked?: () =
 
   // Cancelar petición
   const cancelarPeticion = (peticionId: string) => {
-    if (refWs.current && refWs.current.readyState === WebSocket.OPEN) {
+    if (refInitialized.current && refWs.current && refWs.current.readyState === WebSocket.OPEN) {
       refWs.current.send(
         JSON.stringify({
           type: 'CANCEL_REQUEST',
@@ -332,7 +352,7 @@ export function useWebSocketMobile(token: string | null, onSessionRevoked?: () =
 
   // Calificar petición
   const ratePeticion = (peticionId: string, rating: number) => {
-    if (refWs.current && refWs.current.readyState === WebSocket.OPEN) {
+    if (refInitialized.current && refWs.current && refWs.current.readyState === WebSocket.OPEN) {
       const ratedAt = new Date().toISOString();
       
       refWs.current.send(
@@ -362,26 +382,28 @@ export function useWebSocketMobile(token: string | null, onSessionRevoked?: () =
   };
 
   const reconectar = useCallback(() => {
-    refReconectandoManual.current = true;
-
-    if (refTimeoutReconexion.current) {
-      clearTimeout(refTimeoutReconexion.current);
-      refTimeoutReconexion.current = undefined;
-    }
-
+    clearTimeout(refTimeoutReconexion.current);
+    refTimeoutReconexion.current = undefined;
+    clearTimeout(refInitTimeout.current);
+    refInitTimeout.current = undefined;
     refIntentosReconexion.current = 0;
-
-    if (refWs.current) {
-      refWs.current.close();
-      return;
+    const previous = refWs.current;
+    refWs.current = null;
+    refInitialized.current = false;
+    rejectPendingTransport();
+    setEstaConectado(false);
+    if (previous) {
+      previous.onclose = null;
+      previous.onmessage = null;
+      previous.onerror = null;
+      previous.close();
     }
-
-    refReconectandoManual.current = false;
     conectar();
-  }, [conectar]);
+  }, [conectar, rejectPendingTransport]);
 
   // Iniciar conexión al montar el componente
   useEffect(() => {
+    refActive.current = Boolean(token);
     refSessionRevoked.current = false;
     requestRetry.current = null;
     sentConfirmedIds.current.clear();
@@ -399,17 +421,38 @@ export function useWebSocketMobile(token: string | null, onSessionRevoked?: () =
     }
 
     conectar();
+    const subscription = AppState.addEventListener('change', state => {
+      if (state === 'active') reconectar();
+    });
+    const onOnline = () => reconectar();
+    if (typeof window !== 'undefined' && typeof window.addEventListener === 'function') {
+      window.addEventListener('online', onOnline);
+    }
 
     return () => {
+      refActive.current = false;
+      refInitialized.current = false;
+      subscription.remove();
+      if (typeof window !== 'undefined' && typeof window.removeEventListener === 'function') {
+        window.removeEventListener('online', onOnline);
+      }
       rejectPendingTransport();
       if (refTimeoutReconexion.current) {
         clearTimeout(refTimeoutReconexion.current);
       }
-      if (refWs.current) {
-        refWs.current.close();
+      refTimeoutReconexion.current = undefined;
+      clearTimeout(refInitTimeout.current);
+      refInitTimeout.current = undefined;
+      const previous = refWs.current;
+      refWs.current = null;
+      if (previous) {
+        previous.onclose = null;
+        previous.onmessage = null;
+        previous.onerror = null;
+        previous.close();
       }
     };
-  }, [conectar, token, rejectPendingTransport]);
+  }, [conectar, token, rejectPendingTransport, reconectar]);
 
   return {
     estaConectado,
