@@ -1,16 +1,24 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator } from 'react-native';
+import React, { useEffect, useRef, useState } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator, Pressable } from 'react-native';
 import { CameraView, useCameraPermissions } from 'expo-camera';
 import { MaterialIcons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { useAuth } from '@/components/BothComponents/auth-provider';
 import { validateToken } from '@/services/auth';
 import { TermsConsentModal } from '@/components/BothComponents/TermsConsentModal';
+import { API_BASE_URL } from '@/constants/network';
+import { hasPrivacyConsent, recordPrivacyConsent } from '@/services/consent';
 
 type FlowState = 'camera' | 'validating' | 'error';
 
 export default function LoginScreen() {
   const [termsAccepted, setTermsAccepted] = useState(false);
+  const [consentLoading, setConsentLoading] = useState(true);
+  const [policyVisible, setPolicyVisible] = useState(false);
+  const [policyChecked, setPolicyChecked] = useState(false);
+  const [consentError, setConsentError] = useState('');
+  const [savingConsent, setSavingConsent] = useState(false);
+  const consentBusy = useRef(false);
   const [permission, requestPermission] = useCameraPermissions();
   const [flowState, setFlowState] = useState<FlowState>('camera');
   const [scanned, setScanned] = useState(false);
@@ -18,6 +26,32 @@ export default function LoginScreen() {
   const [token, setToken] = useState('');
   const [error, setError] = useState('');
   const { login } = useAuth();
+
+  useEffect(() => {
+    let active = true;
+    hasPrivacyConsent().then(accepted => { if (active) setTermsAccepted(accepted); })
+      .catch(() => { if (active) setConsentError('CONSENT CHECK FAILED. TRY AGAIN.'); })
+      .finally(() => { if (active) setConsentLoading(false); });
+    return () => { active = false; };
+  }, []);
+
+  const handleAllow = async () => {
+    if (!policyChecked || consentBusy.current) return;
+    consentBusy.current = true;
+    setSavingConsent(true);
+    setConsentError('');
+    try {
+      // El permiso nativo y el registro empiezan con la misma acción explícita.
+      const [camera] = await Promise.all([requestPermission(), recordPrivacyConsent('requested')]);
+      await recordPrivacyConsent(camera.granted ? 'granted' : 'denied');
+      setTermsAccepted(true);
+    } catch {
+      setConsentError('CONSENT SAVE FAILED. CHECK CONNECTION AND TRY AGAIN.');
+    } finally {
+      consentBusy.current = false;
+      setSavingConsent(false);
+    }
+  };
 
   // Manejador para escaneo de código de barras
   const handleBarcodeScan = async ({ data }: { data: string }) => {
@@ -44,7 +78,11 @@ export default function LoginScreen() {
           router.replace('/onboarding');
         }, 100);
       } else {
-        setError('INVALID ROOM QR CODE. SCAN AGAIN.');
+        setError(result.isNetworkError
+          ? 'SERVER CONNECTION FAILED. CHECK WI-FI.'
+          : result.status && result.status >= 500
+            ? 'SERVER UNAVAILABLE. TRY AGAIN.'
+            : 'INVALID ROOM QR CODE. SCAN AGAIN.');
         setFlowState('error');
       }
     } catch (err) {
@@ -62,9 +100,28 @@ export default function LoginScreen() {
     setRoomNumber('');
   };
 
-  // Keep the scanner and camera permission prompt behind explicit consent.
+  if (consentLoading) return <View style={styles.container}><ActivityIndicator size="large" /></View>;
+
+  // El escáner se habilita solo después del consentimiento confirmado por el servidor.
   if (!termsAccepted) {
-    return <TermsConsentModal onContinue={() => setTermsAccepted(true)} />;
+    return <View style={styles.container} testID="privacy-gate">
+      <MaterialIcons name="policy" size={64} color="#93C5FD" />
+      <Text style={styles.title}>CAMERA ACCESS AND PRIVACY</Text>
+      <Text style={styles.subtitle}>ALLOW PRESS: PRIVACY POLICY ACCEPT, CAMERA USE ACCEPT. ROOM QR SCAN CAMERA NEED.</Text>
+      <Pressable accessibilityRole="link" onPress={() => setPolicyVisible(true)} testID="privacy-policy">
+        <Text style={styles.policyLink}>Privacy Policy</Text>
+      </Pressable>
+      <Pressable accessibilityRole="checkbox" accessibilityState={{ checked: policyChecked }}
+        onPress={() => setPolicyChecked(value => !value)} testID="privacy-checkbox" disabled={savingConsent}>
+        <Text style={styles.policyLink}>{policyChecked ? '☑' : '☐'} I accept the terms, Privacy Policy and camera use.</Text>
+      </Pressable>
+      {consentError ? <Text style={styles.subtitle} accessibilityRole="alert">{consentError}</Text> : null}
+      <TouchableOpacity style={[styles.button, { opacity: policyChecked && !savingConsent ? 1 : 0.45 }]}
+        disabled={!policyChecked || savingConsent} onPress={handleAllow} testID="privacy-allow">
+        <Text style={styles.buttonText}>{savingConsent ? 'SAVING...' : 'ALLOW'}</Text>
+      </TouchableOpacity>
+      {policyVisible ? <TermsConsentModal onContinue={() => {}} onClose={() => setPolicyVisible(false)} /> : null}
+    </View>;
   }
 
   // Solicitar permisos de cámara
@@ -105,6 +162,7 @@ export default function LoginScreen() {
       <View style={styles.container}>
         <MaterialIcons name="error-outline" size={64} color="#dc2626" />
         <Text style={styles.title}>{error}</Text>
+        <Text style={styles.subtitle}>SERVER: {API_BASE_URL}</Text>
         <TouchableOpacity style={styles.button} onPress={handleScanAgain}>
           <Text style={styles.buttonText}>SCAN AGAIN</Text>
         </TouchableOpacity>
@@ -142,6 +200,7 @@ export default function LoginScreen() {
 }
 
 const styles = StyleSheet.create({
+  policyLink: { color: '#93C5FD', textDecorationLine: 'underline', textAlign: 'center', margin: 16, fontSize: 16 },
   container: {
     flex: 1,
     backgroundColor: '#000',

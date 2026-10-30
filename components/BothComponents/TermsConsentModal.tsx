@@ -16,7 +16,7 @@ function FormattedText({ text }: { text: string }) {
   ));
 }
 
-export function TermsConsentModal({ onContinue }: { onContinue: () => void }) {
+export function TermsConsentModal({ onContinue, onClose }: { onContinue: () => void; onClose?: () => void }) {
   const [accepted, setAccepted] = useState(false);
   const { height } = useWindowDimensions();
   const insets = useSafeAreaInsets();
@@ -28,7 +28,7 @@ export function TermsConsentModal({ onContinue }: { onContinue: () => void }) {
   const buttonColor = useThemeColor({ light: '#1D4ED8', dark: '#2563EB' }, 'background');
 
   return (
-    <Modal visible transparent animationType="fade" onRequestClose={() => {}}>
+    <Modal visible transparent animationType="fade" onRequestClose={() => onClose?.()}>
       <View style={[styles.overlay, { paddingTop: insets.top + 16, paddingBottom: insets.bottom + 16 }]}>
         <View style={[styles.panel, { backgroundColor, height: Math.min(820, height - insets.top - insets.bottom - 32) }]}>
           <View style={[styles.header, { borderBottomColor: borderColor }]}>
@@ -47,6 +47,9 @@ export function TermsConsentModal({ onContinue }: { onContinue: () => void }) {
             ))}
           </ScrollView>
           <View style={[styles.footer, { borderTopColor: borderColor }]}>
+            {onClose ? <Pressable accessibilityRole="button" onPress={onClose} testID="terms-close" style={styles.checkboxRow}>
+              <Text style={{ color: accent }}>CLOSE PRIVACY POLICY</Text>
+            </Pressable> : <>
             <Pressable accessibilityRole="checkbox" accessibilityState={{ checked: accepted }}
               accessibilityLabel="I accept the terms and conditions."
               onPress={() => setAccepted(value => !value)} style={styles.checkboxRow} testID="terms-checkbox">
@@ -60,6 +63,7 @@ export function TermsConsentModal({ onContinue }: { onContinue: () => void }) {
               <Text style={styles.continueLabel}>Continue</Text>
               <MaterialIcons name="arrow-forward" size={22} color="#FFFFFF" />
             </Pressable>
+            </>}
           </View>
         </View>
       </View>

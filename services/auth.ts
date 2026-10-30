@@ -6,6 +6,8 @@ interface ValidateTokenResponse {
   stayId?: string;
   expiresAt?: string;
   reason?: string;
+  status?: number;
+  isNetworkError?: boolean;
 }
 
 interface RegisterGuestResponse {
@@ -20,9 +22,12 @@ interface RegisterGuestResponse {
  * @returns Validation result with room number and stay information if valid
  */
 export async function validateToken(token: string): Promise<ValidateTokenResponse> {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 10000);
   try {
     const response = await fetch(`${API_BASE_URL}/api/auth/validate`, {
       method: 'POST',
+      signal: controller.signal,
       headers: {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${token}`,
@@ -33,17 +38,22 @@ export async function validateToken(token: string): Promise<ValidateTokenRespons
       const errorData = await response.json().catch(() => ({}));
       return {
         valid: false,
-        reason: errorData.message || `HTTP ${response.status}`,
+        reason: errorData?.reason || errorData?.error || errorData?.message || `HTTP ${response.status}`,
+        status: response.status,
       };
     }
 
-    const data = await response.json();
+    const data = await response.json().catch(() => null);
+    if (typeof data?.valid !== 'boolean') return { valid: false, status: 502, reason: 'INVALID_SERVER_RESPONSE' };
     return data;
   } catch (error) {
     return {
       valid: false,
-      reason: error instanceof Error ? error.message : 'Network error',
+      isNetworkError: true,
+      reason: controller.signal.aborted ? 'NETWORK_TIMEOUT' : 'NETWORK_ERROR',
     };
+  } finally {
+    clearTimeout(timeout);
   }
 }
 

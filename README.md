@@ -4,6 +4,19 @@ Aplicación móvil para hoteles que permite a los huéspedes comunicarse con el 
 
 ## 📋 Características
 
+Antes del QR, la pantalla de privacidad ofrece el documento completo en
+**Privacy Policy** y exige marcar la aceptación antes de pulsar **ALLOW**.
+Abrir o cerrar el documento no acepta la política ni solicita la cámara.
+ALLOW inicia el permiso nativo y guarda la aceptación en `POST /api/consents`;
+el escáner espera la confirmación del servidor. Si falla la conexión, permite
+reintentar. La aceptación de la versión `2026-10-26` se conserva localmente
+entre aperturas. El servidor almacena la fecha de aceptación y el estado del
+permiso (`requested`, `denied` o `granted`) con un identificador aleatorio de
+instalación; no recoge identificadores del hardware. Los reintentos actualizan
+un único registro por instalación y versión, conservando la fecha original.
+`npm run test:consent` cubre el flujo con permisos simulados; los diálogos del
+sistema y la cámara requieren una comprobación en Android o iOS.
+
 ### Modo Texto
 - Comunicación mediante texto, desarrollado para lectores con discapacidad auditiva y publico en general
 

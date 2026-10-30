@@ -71,29 +71,13 @@ test('Continue is disabled until terms are accepted, and the checkbox can revoke
   assert.doesNotMatch(JSON.stringify(tree), /ACADEMIC PROPOSAL/);
 });
 
-test('QR camera permission and scanner are gated by terms acceptance', () => {
-  const hooks = makeHooks();
-  const TermsConsentModal = () => {};
-  const { default: LoginScreen } = load('app/login.tsx', {
-    react: hooks.react,
-    'react/jsx-runtime': jsx,
-    'react-native': native,
-    'expo-camera': { CameraView: 'CameraView', useCameraPermissions: () => [null, () => {}] },
-    '@expo/vector-icons': { MaterialIcons: 'MaterialIcons' },
-    'expo-router': { router: { replace() {} } },
-    '@/components/BothComponents/auth-provider': { useAuth: () => ({ login() {} }) },
-    '@/services/auth': { validateToken() { throw new Error('QR must not be validated before consent'); } },
-    '@/components/BothComponents/TermsConsentModal': { TermsConsentModal },
-  });
-  hooks.reset();
-  const gate = LoginScreen();
-  assert.equal(gate.type, TermsConsentModal);
-  hooks.reset();
-  const scannerState = LoginScreen();
-  assert.equal(scannerState.type, TermsConsentModal);
-  gate.props.onContinue();
-  hooks.reset();
-  const afterConsent = LoginScreen();
-  assert.notEqual(afterConsent.type, TermsConsentModal);
-  assert.equal(afterConsent.props.children.type, 'ActivityIndicator');
+test('bundled terms contain every section, clause and bullet without relying on ignored Docs', () => {
+  const terms = load('data/termsAndConditions.ts', {});
+  const text = terms.TERMS_AND_CONDITIONS;
+  assert.equal((text.match(/^\*\*[IVX]+\./gm) || []).length, 4);
+  assert.equal((text.match(/^\*\*\d+\./gm) || []).length, 10);
+  assert.equal((text.match(/^- /gm) || []).length, 26);
+  assert.match(text, /ACADEMIC PROPOSAL/);
+  assert.match(text, /Only these coordinates are sent/);
+  assert.match(text, /competent courts in Mexico City/);
 });
