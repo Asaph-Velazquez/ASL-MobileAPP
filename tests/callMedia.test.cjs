@@ -12,7 +12,7 @@ function deferred() {
 }
 
 function harness({ focused = true, width = 390, left = 0, right = 0, sessionFailures = [] } = {}) {
-  const effects = [], state = [], sockets = [], peers = [], timers = new Map();
+  const effects = [], state = [], sockets = [], peers = [], attachments = [], timers = new Map();
   let timerId = 0;
   let sessionRequests = 0;
   const timerDelays = new Map();
@@ -46,7 +46,7 @@ function harness({ focused = true, width = 390, left = 0, right = 0, sessionFail
       peers.push(peer);
       return peer;
     },
-    attachLocalStream: async () => {},
+    attachLocalStream: async (peer, stream) => { attachments.push({ peer, stream }); },
     applyRemoteDescription: async (peer, sdp) => { peer.remoteDescription = sdp; },
     applyIceCandidate: async (peer, candidate) => {
       assert.ok(peer.remoteDescription, 'ICE must wait for remote SDP');
@@ -92,7 +92,7 @@ function harness({ focused = true, width = 390, left = 0, right = 0, sessionFail
   );
   const tree = module.exports.default();
   const cleanups = effects.map(fn => fn());
-  return { tree, sockets, peers, state, permission, capture, stream, timers,
+  return { tree, sockets, peers, attachments, state, permission, capture, stream, timers,
     runTimer(delay) {
       const id = [...timerDelays.entries()].find(([, value]) => value === delay)?.[0];
       assert.ok(id, `expected timer with ${delay}ms delay`);
@@ -299,6 +299,50 @@ test('lost media renegotiates ICE while preserving the local camera stream', asy
   peer.handlers.onConnectionStateChange('connected');
   assert.equal(h.timers.size, 0);
   h.cleanup();
+});
+
+test('CPM_MOV_042: signaling loss preserves the preview and reattaches it after retry on the same screen', async () => {
+  const h = harness();
+  await flush();
+  const socket = h.sockets[0];
+  socket.receive('CALL_ACCEPTED');
+  h.permission.resolve({ granted: true });
+  await flush();
+  h.capture.resolve(h.stream);
+  await flush();
+  const firstPeer = h.peers[0];
+  socket.close();
+  assert.equal(firstPeer.closed, true);
+  assert.equal(h.counts().stops, 0);
+  h.runTimer(10000);
+  await flush();
+  const recovered = h.sockets[1];
+  recovered.receive('CALL_PENDING');
+  assert.equal(h.counts().stops, 0);
+  recovered.receive('CALL_ACCEPTED');
+  await flush();
+  assert.equal(h.counts().captures, 1);
+  assert.equal(h.counts().permissionRequests, 1);
+  assert.equal(h.peers.length, 2);
+  assert.ok(h.attachments.some(item => item.peer === h.peers[1] && item.stream === h.stream));
+  h.cleanup();
+  assert.equal(h.counts().stops, 1);
+  assert.equal(h.timers.size, 0);
+});
+
+test('CPM_MOV_042: server-finalized network calls preserve the camera until the guest ends recovery', async () => {
+  const h = harness();
+  await flush();
+  h.sockets[0].receive('CALL_ACCEPTED');
+  h.permission.resolve({ granted: true });
+  await flush();
+  h.capture.resolve(h.stream);
+  await flush();
+  h.sockets[0].receive('CALL_ENDED', { endReason: 'network_error' });
+  assert.equal(h.counts().stops, 0);
+  h.cleanup();
+  assert.equal(h.counts().stops, 1);
+  assert.equal(h.timers.size, 0);
 });
 
 test('expired guest sessions do not retry while transient session failures do', async () => {

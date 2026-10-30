@@ -85,7 +85,7 @@ export default function CallScreen() {
     setMessage(nextMessage);
   }
 
-  function cleanupMediaSession() {
+  function cleanupMediaSession(preserveLocalStream = false) {
     clearMediaRetryTimer();
     mediaRetryBusyRef.current = false;
     mediaGenerationRef.current += 1;
@@ -95,16 +95,18 @@ export default function CallScreen() {
     peerRef.current = null;
     closePeerConnection(previousPeer);
 
-    stopStream(localStreamRef.current);
-    localStreamRef.current = null;
-    setLocalStreamUrl(null);
+    if (!preserveLocalStream) {
+      stopStream(localStreamRef.current);
+      localStreamRef.current = null;
+      setLocalStreamUrl(null);
+      setIsMicrophoneEnabled(true);
+      setIsCameraEnabled(true);
+    }
 
     stopStream(remoteStreamRef.current);
     remoteStreamRef.current = null;
     setRemoteStreamUrl(null);
 
-    setIsMicrophoneEnabled(true);
-    setIsCameraEnabled(true);
     setIsRetryingMedia(false);
     setMediaStatus('idle');
     setMediaMessage('CAMERA AND MICROPHONE START AFTER INTERPRETER ACCEPT CALL.');
@@ -192,7 +194,11 @@ export default function CallScreen() {
 
   function ensureLocalMedia(currentCallId: string, socket: WebSocket): Promise<MediaStream> {
     if (localStreamRef.current) {
-      return Promise.resolve(localStreamRef.current);
+      const stream = localStreamRef.current;
+      return ensurePeerSession(currentCallId, socket).then(async peer => {
+        await attachLocalStream(peer, stream);
+        return stream;
+      });
     }
     if (mediaPendingRef.current) return mediaPendingRef.current;
     const pending = captureLocalMedia(currentCallId, socket);
@@ -374,7 +380,7 @@ export default function CallScreen() {
       releaseSocket();
       callIdRef.current = null;
       setCallId(null);
-      cleanupMediaSession();
+      cleanupMediaSession(Boolean(localStreamRef.current));
       signalingQueue = Promise.resolve();
       try {
         updateStatus('connecting', 'REQUEST INTERPRETER CALL...');
@@ -435,17 +441,18 @@ export default function CallScreen() {
                   scheduleRetry();
                   break;
                 case 'CALL_UNAVAILABLE':
-                  cleanupMediaSession();
+                  cleanupMediaSession(Boolean(localStreamRef.current));
                   updateStatus('unavailable', 'INTERPRETER NOT AVAILABLE. SEARCH AGAIN EVERY 10 SECONDS.');
                   scheduleRetry();
                   break;
                 case 'CALL_ENDED':
                   callIdRef.current = null;
-                  cleanupMediaSession();
                   if (incoming.payload?.endReason === 'network_error' || incoming.payload?.reason === 'network_error') {
+                    cleanupMediaSession(true);
                     updateStatus('error', 'CALL CONNECTION LOST. RECONNECT IN 10 SECONDS.');
                     scheduleRetry();
                   } else {
+                    cleanupMediaSession();
                     clearRetryTimer();
                     updateStatus('ended', 'CALL ENDED. HOTEL STAFF FOLLOW-UP IF NEEDED.');
                   }
@@ -492,7 +499,7 @@ export default function CallScreen() {
           clearConnectionTimer();
           if (!disposed && statusRef.current !== 'ended') {
             callIdRef.current = null;
-            cleanupMediaSession();
+            cleanupMediaSession(true);
             updateStatus('error', 'CALL CONNECTION LOST. RECONNECT IN 10 SECONDS.');
             scheduleRetry();
           }
@@ -501,6 +508,7 @@ export default function CallScreen() {
         if (disposed || statusRef.current === 'ended') return;
         const httpStatus = (error as { status?: number }).status;
         if (httpStatus === 401 || httpStatus === 403) {
+          cleanupMediaSession();
           updateStatus('error', 'GUEST SESSION EXPIRED. SIGN IN AGAIN.');
           retryCallRef.current = null;
         } else {
