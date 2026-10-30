@@ -66,6 +66,22 @@ test('CPM_MOV_001: persisted acceptance bypasses the first screen on a new mount
   assert.deepEqual(s.calls, []);
 });
 
+test('CPM_MOV_002: REJECT blocks access without camera permission or a server acceptance, including a fresh launch', async () => {
+  const s = screen(); s.render(); await flush();
+  find(s.render(), 'privacy-checkbox').props.onPress();
+  find(s.render(), 'privacy-reject').props.onPress();
+  let tree = s.render();
+  assert.match(JSON.stringify(tree), /PRIVACY POLICY ACCEPT AND CAMERA USE ACCEPT NEED/);
+  assert.equal(find(tree, 'privacy-allow').props.disabled, true);
+  assert.equal(nodes(tree, n => n.type === 'CameraView').length, 0);
+  assert.deepEqual(s.calls, []);
+  const reopened = screen(); reopened.render(); await flush();
+  tree = reopened.render();
+  assert.ok(find(tree, 'privacy-gate'));
+  assert.ok(find(tree, 'privacy-reject'));
+  assert.deepEqual(reopened.calls, []);
+});
+
 test('CPM_MOV_001: denial keeps policy acceptance and records the denied permission', async () => {
   const s = screen(); s.render(); await flush();
   find(s.render(), 'privacy-checkbox').props.onPress();

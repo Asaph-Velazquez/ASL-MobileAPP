@@ -120,6 +120,13 @@ export default function LoginScreen() {
         disabled={!policyChecked || savingConsent} onPress={handleAllow} testID="privacy-allow">
         <Text style={styles.buttonText}>{savingConsent ? 'SAVING...' : 'ALLOW'}</Text>
       </TouchableOpacity>
+      <TouchableOpacity style={styles.button} disabled={savingConsent} testID="privacy-reject" onPress={() => {
+        if (consentBusy.current) return;
+        setPolicyChecked(false);
+        setConsentError('APP USE: PRIVACY POLICY ACCEPT AND CAMERA USE ACCEPT NEED. REJECT: ACCESS BLOCKED.');
+      }}>
+        <Text style={styles.buttonText}>REJECT</Text>
+      </TouchableOpacity>
       {policyVisible ? <TermsConsentModal onContinue={() => {}} onClose={() => setPolicyVisible(false)} /> : null}
     </View>;
   }

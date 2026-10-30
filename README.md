@@ -7,6 +7,8 @@ Aplicación móvil para hoteles que permite a los huéspedes comunicarse con el 
 Antes del QR, la pantalla de privacidad ofrece el documento completo en
 **Privacy Policy** y exige marcar la aceptación antes de pulsar **ALLOW**.
 Abrir o cerrar el documento no acepta la política ni solicita la cámara.
+**REJECT** mantiene el acceso bloqueado y explica en glosa que se necesita
+aceptar la política y el uso de cámara; no solicita el permiso ni registra aceptación.
 ALLOW inicia el permiso nativo y guarda la aceptación en `POST /api/consents`;
 el escáner espera la confirmación del servidor. Si falla la conexión, permite
 reintentar. La aceptación de la versión `2026-10-26` se conserva localmente
