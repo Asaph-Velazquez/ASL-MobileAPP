@@ -5,11 +5,16 @@ const { load, hooks, jsx, native, find, nodes, flush } = require('./helpers/rend
 function screen({ saved = false, granted = false, fail = false, result = { valid: false, status: 401 } } = {}) {
   const h = hooks(), calls = [];
   const permission = { granted, canAskAgain: true };
+  let resume;
+  const getPermission = async () => { calls.push('get-permission'); return permission; };
   const { default: Login } = load('app/login.tsx', {
-    react: h.react, 'react/jsx-runtime': jsx, 'react-native': native,
+    react: h.react, 'react/jsx-runtime': jsx, 'react-native': { ...native,
+      AppState: { addEventListener: (_, callback) => { resume = callback; return { remove() {} }; } },
+      Linking: { openSettings: async () => { calls.push('settings'); } },
+    },
     'expo-camera': { CameraView: 'CameraView', useCameraPermissions: () => [permission, async () => {
       calls.push('camera'); return permission;
-    }] },
+    }, getPermission] },
     '@expo/vector-icons': { MaterialIcons: 'MaterialIcons' },
     'expo-router': { router: { replace() {} } },
     '@/components/BothComponents/auth-provider': { useAuth: () => ({ login() {} }) },
@@ -20,7 +25,7 @@ function screen({ saved = false, granted = false, fail = false, result = { valid
       calls.push(status); if (fail) throw Error('offline');
     } },
   });
-  return { calls, permission, render() { h.reset(); const tree = Login(); h.effects(); return tree; } };
+  return { calls, permission, resume: () => resume('active'), render() { h.reset(); const tree = Login(); h.effects(); return tree; } };
 }
 
 test('CPM_MOV_001: opening and closing the complete policy never accepts or requests camera', async () => {
@@ -89,6 +94,22 @@ test('CPM_MOV_001: denial keeps policy acceptance and records the denied permiss
   assert.deepEqual(s.calls, ['camera', 'requested', 'denied']);
   assert.equal(find(s.render(), 'privacy-gate'), undefined);
   assert.equal(nodes(s.render(), n => n.type === 'CameraView').length, 0);
+});
+
+test('CPM_MOV_004: settings recovery refreshes the OS permission and scanner without a new acceptance', async () => {
+  const s = screen({ saved: true }); s.render(); await flush();
+  s.permission.canAskAgain = false;
+  let tree = s.render();
+  assert.match(JSON.stringify(tree), /CAMERA DENIED.*SETTINGS OPEN/);
+  assert.equal(nodes(tree, n => n.type === 'CameraView').length, 0);
+  await find(tree, 'camera-settings').props.onPress();
+  assert.deepEqual(s.calls, ['settings']);
+  s.permission.granted = true;
+  s.resume(); await flush();
+  tree = s.render();
+  assert.equal(nodes(tree, n => n.type === 'CameraView').length, 1);
+  assert.equal(find(tree, 'privacy-gate'), undefined);
+  assert.deepEqual(s.calls, ['settings', 'get-permission', 'granted']);
 });
 
 test('CPM_MOV_001: consent client persists only acknowledged version and retries with the same installation id', async t => {

@@ -18,6 +18,10 @@ instalación; no recoge identificadores del hardware. Los reintentos actualizan
 un único registro por instalación y versión, conservando la fecha original.
 `npm run test:consent` cubre el flujo con permisos simulados; los diálogos del
 sistema y la cámara requieren una comprobación en Android o iOS.
+Si se deniega el permiso, la pantalla explica en glosa por qué se requiere
+la cámara y ofrece **OPEN SETTINGS**. Al regresar desde los ajustes consulta
+el permiso del sistema, actualiza el registro y habilita el QR si fue otorgado,
+sin solicitar otra aceptación de la política.
 
 ### Modo Texto
 - Comunicación mediante texto, desarrollado para lectores con discapacidad auditiva y publico en general

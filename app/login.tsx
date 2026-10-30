@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator, Pressable } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator, Pressable, AppState, Linking } from 'react-native';
 import { CameraView, useCameraPermissions } from 'expo-camera';
 import { MaterialIcons } from '@expo/vector-icons';
 import { router } from 'expo-router';
@@ -19,7 +19,7 @@ export default function LoginScreen() {
   const [consentError, setConsentError] = useState('');
   const [savingConsent, setSavingConsent] = useState(false);
   const consentBusy = useRef(false);
-  const [permission, requestPermission] = useCameraPermissions();
+  const [permission, requestPermission, getPermission] = useCameraPermissions();
   const [flowState, setFlowState] = useState<FlowState>('camera');
   const [scanned, setScanned] = useState(false);
   const [roomNumber, setRoomNumber] = useState('');
@@ -34,6 +34,16 @@ export default function LoginScreen() {
       .finally(() => { if (active) setConsentLoading(false); });
     return () => { active = false; };
   }, []);
+
+  useEffect(() => {
+    if (!termsAccepted) return;
+    const subscription = AppState.addEventListener('change', state => {
+      if (state !== 'active') return;
+      getPermission().then(result => recordPrivacyConsent(result.granted ? 'granted' : 'denied'))
+        .catch(() => setConsentError('CAMERA PERMISSION CHECK FAILED. CHECK CONNECTION AND TRY AGAIN.'));
+    });
+    return () => subscription.remove();
+  }, [termsAccepted, getPermission]);
 
   const handleAllow = async () => {
     if (!policyChecked || consentBusy.current) return;
@@ -146,8 +156,19 @@ export default function LoginScreen() {
         <MaterialIcons name="camera-alt" size={64} color="#666" />
         <Text style={styles.title}>CAMERA ACCESS NEED</Text>
         <Text style={styles.subtitle}>ROOM QR CODE SCAN, CAMERA ACCESS NEED</Text>
-        <TouchableOpacity style={styles.button} onPress={requestPermission}>
+        <Text style={styles.subtitle}>CAMERA DENIED. SETTINGS OPEN, CAMERA ALLOW, RETURN HERE. SCAN QR THEN CAN.</Text>
+        {consentError ? <Text style={styles.subtitle} accessibilityRole="alert">{consentError}</Text> : null}
+        {permission.canAskAgain ? <TouchableOpacity style={styles.button} onPress={async () => {
+          try {
+            const result = await requestPermission();
+            await recordPrivacyConsent(result.granted ? 'granted' : 'denied');
+          } catch { setConsentError('CAMERA PERMISSION CHECK FAILED. TRY AGAIN.'); }
+        }}>
           <Text style={styles.buttonText}>ALLOW CAMERA</Text>
+        </TouchableOpacity> : null}
+        <TouchableOpacity style={styles.button} testID="camera-settings" accessibilityLabel="Abrir configuración"
+          onPress={() => Linking.openSettings().catch(() => setConsentError('SETTINGS OPEN FAILED. OPEN APP SETTINGS.'))}>
+          <Text style={styles.buttonText}>OPEN SETTINGS</Text>
         </TouchableOpacity>
       </View>
     );
