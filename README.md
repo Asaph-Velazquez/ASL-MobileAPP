@@ -30,6 +30,11 @@ la bienvenida y la habitación continúa obteniéndose de la sesión. Si no se p
 guardar, la pantalla permite reintentar. `npm run test:onboarding` comprueba
 el primer ingreso, la omisión, la finalización y el reingreso.
 
+En **Report Problem** del modo ASL, la vista previa permanece fija mientras
+se desplazan las opciones, incluida **Other Problem**. Su altura se adapta al
+tamaño de pantalla para dejar espacio a la lista. `npm run test:problem-preview`
+comprueba la separación entre la animación y el área desplazable.
+
 ### Modo Texto
 - Comunicación mediante texto, desarrollado para lectores con discapacidad auditiva y publico en general
 

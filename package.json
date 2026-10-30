@@ -12,6 +12,7 @@
     "typecheck": "tsc --noEmit",
     "test:consent": "node --test tests/termsConsent.test.cjs tests/privacyConsent.test.cjs",
     "test:onboarding": "node --test tests/onboarding.test.cjs",
+    "test:problem-preview": "node --test tests/problemPreview.test.cjs",
     "test:call": "node --test tests/callMedia.test.cjs tests/callSession.test.cjs tests/callLayout.test.cjs tests/callHistory.test.cjs tests/remoteStream.test.cjs",
     "test:transport": "node --test tests/transport.test.cjs tests/transportSocket.test.cjs tests/socketRecovery.test.cjs tests/sessionRevocation.test.cjs",
     "test:asl": "node --test tests/signSequence.test.cjs tests/aslRecognition.test.cjs",

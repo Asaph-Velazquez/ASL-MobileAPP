@@ -2,13 +2,15 @@ import { ThemedView } from "@/components/BothComponents/themed-view";
 import { commonStyles } from '@/styles/common';
 import { useCameraPermissions } from "expo-camera";
 import { useState } from "react";
-import { ScrollView, RefreshControl } from "react-native";
+import { ScrollView, RefreshControl, useWindowDimensions } from "react-native";
 import { ASLPetitionModal } from '@/components/ASLComponents/asl-petition-modal';
 import { GifPreviewContainer } from "@/components/ASLComponents/GifPreviewContainer";
 import { ASLGridView, ASLOption } from "@/components/ASLComponents/ASLGridView";
 import { usePetitionSender } from '@/hooks/usePetitionSender';
 
 export default function ASLReportProblem(){
+    const { height } = useWindowDimensions();
+    const previewHeight = Math.max(120, Math.min(300, height * 0.4));
     const [problemaSeleccionado, setProblemaSeleccionado] = useState<ASLOption | null>(null);
     const [modalVisible, setModalVisible] = useState(false);
     const [cameraActive, setCameraActive] = useState(false);
@@ -131,7 +133,9 @@ export default function ASLReportProblem(){
 
     
     return(
-        <ScrollView
+        <ThemedView style={commonStyles.container}>
+            <GifPreviewContainer gifSource={selectedGif} mediaType={selectedMediaType} height={previewHeight} />
+            <ScrollView style={{ flex: 1 }} testID="problem-options-scroll"
             refreshControl={
                 <RefreshControl 
                     refreshing={refreshing}
@@ -140,9 +144,6 @@ export default function ASLReportProblem(){
                 />
             }
         >
-        <ThemedView style={commonStyles.container}>
-            <GifPreviewContainer gifSource={selectedGif} mediaType={selectedMediaType} />
-            
             <ASLGridView 
                 options={problemOptions}
                 onOptionPress={handlePress}
@@ -153,6 +154,7 @@ export default function ASLReportProblem(){
                 defaultGif={defaultGif}
                 defaultMediaType="video"
             />
+            </ScrollView>
 
             <ASLPetitionModal
                 visible={modalVisible}
@@ -173,6 +175,5 @@ export default function ASLReportProblem(){
             />
 
         </ThemedView>
-        </ScrollView>
     );
 }
