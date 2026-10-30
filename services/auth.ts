@@ -45,7 +45,7 @@ export async function validateToken(token: string): Promise<ValidateTokenRespons
     }
 
     const data = await response.json().catch(() => null);
-    if (typeof data?.valid !== 'boolean') return { valid: false, status: 502, reason: 'INVALID_SERVER_RESPONSE' };
+    if (typeof data?.valid !== 'boolean') return { valid: false, status: 502, isNetworkError: true, reason: 'INVALID_SERVER_RESPONSE' };
     return data;
   } catch (error) {
     return {
@@ -71,40 +71,14 @@ export async function validateTokenWithNetworkStatus(token: string): Promise<{
   roomNumber?: string;
   reason?: string;
 }> {
-  try {
-    const response = await fetch(`${API_BASE_URL}/api/auth/validate`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`,
-      },
-    });
-
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
-      return {
-        isValid: false,
-        isNetworkError: false,
-        reason: errorData.message || `HTTP ${response.status}`,
-      };
-    }
-
-    const data = await response.json();
-    return {
-      isValid: data.valid,
-      isNetworkError: false,
-      expiresAt: data.expiresAt,
-      roomNumber: data.roomNumber,
-      reason: data.reason,
-    };
-  } catch (error) {
-    // Network error - return special flag
-    return {
-      isValid: false,
-      isNetworkError: true,
-      reason: error instanceof Error ? error.message : 'Network error',
-    };
-  }
+  const result = await validateToken(token);
+  return {
+    isValid: result.valid,
+    isNetworkError: result.isNetworkError ?? false,
+    expiresAt: result.expiresAt,
+    roomNumber: result.roomNumber,
+    reason: result.reason,
+  };
 }
 
 /**

@@ -50,6 +50,8 @@ test('middleware errors and unavailable servers preserve their HTTP classificati
   }
   const invalid = auth(async () => ({ ok: true, json: async () => { throw Error('HTML not JSON'); } }));
   assert.equal((await invalid.validateToken('sample')).status, 502);
+  assert.equal((await invalid.validateToken('sample')).isNetworkError, true);
+  assert.equal((await invalid.validateTokenWithNetworkStatus('sample')).isNetworkError, true);
 });
 
 test('stalled validation aborts after ten seconds and releases its timer', async () => {
