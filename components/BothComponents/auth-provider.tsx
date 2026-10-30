@@ -13,6 +13,7 @@ interface AuthContextType {
   roomNumber: string | null;
   token: string | null;
   expiresAt: string | null;
+  setSocketConnected: (connected: boolean) => void;
   login: (token: string, guestName: string, roomNumber: string, expiresAt?: string) => Promise<void>;
   logout: () => Promise<void>;
   revalidateSession: () => Promise<boolean>;
@@ -26,8 +27,8 @@ const GUEST_NAME_KEY = 'guest_name';
 const ROOM_NUMBER_KEY = 'room_number';
 const SESSION_EXPIRES_KEY = 'session_expires';
 
-// Intervalo de validación de sesión (60 segundos)
-const SESSION_CHECK_INTERVAL = 60000;
+// Respaldo del aviso WebSocket: comprobar antes del límite de treinta segundos.
+const SESSION_CHECK_INTERVAL = 10000;
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -38,6 +39,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [roomNumber, setRoomNumber] = useState<string | null>(null);
   const [token, setToken] = useState<string | null>(null);
   const [expiresAt, setExpiresAt] = useState<string | null>(null);
+  const [isSocketConnected, setSocketConnected] = useState(false);
   const router = useRouter();
 
   /**
@@ -257,10 +259,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       } catch (error) {
         setIsOffline(true);
       }
-    }, SESSION_CHECK_INTERVAL);
+    }, isSocketConnected ? 60000 : SESSION_CHECK_INTERVAL);
 
     return () => clearInterval(intervalId);
-  }, [isAuthenticated, token, expiresAt]);
+  }, [isAuthenticated, token, expiresAt, isSocketConnected]);
 
   const value: AuthContextType = {
     isAuthenticated,
@@ -271,6 +273,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     roomNumber,
     token,
     expiresAt,
+    setSocketConnected,
     login,
     logout,
     revalidateSession,

@@ -40,6 +40,7 @@ export async function validateToken(token: string): Promise<ValidateTokenRespons
         valid: false,
         reason: errorData?.reason || errorData?.error || errorData?.message || `HTTP ${response.status}`,
         status: response.status,
+        isNetworkError: response.status === 429 || response.status >= 500,
       };
     }
 

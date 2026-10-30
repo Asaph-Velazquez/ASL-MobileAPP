@@ -25,8 +25,12 @@ interface WebSocketContextType {
 const WebSocketContext = createContext<WebSocketContextType | undefined>(undefined);
 
 export function WebSocketProvider({ children }: { children: ReactNode }) {
-  const { guestName, roomNumber, token, isAuthenticated, isOffline } = useAuth();
-  const socketData = useWebSocketMobile(token);
+  const { guestName, roomNumber, token, isAuthenticated, isOffline, logout, setSocketConnected } = useAuth();
+  const socketData = useWebSocketMobile(token, logout);
+  React.useEffect(() => {
+    setSocketConnected(socketData.estaConectado);
+    return () => setSocketConnected(false);
+  }, [socketData.estaConectado, setSocketConnected]);
   
   // Hook de notificaciones global
   useNotifications({ ultimaActualizacion: socketData.ultimaActualizacion });

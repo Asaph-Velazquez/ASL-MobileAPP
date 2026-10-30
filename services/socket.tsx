@@ -57,7 +57,7 @@ function mapPersistedRequestToPeticion(request: PersistedRequestPayload): Petici
   };
 }
 
-export function useWebSocketMobile(token: string | null) {
+export function useWebSocketMobile(token: string | null, onSessionRevoked?: () => void) {
   const [estaConectado, setEstaConectado] = useState(false);
   const [misPeticiones, setMisPeticiones] = useState<Peticion[]>([]);
   const [ultimaActualizacion, setUltimaActualizacion] = useState<any>(null);
@@ -65,6 +65,9 @@ export function useWebSocketMobile(token: string | null) {
   const refTimeoutReconexion = useRef<number | undefined>(undefined);
   const refIntentosReconexion = useRef(0);
   const refReconectandoManual = useRef(false);
+  const refSessionRevoked = useRef(false);
+  const refOnSessionRevoked = useRef(onSessionRevoked);
+  refOnSessionRevoked.current = onSessionRevoked;
   const maxIntentosReconexion = 5;
   const requestRetry = useRef<{ key: string; request: Peticion } | null>(null);
   const sentConfirmedIds = useRef(new Set<string>());
@@ -118,7 +121,7 @@ export function useWebSocketMobile(token: string | null) {
 
   // Conexión WebSocket con reconexión automática
   const conectar = useCallback(() => {
-    if (!token) {
+    if (!token || refSessionRevoked.current) {
       setEstaConectado(false);
       return;
     }
@@ -137,6 +140,13 @@ export function useWebSocketMobile(token: string | null) {
           const mensaje = JSON.parse(evento.data);
 
           switch (mensaje.type) {
+            case 'SESSION_REVOKED':
+              refSessionRevoked.current = true;
+              rejectPendingTransport();
+              setEstaConectado(false);
+              refOnSessionRevoked.current?.();
+              ws.close();
+              break;
             case 'NEW_REQUEST': {
               const id = mensaje.payload?.requestId || mensaje.payload?.id;
               if (sentConfirmedIds.current.has(id)) {
@@ -237,6 +247,8 @@ export function useWebSocketMobile(token: string | null) {
         rejectPendingTransport();
         setEstaConectado(false);
         refWs.current = null;
+
+        if (refSessionRevoked.current) return;
 
         if (refReconectandoManual.current) {
           refReconectandoManual.current = false;
@@ -370,6 +382,7 @@ export function useWebSocketMobile(token: string | null) {
 
   // Iniciar conexión al montar el componente
   useEffect(() => {
+    refSessionRevoked.current = false;
     requestRetry.current = null;
     sentConfirmedIds.current.clear();
     if (!token) {
