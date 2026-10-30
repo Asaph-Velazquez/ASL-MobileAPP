@@ -1,6 +1,7 @@
 import { ThemedView } from "@/components/BothComponents/themed-view";
 import { ASLCardIcon } from '@/components/ASLComponents/ASLCardIcon';
 import { ASLVideoPreview } from '@/components/ASLComponents/ASLVideoPreview';
+import { ASLPreviewButton } from '@/components/ASLComponents/ASLPreviewButton';
 import { useThemeColor } from '@/hooks/use-theme-color';
 import { commonStyles } from '@/styles/common';
 import { MaterialCommunityIcons, MaterialIcons } from "@expo/vector-icons";
@@ -151,17 +152,18 @@ export default function ASLServices(){
             
             {/* Cuadrícula de opciones */}
             <View style={styles.gridContainer}>
-                {ServiceOptions.map((opcion, index) => (
-                    <TouchableOpacity 
-                        key={index}
+                {ServiceOptions.map(opcion => (
+                    <ASLPreviewButton
+                        key={opcion.id}
                         style={[styles.gridItem, { backgroundColor: cardBg }]}
-                        onPressIn={() => { setSelectedGif(opcion.gifUrl); setSelectedMediaType(opcion.mediaType ?? 'gif'); }}
-                        onPressOut={() => { setSelectedGif(require('../../assets/gifs/00006.mp4')); setSelectedMediaType('video'); }}
+                        accessibilityLabel={opcion.id}
+                        onPreviewStart={() => { setSelectedGif(opcion.gifUrl); setSelectedMediaType(opcion.mediaType ?? 'gif'); }}
+                        onPreviewEnd={() => { setSelectedGif(require('../../assets/gifs/00006.mp4')); setSelectedMediaType('video'); }}
                         onPress={() => handlePress(opcion)}
                         activeOpacity={0.7}
                     >
                         <ASLCardIcon name={opcion.icon} type={opcion.iconType} color={opcion.iconColor} />
-                    </TouchableOpacity>
+                    </ASLPreviewButton>
                 ))}
             </View>
 

@@ -1,6 +1,7 @@
 import { useThemeColor } from '@/hooks/use-theme-color';
 import { ASLCardIcon } from './ASLCardIcon';
-import { StyleSheet, TouchableOpacity } from "react-native";
+import { ASLPreviewButton } from './ASLPreviewButton';
+import { StyleSheet } from "react-native";
 import { ServiceOption } from '../TextComponents/ServiceCard';
 
 interface GridCardProps {
@@ -18,15 +19,16 @@ export function GridCard({ option, onPress, onPressIn, onPressOut }: GridCardPro
   const cardBg = useThemeColor({}, 'card');
 
   return (
-    <TouchableOpacity
+    <ASLPreviewButton
       style={[styles.gridItem, { backgroundColor: cardBg }]}
-      onPressIn={() => onPressIn?.(option)}
-      onPressOut={onPressOut}
+      accessibilityLabel={option.id}
+      onPreviewStart={() => onPressIn?.(option)}
+      onPreviewEnd={onPressOut}
       onPress={() => onPress(option)}
       activeOpacity={0.7}
     >
       <ASLCardIcon name={option.icon} type={option.iconType} color={option.iconColor} />
-    </TouchableOpacity>
+    </ASLPreviewButton>
   );
 }
 

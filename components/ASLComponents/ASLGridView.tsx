@@ -1,6 +1,7 @@
 import { useThemeColor } from '@/hooks/use-theme-color';
 import { ASLCardIcon } from './ASLCardIcon';
-import { StyleSheet, TouchableOpacity, View } from "react-native";
+import { ASLPreviewButton } from './ASLPreviewButton';
+import { StyleSheet, View } from "react-native";
 
 export interface ASLOption {
     id: string;
@@ -37,23 +38,24 @@ export function ASLGridView({
 
     return (
         <View style={styles.gridContainer}>
-            {options.map((option, index) => (
-                <TouchableOpacity 
-                    key={index}
+            {options.map(option => (
+                <ASLPreviewButton
+                    key={option.id}
                     style={[styles.gridItem, { backgroundColor: cardBg }]}
-                    onPressIn={() => {
+                    accessibilityLabel={option.id}
+                    onPreviewStart={() => {
                         if (option.videoSource !== undefined) {
                             onPreviewChange(option.videoSource, 'video');
                         } else if (option.gifSource) {
                             onPreviewChange(option.gifSource, 'gif');
                         }
                     }}
-                    onPressOut={() => onPreviewChange(defaultGif, defaultMediaType)}
+                    onPreviewEnd={() => onPreviewChange(defaultGif, defaultMediaType)}
                     onPress={() => onOptionPress(option)}
                     activeOpacity={0.7}
                 >
                     <ASLCardIcon name={option.icon} type={option.iconType} color={option.iconColor} />
-                </TouchableOpacity>
+                </ASLPreviewButton>
             ))}
         </View>
     );

@@ -35,6 +35,13 @@ se desplazan las opciones, incluida **Other Problem**. Su altura se adapta al
 tamaño de pantalla para dejar espacio a la lista. `npm run test:problem-preview`
 comprueba la separación entre la animación y el área desplazable.
 
+Mantener presionada una opción ASL permite consultar su video. Al soltar una
+pulsación larga se restaura la vista previa sin abrir la categoría ni enviar
+peticiones; un toque breve posterior sí selecciona la opción. El mismo control
+se utiliza en las cuadrículas y en los servicios del hotel. Las activaciones
+del lector de pantalla seleccionan la opción directamente.
+`npm run test:preview-gestures` comprueba ambos gestos y la restauración del video.
+
 ### Modo Texto
 - Comunicación mediante texto, desarrollado para lectores con discapacidad auditiva y publico en general
 
