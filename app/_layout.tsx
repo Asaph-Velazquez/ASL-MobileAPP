@@ -14,6 +14,7 @@ import { AuthProvider, useAuth } from '@/components/BothComponents/auth-provider
 import { CommunicationModeProvider } from '@/components/BothComponents/communication-mode-provider';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { useTheme } from '@/components/BothComponents/theme-provider';
+import { getGuestEntryRoute } from '@/services/onboarding';
 
 export const unstable_settings = {
   anchor: '(tabs)',
@@ -31,16 +32,17 @@ function RootLayoutNav() {
   useEffect(() => {
     if (isLoading) return; // Esperar a que se complete la verificación de autenticación
 
+    let active = true;
     const inAuthGroup = segments[0] === 'login';
-    const inOnboarding = segments[0] === 'onboarding';
 
     if (!isAuthenticated && !inAuthGroup) {
       // Redirigir a login si no está autenticado
       router.replace('/login');
-    } else if (isAuthenticated && inAuthGroup && !inOnboarding) {
-      router.replace('/onboarding');
+    } else if (isAuthenticated && inAuthGroup) {
+      getGuestEntryRoute().then(route => { if (active) router.replace(route); });
     }
-  }, [isAuthenticated, isLoading, segments]);
+    return () => { active = false; };
+  }, [isAuthenticated, isLoading, segments, router]);
 
   // Mostrar pantalla de carga mientras se verifica la autenticación
   if (isLoading) {

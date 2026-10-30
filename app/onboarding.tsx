@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView, useWindowDimensions } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { MaterialIcons } from '@expo/vector-icons';
@@ -7,6 +7,7 @@ import { useAuth } from '@/components/BothComponents/auth-provider';
 import { useThemeColor } from '@/hooks/use-theme-color';
 import { ThemedView } from '@/components/BothComponents/themed-view';
 import { ASLVideoPreview } from '@/components/ASLComponents/ASLVideoPreview';
+import { completeGuestOnboarding } from '@/services/onboarding';
 
 interface OnboardingSlide {
   id: number;
@@ -53,6 +54,9 @@ export default function OnboardingScreen() {
   const videoWidth = Math.max(Math.min(width - 40, 560), 0);
   const videoHeight = Math.min(videoWidth * 0.75, (height - insets.top - insets.bottom) * 0.5, 400);
   const [currentSlide, setCurrentSlide] = useState(0);
+  const [isCompleting, setIsCompleting] = useState(false);
+  const [completionError, setCompletionError] = useState('');
+  const completingRef = useRef(false);
   const { roomNumber, isOffline } = useAuth();
   const textColor = useThemeColor({}, 'text');
   const mutedColor = useThemeColor({}, 'muted');
@@ -62,10 +66,25 @@ export default function OnboardingScreen() {
   const isLastSlide = currentSlide === slides.length - 1;
   const isFirstSlide = currentSlide === 0;
 
-  const handleNext = () => {
-    if (isLastSlide) {
-      // Ir a la pantalla de selección de modo (index.tsx en tabs)
+  const handleComplete = async () => {
+    if (completingRef.current) return;
+    completingRef.current = true;
+    setIsCompleting(true);
+    setCompletionError('');
+    try {
+      await completeGuestOnboarding();
       router.replace('/(tabs)');
+    } catch {
+      setCompletionError('WELCOME SAVE FAILED. TRY AGAIN.');
+    } finally {
+      completingRef.current = false;
+      setIsCompleting(false);
+    }
+  };
+
+  const handleNext = async () => {
+    if (isLastSlide) {
+      await handleComplete();
     } else {
       setCurrentSlide(currentSlide + 1);
     }
@@ -77,17 +96,13 @@ export default function OnboardingScreen() {
     }
   };
 
-  const handleSkip = () => {
-    router.replace('/(tabs)');
-  };
-
   const slide = slides[currentSlide];
 
   return (
     <ThemedView style={styles.container}>
       {/* Skip button */}
       {!isLastSlide && (
-        <TouchableOpacity style={styles.skipButton} onPress={handleSkip}>
+        <TouchableOpacity style={styles.skipButton} onPress={handleComplete} disabled={isCompleting} testID="onboarding-skip">
           <Text style={[styles.skipText, { color: mutedColor }]}>SKIP</Text>
         </TouchableOpacity>
       )}
@@ -148,17 +163,18 @@ export default function OnboardingScreen() {
         </View>
 
         {/* Navigation buttons */}
+        {completionError ? <Text accessibilityRole="alert" style={[styles.description, { color: textColor }]}>{completionError}</Text> : null}
         <View style={styles.navigationContainer}>
           {/* Back button */}
           {!isFirstSlide && (
-            <TouchableOpacity style={styles.backButton} onPress={handleBack}>
+            <TouchableOpacity style={styles.backButton} onPress={handleBack} disabled={isCompleting}>
               <MaterialIcons name="arrow-back" size={24} color="#4A90E2" />
               <Text style={styles.backButtonText}>BACK</Text>
             </TouchableOpacity>
           )}
 
           {/* Next button */}
-          <TouchableOpacity style={styles.nextButton} onPress={handleNext}>
+          <TouchableOpacity style={styles.nextButton} onPress={handleNext} disabled={isCompleting} testID="onboarding-next">
             <Text style={styles.nextButtonText}>
               {isLastSlide ? 'START NOW' : 'NEXT'}
             </Text>

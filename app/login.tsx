@@ -8,6 +8,7 @@ import { validateToken } from '@/services/auth';
 import { TermsConsentModal } from '@/components/BothComponents/TermsConsentModal';
 import { API_BASE_URL } from '@/constants/network';
 import { hasPrivacyConsent, recordPrivacyConsent } from '@/services/consent';
+import { getGuestEntryRoute } from '@/services/onboarding';
 
 type FlowState = 'camera' | 'validating' | 'error';
 
@@ -74,6 +75,7 @@ export default function LoginScreen() {
       const result = await validateToken(data);
       
       if (result.valid) {
+        const entryRoute = await getGuestEntryRoute();
         // Iniciar sesión con expiresAt del servidor
         await login(
           data, 
@@ -82,11 +84,7 @@ export default function LoginScreen() {
           result.expiresAt
         );
         
-        // Pequeño delay para asegurar que el estado de autenticación se estabilice
-        setTimeout(() => {
-          // Redirigir al onboarding
-          router.replace('/onboarding');
-        }, 100);
+        router.replace(entryRoute);
       } else {
         setError(result.isNetworkError
           ? 'SERVER CONNECTION FAILED. CHECK WI-FI.'

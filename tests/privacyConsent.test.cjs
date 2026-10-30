@@ -19,6 +19,7 @@ function screen({ saved = false, granted = false, fail = false, result = { valid
     'expo-router': { router: { replace() {} } },
     '@/components/BothComponents/auth-provider': { useAuth: () => ({ login() {} }) },
     '@/services/auth': { validateToken: async () => result },
+    '@/services/onboarding': { getGuestEntryRoute: async () => '/onboarding' },
     '@/constants/network': { API_BASE_URL: 'http://localhost:8080' },
     '@/components/BothComponents/TermsConsentModal': { TermsConsentModal: 'PolicyDocument' },
     '@/services/consent': { hasPrivacyConsent: async () => saved, recordPrivacyConsent: async status => {

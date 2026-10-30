@@ -23,6 +23,13 @@ la cámara y ofrece **OPEN SETTINGS**. Al regresar desde los ajustes consulta
 el permiso del sistema, actualiza el registro y habilita el QR si fue otorgado,
 sin solicitar otra aceptación de la política.
 
+Las instrucciones de bienvenida se muestran en el primer ingreso. **SKIP** y
+**START NOW** guardan la preferencia en la instalación antes de abrir la selección
+de modo. Cerrar sesión no borra esa preferencia: al ingresar de nuevo se omite
+la bienvenida y la habitación continúa obteniéndose de la sesión. Si no se puede
+guardar, la pantalla permite reintentar. `npm run test:onboarding` comprueba
+el primer ingreso, la omisión, la finalización y el reingreso.
+
 ### Modo Texto
 - Comunicación mediante texto, desarrollado para lectores con discapacidad auditiva y publico en general
 
