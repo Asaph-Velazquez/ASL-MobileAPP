@@ -30,6 +30,9 @@ export async function recordPrivacyConsent(cameraPermission: CameraConsentStatus
       body: JSON.stringify({ installationId, policyVersion: POLICY_VERSION,
         privacyAccepted: true, cameraAccepted: true, cameraPermission }),
     });
+    if (response.status === 404 || response.status === 405) {
+      throw new Error('CONSENT SERVICE NOT AVAILABLE. HOTEL SERVER UPDATE REQUIRED. CONTACT RECEPTION.');
+    }
     if (!response.ok) throw new Error('CONSENT SAVE FAILED. CHECK CONNECTION AND TRY AGAIN.');
     const receipt = await response.json();
     if (receipt.accepted !== true || receipt.policyVersion !== POLICY_VERSION) {

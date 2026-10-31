@@ -56,8 +56,9 @@ export default function LoginScreen() {
       const [camera] = await Promise.all([requestPermission(), recordPrivacyConsent('requested')]);
       await recordPrivacyConsent(camera.granted ? 'granted' : 'denied');
       setTermsAccepted(true);
-    } catch {
-      setConsentError('CONSENT SAVE FAILED. CHECK CONNECTION AND TRY AGAIN.');
+    } catch (error) {
+      setConsentError(error instanceof Error && error.message.startsWith('CONSENT ')
+        ? error.message : 'CONSENT SAVE FAILED. CHECK CONNECTION AND TRY AGAIN.');
     } finally {
       consentBusy.current = false;
       setSavingConsent(false);

@@ -23,7 +23,7 @@ function screen({ saved = false, granted = false, fail = false, result = { valid
     '@/constants/network': { API_BASE_URL: 'http://localhost:8080' },
     '@/components/BothComponents/TermsConsentModal': { TermsConsentModal: 'PolicyDocument' },
     '@/services/consent': { hasPrivacyConsent: async () => saved, recordPrivacyConsent: async status => {
-      calls.push(status); if (fail) throw Error('offline');
+      calls.push(status); if (fail) throw Error(typeof fail === 'string' ? fail : 'offline');
     } },
   });
   return { calls, permission, resume: () => resume('active'), render() { h.reset(); const tree = Login(); h.effects(); return tree; } };
@@ -70,6 +70,28 @@ test('CPM_MOV_001: persisted acceptance bypasses the first screen on a new mount
   const s = screen({ saved: true, granted: true }); s.render(); await flush();
   assert.equal(nodes(s.render(), n => n.type === 'CameraView').length, 1);
   assert.deepEqual(s.calls, []);
+});
+
+test('a missing consent API explains the required server update and keeps the scanner blocked', async () => {
+  const s = screen({ granted: true, fail: 'CONSENT SERVICE NOT AVAILABLE. HOTEL SERVER UPDATE REQUIRED. CONTACT RECEPTION.' });
+  s.render(); await flush();
+  find(s.render(), 'privacy-checkbox').props.onPress();
+  await find(s.render(), 'privacy-allow').props.onPress();
+  assert.match(JSON.stringify(s.render()), /HOTEL SERVER UPDATE REQUIRED/);
+  assert.equal(nodes(s.render(), n => n.type === 'CameraView').length, 0);
+});
+
+for (const status of [404, 405]) test(`consent HTTP ${status} never records a false acknowledgement`, async t => {
+  const storage = new Map();
+  const { recordPrivacyConsent, hasPrivacyConsent } = load('services/consent.ts', {
+    '@react-native-async-storage/async-storage': { default: {
+      getItem: async key => storage.get(key) ?? null, setItem: async (key, value) => storage.set(key, value),
+    } }, '@/constants/network': { API_BASE_URL: 'https://hotel.example' },
+  });
+  t.mock.method(global, 'fetch', async () => ({ ok: false, status }));
+  await assert.rejects(recordPrivacyConsent('requested'), /HOTEL SERVER UPDATE REQUIRED/);
+  assert.equal(await hasPrivacyConsent(), false);
+  assert.equal(storage.has('privacy_acceptance'), false);
 });
 
 test('CPM_MOV_002: REJECT blocks access without camera permission or a server acceptance, including a fresh launch', async () => {
